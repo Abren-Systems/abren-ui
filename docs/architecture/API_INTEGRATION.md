@@ -42,7 +42,7 @@ All modules share a single Axios instance configured with interceptors for authe
 // core/api/http-client.ts
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/core/auth/auth.store'
-import { generateIdempotencyKey } from '@/shared/composables/useIdempotencyKey'
+import { generateIdempotencyKey } from '@/core/composables/useIdempotencyKey'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 

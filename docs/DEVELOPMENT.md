@@ -134,7 +134,7 @@ import type { PaymentRequestDTO } from '../types/api.types'
 feature/{module}/{description}     e.g. feature/accounting/journal-entry-form
 fix/{module}/{description}         e.g. fix/identity/login-redirect
 docs/{description}                 e.g. docs/testing-strategy
-refactor/{module}/{description}    e.g. refactor/shared/http-client-interceptors
+refactor/{module}/{description}    e.g. refactor/core/http-client-interceptors
 ```
 
 ### 5.2 Commit Messages (Conventional Commits)

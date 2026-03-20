@@ -36,7 +36,7 @@ abren-erp/                           # Parent directory (NOT a git repo)
     │   │   ├── reporting/           ← mirrors reporting
     │   │   ├── webhooks/            ← mirrors webhooks
     │   │   └── system/              ← mirrors system
-    │   └── shared/
+    │   └── core/
     ├── docs/
     ├── package.json
     ├── vite.config.ts
@@ -71,7 +71,7 @@ npm install -D openapi-typescript
 # package.json script
 {
   "scripts": {
-    "generate-types": "openapi-typescript http://localhost:8000/api/v1/openapi.json -o src/shared/api/generated.types.ts"
+    "generate-types": "openapi-typescript http://localhost:8000/api/v1/openapi.json -o src/core/api/generated.types.ts"
   }
 }
 ```
@@ -91,7 +91,7 @@ graph LR
 Generated types go into one file. Each module re-exports only what it needs:
 
 ```typescript
-// shared/api/generated.types.ts — AUTO-GENERATED, never edit
+// core/api/generated.types.ts — AUTO-GENERATED, never edit
 export interface components {
   schemas: {
     PaymentRequestDTO: { ... }
@@ -103,7 +103,7 @@ export interface components {
 }
 
 // modules/payment-requests/types/api.types.ts — Module-scoped re-export
-import type { components } from '@/shared/api/generated.types'
+import type { components } from '@/core/api/generated.types'
 
 export type PaymentRequestDTO = components['schemas']['PaymentRequestDTO']
 export type PaymentRequestCreateDTO = components['schemas']['PaymentRequestCreateDTO']

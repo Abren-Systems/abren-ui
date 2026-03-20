@@ -105,7 +105,7 @@ describe('PaymentRequest Mapper', () => {
 ### 3.2 Value Object Tests
 
 ```typescript
-// shared/domain/__tests__/money.test.ts
+// core/domain/__tests__/money.test.ts
 import { describe, it, expect } from 'vitest'
 import { Money, Currency } from '../money'
 
