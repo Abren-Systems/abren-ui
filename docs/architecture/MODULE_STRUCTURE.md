@@ -43,8 +43,8 @@ src/modules/{module-name}/
 │   ├── {Entity}ListPage.vue
 │   └── {Entity}DetailPage.vue
 │
-├── services/                # API calls (typed HTTP methods)
-│   └── {module}.service.ts  # Uses core HTTP client
+├── api/                     # HTTP client for this module's endpoints
+│   └── {module}.api.ts      # Typed API calls (uses core http-client)
 │
 ├── stores/                  # Pinia store(s)
 │   └── {module}.store.ts    # Module-scoped client state
@@ -64,7 +64,7 @@ src/modules/{module-name}/
 ### Files
 | Type | Pattern | Example |
 |---|---|---|
-| API client | `{module}.service.ts` | `accounting.service.ts` |
+| API client | `{module}.api.ts` | `accounting.api.ts` |
 | Store | `{module}.store.ts` | `accounting.store.ts` |
 | Composable | `use{Action}.ts` | `useVoidEntry.ts` |
 | Mapper | `{entity}.mapper.ts` | `journal-entry.mapper.ts` |
@@ -112,7 +112,7 @@ import AccountCard from '@/modules/accounting/components/AccountCard.vue'
   'no-restricted-imports': ['error', {
     patterns: [
       {
-        group: ['@/modules/*/stores/*', '@/modules/*/services/*', '@/modules/*/composables/*'],
+        group: ['@/modules/*/stores/*', '@/modules/*/api/*', '@/modules/*/composables/*'],
         message: 'Cross-module imports are prohibited. Use the Event Bus or Core types.',
       }
     ]
@@ -191,7 +191,7 @@ When creating a new module (e.g., `procurement`):
 
 - [ ] Create `src/modules/procurement/` with the standard directory structure
 - [ ] Create `index.ts` — `ModuleDefinition` export with id, permissions, menuItems
-- [ ] Create `services/procurement.service.ts` — typed API client for backend endpoints
+- [ ] Create `api/procurement.api.ts` — typed API client for backend endpoints
 - [ ] Create `types/api.types.ts` — interfaces matching backend DTOs
 - [ ] Create `types/view.types.ts` — ViewModel interfaces for components
 - [ ] Create `mappers/` — at least one mapper with unit tests

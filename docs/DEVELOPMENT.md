@@ -101,7 +101,7 @@ npm run dev
 | Composables | camelCase with `use` prefix | `useSubmitRequest.ts` |
 | Stores | kebab-case with `.store` suffix | `payment-requests.store.ts` |
 | Types | PascalCase | `PaymentRequestViewModel` |
-| API clients | kebab-case with `.service` suffix | `payment-requests.service.ts` |
+| API clients | kebab-case with `.api` suffix | `payment-requests.api.ts` |
 | Mappers | kebab-case with `.mapper` suffix | `payment-request.mapper.ts` |
 | Constants | UPPER_SNAKE_CASE | `STATUS_COLORS` |
 

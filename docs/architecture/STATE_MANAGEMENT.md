@@ -112,7 +112,7 @@ sequenceDiagram
 
     C->>H: onMounted → usePaymentRequests()
     H->>TQ: useApiQuery(['payment-requests'], ...)
-    TQ->>A: paymentRequestService.list()
+    TQ->>A: paymentRequestApi.list()
     A-->>TQ: PaymentRequestDTO[]
     TQ->>M: dtos.map(toViewModel)
     M-->>TQ: PaymentRequestViewModel[]
@@ -124,14 +124,14 @@ sequenceDiagram
 ```typescript
 // modules/payment-requests/composables/usePaymentRequests.ts
 import { useApiQuery } from '@/core/composables/useApiQuery'
-import { paymentRequestService } from '../services/payment-requests.service'
+import { paymentRequestApi } from '../api/payment-requests.api'
 import { toViewModel } from '../mappers/payment-request.mapper'
 
 export function usePaymentRequests() {
   const { data: requests, isLoading, error } = useApiQuery(
     ['payment-requests'],
     async () => {
-      const dtos = await paymentRequestService.list()
+      const dtos = await paymentRequestApi.list()
       return dtos.map(toViewModel)
     },
   )

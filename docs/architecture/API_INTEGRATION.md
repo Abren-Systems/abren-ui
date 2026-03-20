@@ -18,8 +18,8 @@ Backend (API)
 └────────────┬───────────────┘
              ↓
 ┌────────────────────────────┐
-│  Module Service Client     │  ← Typed methods per endpoint
-│  (modules/{m}/services/)   │
+│  Module API Client         │  ← Typed methods per endpoint
+│  (modules/{m}/api/)        │
 └────────────┬───────────────┘
              ↓
 ┌────────────────────────────┐
@@ -143,7 +143,7 @@ Each module has a typed API client that wraps the shared HTTP client with module
 ### 3.1 Pattern
 
 ```typescript
-// modules/payment-requests/services/payment-requests.service.ts
+// modules/payment-requests/api/payment-requests.api.ts
 import { httpClient } from '@/core/api/http-client'
 import type {
   PaymentRequestDTO,
@@ -153,7 +153,7 @@ import type {
 
 const BASE = '/payment-requests'
 
-export const paymentRequestService = {
+export const paymentRequestApi = {
   // GET /api/v1/payment-requests
   async list(): Promise<PaymentRequestDTO[]> {
     return httpClient.get(BASE)
@@ -192,10 +192,10 @@ export const paymentRequestService = {
 ```
 
 ### 3.2 Rules
-- **One service client per module**. No shared "mega service" file.
-- **Return raw DTOs**. Mappers are called by composables, not by the service client.
+- **One API client per module**. No shared "mega API" file.
+- **Return raw DTOs**. Mappers are called by composables, not by the API client.
 - **Use action-oriented method names** matching backend endpoint names (`submit`, `approve`, `reject`, `pay`).
-- **No business logic** in service clients. They are pure I/O wrappers.
+- **No business logic** in API clients. They are pure I/O wrappers.
 
 ### 3.3 TanStack Query Wrappers
 
@@ -242,14 +242,14 @@ export function useApiMutation<TData, TVariables>(
 ```typescript
 // modules/payment-requests/composables/usePaymentRequests.ts
 import { useApiQuery } from '@/core/composables/useApiQuery'
-import { paymentRequestService } from '../services/payment-requests.service'
+import { paymentRequestApi } from '../api/payment-requests.api'
 import { toViewModel } from '../mappers/payment-request.mapper'
 
 export function usePaymentRequests() {
   const { data, isLoading, error } = useApiQuery(
     ['payment-requests'],
     async () => {
-      const dtos = await paymentRequestService.list()
+      const dtos = await paymentRequestApi.list()
       return dtos.map(toViewModel)
     },
   )

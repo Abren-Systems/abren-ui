@@ -142,7 +142,7 @@ A **module** is a self-contained directory under `src/modules/` that represents 
 - **Pages** (route-level views)
 - **Components** (reusable within the module)
 - **Store** (Pinia client state)
-- **Services** (API calls to its backend counterpart)
+- **API client** (HTTP calls to its backend counterpart)
 - **Mappers** (DTO → ViewModel transformation)
 - **Types** (TypeScript interfaces)
 - **Routes** (lazy-loaded route definitions)
@@ -156,7 +156,7 @@ src/modules/{module-name}/
 ├── composables/     # Use Case Hooks (business logic orchestration)
 ├── mappers/         # DTO → ViewModel transformers (Anti-Corruption Layer)
 ├── pages/           # Route-level page components
-├── services/        # API calls (typed HTTP methods per endpoint)
+├── api/             # HTTP client for this module's backend endpoints
 ├── stores/          # Pinia store(s) for module client state
 ├── types/           # TypeScript interfaces, enums, view models
 ├── routes.ts        # Lazy-loaded route definitions
@@ -283,7 +283,7 @@ eventBus.on('journal-entry:posted', ({ id }) => {
 - Business logic specific to any module
 - Components that are only used by one module
 - Module-specific types or interfaces
-- Module API service clients (these belong in each module's `services/` directory)
+- Module API clients (these belong in each module's `api/` directory)
 
 ---
 
@@ -329,7 +329,7 @@ All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempote
 | **Business logic in templates** | Untestable, duplicated across views | Composables (Use Case Hooks) |
 | **Global CSS classes** | Styling conflicts across modules | Scoped styles + design tokens |
 | **`any` types** | Defeats TypeScript's entire purpose | Strict mode, branded types |
-| **Direct Axios calls in components** | Untestable, no error interception | Module-scoped service client |
+| **Direct Axios calls in components** | Untestable, no error interception | Module-scoped API client |
 | **Storing tokens in localStorage** | XSS vulnerability | httpOnly cookies or in-memory |
 | **Inline styles for theming** | Unmaintainable at scale | Tailwind v4 `@theme` design tokens |
 | **Raw HTML tables** | No sorting, pagination, virtual scroll | `core/ui` DataGrid (TanStack Table) |
