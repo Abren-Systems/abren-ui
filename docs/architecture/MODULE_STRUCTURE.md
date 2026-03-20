@@ -27,9 +27,6 @@ Every module **MUST** follow this exact directory layout:
 
 ```
 src/modules/{module-name}/
-├── api/                     # HTTP client for this module's endpoints
-│   └── {module}.api.ts      # Typed API calls (uses shared http-client)
-│
 ├── components/              # Vue SFCs scoped to this module
 │   ├── {Entity}List.vue     # List/table views
 │   ├── {Entity}Form.vue     # Create/edit forms
@@ -46,14 +43,18 @@ src/modules/{module-name}/
 │   ├── {Entity}ListPage.vue
 │   └── {Entity}DetailPage.vue
 │
+├── services/                # API calls (typed HTTP methods)
+│   └── {module}.service.ts  # Uses core HTTP client
+│
 ├── stores/                  # Pinia store(s)
-│   └── {module}.store.ts    # Module-scoped reactive state
+│   └── {module}.store.ts    # Module-scoped client state
 │
 ├── types/                   # TypeScript definitions
 │   ├── api.types.ts         # Raw API DTO interfaces (from OpenAPI)
 │   └── view.types.ts        # ViewModel interfaces (what components use)
 │
-└── routes.ts                # Lazy-loaded route definitions
+├── routes.ts                # Lazy-loaded route definitions
+└── index.ts                 # ModuleDefinition export
 ```
 
 ---
@@ -63,7 +64,7 @@ src/modules/{module-name}/
 ### Files
 | Type | Pattern | Example |
 |---|---|---|
-| API client | `{module}.api.ts` | `accounting.api.ts` |
+| API client | `{module}.service.ts` | `accounting.service.ts` |
 | Store | `{module}.store.ts` | `accounting.store.ts` |
 | Composable | `use{Action}.ts` | `useVoidEntry.ts` |
 | Mapper | `{entity}.mapper.ts` | `journal-entry.mapper.ts` |
@@ -90,10 +91,10 @@ Backend: GET  /accounts                   →  useAccountList()
 ### 4.1 Import Rules (Enforced by ESLint)
 
 ```typescript
-// ✅ ALLOWED: Module imports from shared
-import { Money } from '@/shared/domain/money'
-import { httpClient } from '@/shared/api/http-client'
-import { eventBus } from '@/shared/event-bus/event-bus'
+// ✅ ALLOWED: Module imports from core
+import { Money } from '@/core/domain/money'
+import { httpClient } from '@/core/api/http-client'
+import { eventBus } from '@/core/event-bus/event-bus'
 
 // ✅ ALLOWED: Module imports from itself
 import { useAccountingStore } from '../stores/accounting.store'
@@ -111,8 +112,8 @@ import AccountCard from '@/modules/accounting/components/AccountCard.vue'
   'no-restricted-imports': ['error', {
     patterns: [
       {
-        group: ['@/modules/*/stores/*', '@/modules/*/api/*', '@/modules/*/composables/*'],
-        message: 'Cross-module imports are prohibited. Use the Event Bus or Shared Kernel.',
+        group: ['@/modules/*/stores/*', '@/modules/*/services/*', '@/modules/*/composables/*'],
+        message: 'Cross-module imports are prohibited. Use the Event Bus or Core types.',
       }
     ]
   }]
@@ -139,60 +140,47 @@ Module A (Payment Requests)          Module B (Accounting)
 
 ## 5. Route Registration Pattern
 
-Each module exports a `routes.ts` that defines lazy-loaded pages:
+Each module exports a `ModuleDefinition` that includes its routes, permissions, and menu items:
 
 ```typescript
-// modules/accounting/routes.ts
-import type { RouteRecordRaw } from 'vue-router'
+// modules/accounting/index.ts
+import type { ModuleDefinition } from '@/core/types/module'
 
-export const accountingRoutes: RouteRecordRaw[] = [
-  {
-    path: '/accounting',
-    meta: { requiresAuth: true, feature: 'accounting' },
-    children: [
-      {
-        path: 'accounts',
-        name: 'accounting.accounts',
-        component: () => import('./pages/AccountListPage.vue'),
-      },
-      {
-        path: 'journal-entries',
-        name: 'accounting.journal-entries',
-        component: () => import('./pages/JournalEntryListPage.vue'),
-      },
-      {
-        path: 'journal-entries/:id',
-        name: 'accounting.journal-entry-detail',
-        component: () => import('./pages/JournalEntryDetailPage.vue'),
-      },
-    ],
-  },
-]
+export const accountingModule: ModuleDefinition = {
+  id: 'accounting',
+  name: 'Accounting',
+  routes: () => import('./routes').then(m => m.default),
+  permissions: ['accounting.view', 'accounting.edit'],
+  menuItems: [
+    { label: 'Chart of Accounts', route: 'AccountingCoa', icon: 'book-open' },
+    { label: 'Journal Entries', route: 'AccountingJournals', icon: 'file-text' },
+  ],
+}
 ```
 
-The central `app/router.ts` aggregates all module routes:
+The central `app/router/index.ts` aggregates all module definitions dynamically:
 
 ```typescript
-// app/router.ts
-import { accountingRoutes } from '@/modules/accounting/routes'
-import { identityRoutes } from '@/modules/identity/routes'
-import { paymentRequestRoutes } from '@/modules/payment-requests/routes'
-// ... other modules
+// app/router/index.ts
+import { modules } from '@/modules'
 
 const router = createRouter({
   routes: [
     {
       path: '/app',
       component: AuthenticatedLayout,
-      children: [
-        ...identityRoutes,
-        ...accountingRoutes,
-        ...paymentRequestRoutes,
-        // ... all module routes flattened here
-      ],
+      beforeEnter: [requiresAuth],
+      children: [], // Populated dynamically from module definitions
     },
   ],
 })
+
+// Register module routes dynamically
+for (const mod of modules) {
+  mod.routes().then(routes => {
+    routes.forEach(route => router.addRoute('app', route))
+  })
+}
 ```
 
 ---
@@ -202,12 +190,13 @@ const router = createRouter({
 When creating a new module (e.g., `procurement`):
 
 - [ ] Create `src/modules/procurement/` with the standard directory structure
-- [ ] Create `api/procurement.api.ts` — typed API client for backend endpoints
+- [ ] Create `index.ts` — `ModuleDefinition` export with id, permissions, menuItems
+- [ ] Create `services/procurement.service.ts` — typed API client for backend endpoints
 - [ ] Create `types/api.types.ts` — interfaces matching backend DTOs
 - [ ] Create `types/view.types.ts` — ViewModel interfaces for components
 - [ ] Create `mappers/` — at least one mapper with unit tests
-- [ ] Create `stores/procurement.store.ts` — Pinia store
+- [ ] Create `stores/procurement.store.ts` — Pinia store (client state only)
 - [ ] Create `routes.ts` — lazy-loaded route definitions
-- [ ] Register routes in `app/router.ts`
+- [ ] Register module in `modules/index.ts` module array
 - [ ] Add feature gate check if the module is toggleable
 - [ ] Update `docs/OVERVIEW.md` module table

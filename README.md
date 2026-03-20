@@ -8,11 +8,13 @@
 |---|---|
 | Framework | Vue 3 + TypeScript (Composition API) |
 | Build | Vite |
-| UI Components | PrimeVue Volt (Code Ownership) |
-| Styling | Tailwind CSS v4 |
+| UI System | Custom Design System (`core/ui/`) |
+| Accessible Primitives | Radix Vue |
+| DataGrid Engine | TanStack Table + TanStack Virtual |
 | Server State | TanStack Query |
 | Form State | TanStack Form + Zod |
 | Client State | Pinia |
+| Styling | Tailwind CSS v4 |
 | HTTP | Axios |
 | Testing | Vitest + Playwright |
 
@@ -37,12 +39,14 @@ npm run generate-types
 ```
 src/
 ├── app/              # Application shell (router, layouts)
-├── shared/           # Shared Kernel (HTTP client, auth, event bus, VOs)
+├── core/             # Infrastructure (NO domain logic)
 │   ├── api/          # Axios client, typed helpers
 │   ├── auth/         # Auth store (JWT, tenant, features)
-│   ├── composables/  # useFeatureGate, etc.
+│   ├── composables/  # useApiQuery, useApiMutation, useFeatureGate
 │   ├── domain/       # Money VO, Currency, branded types
-│   └── event-bus/    # Typed cross-module communication
+│   ├── event-bus/    # Typed cross-module communication
+│   ├── types/        # ModuleDefinition, shared contracts
+│   └── ui/           # Custom Design System (components, patterns, primitives)
 ├── modules/          # Bounded Contexts (one per backend module)
 │   ├── identity/     # Login, users, tenants
 │   ├── accounting/   # Chart of accounts, journal entries
@@ -52,7 +56,7 @@ src/
 │   ├── workflows/
 │   ├── webhooks/
 │   └── system/
-└── assets/           # Tailwind v4 entry + design tokens
+└── assets/           # Tailwind v4 entry + @theme design tokens
 ```
 
 ## Documentation

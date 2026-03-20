@@ -18,7 +18,7 @@ The frontend is **domain-aware and backend-aligned**, not an exact mirror. The b
 | Backend Concept | Frontend Analog | Relationship |
 |---|---|---|
 | Bounded Context (module) | Feature Module | **1:1 alignment** — same domain names |
-| Shared Kernel | `shared/` library | **1:1 alignment** — contracts & primitives |
+| Shared Kernel | `core/` library | **1:1 alignment** — contracts & primitives |
 | Domain Entity | TypeScript interface | **Simplified** — no aggregate behavior |
 | Application Service | Composable (Use Case) | **Aligned** — same action names |
 | Repository + UoW | API Client | **Collapsed** — one layer, not two |
@@ -45,11 +45,11 @@ Phase 3 (Scale):   Module Federation micro-frontends
 | **Modules own their state** | No cross-store imports | State coupling |
 | **Communication via Event Bus or Props** | Module A never imports Module B's store | Module leakage |
 | **Side effects via Composables** | No raw API calls in components | Untestable UI |
-| **Shared Kernel = Contracts only** | Only types, primitives, and utilities | Business logic in shared |
+| **Core = Contracts only** | Only types, primitives, and utilities in `core/` | Business logic in core |
 | **API layer is replaceable** | Domain types ≠ API DTOs; Mappers enforce this | Backend coupling |
 
 ### 2.2 Strict Dependency Flow
-Dependencies point **inward** only. Modules may only depend on `shared/` and never on each other.
+Dependencies point **inward** only. Modules may only depend on `core/` and never on each other.
 
 ```mermaid
 graph TD
@@ -70,9 +70,9 @@ graph TD
         M[Mappers - ACL]
     end
 
-    subgraph "Shared Kernel"
+    subgraph "Core Infrastructure"
         SK_T[Types & Interfaces]
-        SK_C[Shared Components]
+        SK_C[Design System - core/ui]
         SK_U[Utilities]
         SK_EB[Event Bus]
     end
@@ -94,11 +94,11 @@ graph TD
 
 | Layer | Responsibility | Contains | May Import |
 |---|---|---|---|
-| **Pages** | Route-level views, layout composition | `*Page.vue` | Composables, Shared Components |
-| **Components** | Reusable UI elements within a module | `*.vue` | Shared Components, Types |
+| **Pages** | Route-level views, layout composition | `*Page.vue` | Composables, Core UI Components |
+| **Components** | Reusable UI elements within a module | `*.vue` | Core UI Components, Types |
 | **Composables** | Use case orchestration, business logic | `use*.ts` | Stores, API Clients, Event Bus |
 | **Stores** | Module-scoped reactive state | `*.store.ts` | Types only |
-| **API Clients** | HTTP request/response, error handling | `*.api.ts` | Mappers, Shared HTTP Client |
+| **API Clients** | HTTP request/response, error handling | `*.api.ts` | Mappers, Core HTTP Client |
 | **Mappers** | DTO ↔ ViewModel transformation (ACL) | `*.mapper.ts` | Types only |
 | **Types** | TypeScript interfaces, enums, unions | `*.types.ts` | Nothing (leaf nodes) |
 
@@ -112,13 +112,15 @@ graph TD
 |---|---|---|
 | **Framework** | Vue 3 (Composition API) | SFC colocation, perfect mapping for backend Use Cases |
 | **Build** | Vite | Sub-second HMR, native ESM, Tailwind v4 native support |
-| **UI Components** | **PrimeVue Volt** | **Code Ownership model** (copy-paste), elite DataTable engine, Tailwind v4 |
-| **Server State** | **TanStack Query** | Caching, background refetch, optimistic updates, pagination engine |
-| **Form State** | **TanStack Form** | Headless, granular performance, type-safe validation (Zod) |
-| **Client State** | Pinia | Modular, bounded-context scoped (auth, UI settings) |
-| **Styling** | **Tailwind CSS v4** | Modern, performant, utility-first CSS |
-| **Language** | TypeScript (strict) | Compile-time safety, strict branded types |
-| **HTTP** | Axios | Interceptors for auth, idempotency keys, and error envelopes |
+| **UI System** | **Custom Design System** (`core/ui/`) | Full ownership, zero vendor lock-in, ERP-optimized |
+| **Accessible Primitives** | **Radix Vue** | Headless Dialog, Tooltip, Popover, DropdownMenu |
+| **DataGrid Engine** | **TanStack Table** + **TanStack Virtual** | Sorting, filtering, pagination, virtualized scrolling |
+| **Server State** | **TanStack Query** | Caching, background refetch, optimistic updates |
+| **Form State** | **TanStack Form** + **Zod** | Headless, type-safe validation |
+| **Client State** | Pinia | Bounded-context scoped (auth, UI ephemeral state) |
+| **Styling** | **Tailwind CSS v4** | `@theme` design tokens, utility-first CSS |
+| **Language** | TypeScript (strict) | Compile-time safety, `noUncheckedIndexedAccess` |
+| **HTTP** | Axios | Interceptors for auth, idempotency, error envelopes |
 
 ### 3.2 Development & Quality
 
@@ -139,31 +141,50 @@ graph TD
 A **module** is a self-contained directory under `src/modules/` that represents one backend bounded context. It owns its:
 - **Pages** (route-level views)
 - **Components** (reusable within the module)
-- **Store** (Pinia state)
-- **API client** (HTTP calls to its backend counterpart)
+- **Store** (Pinia client state)
+- **Services** (API calls to its backend counterpart)
 - **Mappers** (DTO → ViewModel transformation)
 - **Types** (TypeScript interfaces)
 - **Routes** (lazy-loaded route definitions)
+- **Registration** (`index.ts` — `ModuleDefinition` export)
 
 ### 4.2 Module Internal Structure (Mandatory)
 
 ```
 src/modules/{module-name}/
-├── api/             # HTTP client for this module's backend endpoints
 ├── components/      # Vue components scoped to this module
 ├── composables/     # Use Case Hooks (business logic orchestration)
 ├── mappers/         # DTO → ViewModel transformers (Anti-Corruption Layer)
 ├── pages/           # Route-level page components
-├── stores/          # Pinia store(s) for this module
+├── services/        # API calls (typed HTTP methods per endpoint)
+├── stores/          # Pinia store(s) for module client state
 ├── types/           # TypeScript interfaces, enums, view models
-└── routes.ts        # Lazy-loaded route definitions for this module
+├── routes.ts        # Lazy-loaded route definitions
+└── index.ts         # ModuleDefinition export (auto-registration)
 ```
 
-### 4.3 Module Rules
+### 4.3 Module Registration Pattern
+Each module exports a `ModuleDefinition` in its `index.ts`. The router aggregates these dynamically:
+
+```typescript
+// modules/accounting/index.ts
+export const accountingModule: ModuleDefinition = {
+  id: 'accounting',
+  name: 'Accounting',
+  routes: () => import('./routes').then(m => m.default),
+  permissions: ['accounting.view', 'accounting.edit'],
+  menuItems: [
+    { label: 'Chart of Accounts', route: 'AccountingCoa', icon: 'book-open' },
+    { label: 'Journal Entries', route: 'AccountingJournals', icon: 'file-text' },
+  ],
+}
+```
+
+### 4.4 Module Rules
 1. **No cross-module imports**: `modules/accounting/` must NEVER import from `modules/payment-requests/`.
-2. **Public API**: If Module A needs data from Module B, it goes through the Event Bus or a Shared Kernel type.
-3. **One store per module**: Each module gets exactly one Pinia store. No global stores outside `shared/`.
-4. **Route ownership**: Each module defines and exports its own routes. The central `app/router.ts` aggregates them.
+2. **Public API**: If Module A needs data from Module B, it goes through the Event Bus or a Core type.
+3. **One store per module**: Each module gets exactly one Pinia store. No global stores outside `core/`.
+4. **Route ownership**: Each module exports a `ModuleDefinition`. The router aggregates them automatically.
 
 ---
 
@@ -208,10 +229,10 @@ export function toViewModel(dto: PaymentRequestDTO): PaymentRequestViewModel {
 ## 6. Cross-Module Communication
 
 ### 6.1 The Event Bus
-Modules communicate via a typed Event Bus in the Shared Kernel. This mirrors the backend's domain event system.
+Modules communicate via a typed Event Bus in `core/`. This mirrors the backend's domain event system.
 
 ```typescript
-// shared/event-bus/event-bus.ts
+// core/event-bus/event-bus.ts
 type EventMap = {
   'payment-request:submitted': { id: string }
   'payment-request:paid':      { id: string; amount: Money }
@@ -227,7 +248,7 @@ type EventMap = {
 | Parent → Child data | Props | `<UserTable :users="users" />` |
 | Child → Parent action | Emits | `emit('select', user)` |
 | Module → Module reactivity | Event Bus | Payment paid → Refresh journal list |
-| Global cross-cutting state | Shared Store (Auth) | `useAuthStore().currentUser` |
+| Global cross-cutting state | Core Store (Auth) | `useAuthStore().currentUser` |
 
 ### 6.3 Anti-Pattern: Direct Imports
 ```typescript
@@ -243,25 +264,26 @@ eventBus.on('journal-entry:posted', ({ id }) => {
 
 ---
 
-## 7. Shared Kernel (`src/shared/`)
+## 7. Core Infrastructure (`src/core/`)
 
-### 7.1 What Goes in the Shared Kernel
+### 7.1 What Goes in Core
 
 | Directory | Contents | Rule |
 |---|---|---|
 | `api/` | HTTP client, response types, error handler | Infrastructure only |
 | `auth/` | Auth store, route guard, token types | Cross-cutting identity concern |
-| `components/` | Design system primitives | Generic, module-agnostic |
-| `composables/` | `useFeatureGate`, `usePagination`, etc. | Cross-cutting utilities |
+| `composables/` | `useApiQuery`, `useApiMutation`, `useFeatureGate` | Cross-cutting utilities |
 | `domain/` | `Money` VO, `Currency` enum, branded types | Mirrors backend Shared Kernel |
 | `event-bus/` | Typed event bus | Module communication contract |
+| `types/` | `ModuleDefinition`, cross-cutting types | Shared contracts |
+| `ui/` | **Custom Design System** (components, patterns, primitives) | Module-agnostic UI |
 | `utils/` | Date formatters, number formatters | Pure utility functions |
 
-### 7.2 What Does NOT Go in the Shared Kernel
+### 7.2 What Does NOT Go in Core
 - Business logic specific to any module
 - Components that are only used by one module
 - Module-specific types or interfaces
-- API clients (these belong in each module's `api/` directory)
+- Module API service clients (these belong in each module's `services/` directory)
 
 ---
 
@@ -280,10 +302,10 @@ POST /payment-requests/{id}/pay      → usePayRequest()
 ```
 
 ### 8.2 Response Envelope Handling
-All backend responses follow the envelope `{ success, data, meta }` or `{ success, detail, code }`. The shared HTTP client unwraps these automatically:
+All backend responses follow the envelope `{ success, data, meta }` or `{ success, detail, code }`. The core HTTP client unwraps these automatically:
 
 ```typescript
-// shared/api/http-client.ts
+// core/api/http-client.ts
 async function request<T>(config: AxiosRequestConfig): Promise<T> {
   const response = await axios(config)
   if (response.data.success) {
@@ -294,7 +316,7 @@ async function request<T>(config: AxiosRequestConfig): Promise<T> {
 ```
 
 ### 8.3 Idempotency Key Integration
-All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempotency-Key` header via the shared HTTP client interceptor.
+All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempotency-Key` header via the core HTTP client interceptor.
 
 ---
 
@@ -303,13 +325,15 @@ All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempote
 | Anti-Pattern | Why It Fails | Alternative |
 |---|---|---|
 | **Raw API types in components** | Backend DTO change breaks 50 components | Mapper → ViewModel pattern |
-| **Cross-module store imports** | Creates invisible dependency graphs | Event Bus or Shared Kernel |
+| **Cross-module store imports** | Creates invisible dependency graphs | Event Bus or Core types |
 | **Business logic in templates** | Untestable, duplicated across views | Composables (Use Case Hooks) |
 | **Global CSS classes** | Styling conflicts across modules | Scoped styles + design tokens |
 | **`any` types** | Defeats TypeScript's entire purpose | Strict mode, branded types |
-| **Direct Axios calls in components** | Untestable, no error interception | Module-scoped API client |
+| **Direct Axios calls in components** | Untestable, no error interception | Module-scoped service client |
 | **Storing tokens in localStorage** | XSS vulnerability | httpOnly cookies or in-memory |
-| **Inline styles for theming** | Unmaintainable at scale | CSS custom properties (design tokens) |
+| **Inline styles for theming** | Unmaintainable at scale | Tailwind v4 `@theme` design tokens |
+| **Raw HTML tables** | No sorting, pagination, virtual scroll | `core/ui` DataGrid (TanStack Table) |
+| **Bypassing design system** | UI inconsistency | Always use `core/ui` components |
 
 ---
 

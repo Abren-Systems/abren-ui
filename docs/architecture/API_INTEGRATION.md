@@ -13,13 +13,13 @@ The API integration layer sits between the backend's REST endpoints and the fron
 Backend (API)
     ↓  HTTP (JSON)
 ┌────────────────────────────┐
-│  Shared HTTP Client        │  ← Axios instance, interceptors, error handler
-│  (shared/api/)             │
+│  Core HTTP Client          │  ← Axios instance, interceptors, error handler
+│  (core/api/)               │
 └────────────┬───────────────┘
              ↓
 ┌────────────────────────────┐
-│  Module API Client         │  ← Typed methods per endpoint
-│  (modules/{m}/api/)        │
+│  Module Service Client     │  ← Typed methods per endpoint
+│  (modules/{m}/services/)   │
 └────────────┬───────────────┘
              ↓
 ┌────────────────────────────┐
@@ -27,7 +27,7 @@ Backend (API)
 │  (modules/{m}/mappers/)    │
 └────────────┬───────────────┘
              ↓
-   Pinia Store / Composable
+   TanStack Query / Composable
 ```
 
 ---
@@ -39,9 +39,9 @@ All modules share a single Axios instance configured with interceptors for authe
 ### 2.1 Base Configuration
 
 ```typescript
-// shared/api/http-client.ts
+// core/api/http-client.ts
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { useAuthStore } from '@/shared/auth/auth.store'
+import { useAuthStore } from '@/core/auth/auth.store'
 import { generateIdempotencyKey } from '@/shared/composables/useIdempotencyKey'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -101,7 +101,7 @@ export { httpClient }
 ### 2.2 Error Types
 
 ```typescript
-// shared/api/types.ts
+// core/api/types.ts
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -143,8 +143,8 @@ Each module has a typed API client that wraps the shared HTTP client with module
 ### 3.1 Pattern
 
 ```typescript
-// modules/payment-requests/api/payment-requests.api.ts
-import { httpClient } from '@/shared/api/http-client'
+// modules/payment-requests/services/payment-requests.service.ts
+import { httpClient } from '@/core/api/http-client'
 import type {
   PaymentRequestDTO,
   PaymentRequestCreateDTO,
@@ -153,7 +153,7 @@ import type {
 
 const BASE = '/payment-requests'
 
-export const paymentRequestApi = {
+export const paymentRequestService = {
   // GET /api/v1/payment-requests
   async list(): Promise<PaymentRequestDTO[]> {
     return httpClient.get(BASE)
@@ -192,10 +192,71 @@ export const paymentRequestApi = {
 ```
 
 ### 3.2 Rules
-- **One API client per module**. No shared "mega API" file.
-- **Return raw DTOs**. Mappers are called by composables, not by the API client.
+- **One service client per module**. No shared "mega service" file.
+- **Return raw DTOs**. Mappers are called by composables, not by the service client.
 - **Use action-oriented method names** matching backend endpoint names (`submit`, `approve`, `reject`, `pay`).
-- **No business logic** in API clients. They are pure I/O wrappers.
+- **No business logic** in service clients. They are pure I/O wrappers.
+
+### 3.3 TanStack Query Wrappers
+
+Instead of calling service clients directly from composables, use `useApiQuery` and `useApiMutation` wrappers:
+
+```typescript
+// core/composables/useApiQuery.ts
+import { useQuery, type UseQueryOptions } from '@tanstack/vue-query'
+
+export function useApiQuery<T>(
+  key: string[],
+  fetcher: () => Promise<T>,
+  options?: Partial<UseQueryOptions<T>>,
+) {
+  return useQuery({
+    queryKey: key,
+    queryFn: fetcher,
+    ...options,
+  })
+}
+
+// core/composables/useApiMutation.ts
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+
+export function useApiMutation<TData, TVariables>(
+  mutationFn: (variables: TVariables) => Promise<TData>,
+  options?: { invalidateKeys?: string[][] },
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () => {
+      options?.invalidateKeys?.forEach((key) => {
+        queryClient.invalidateQueries({ queryKey: key })
+      })
+    },
+  })
+}
+```
+
+**Usage in a module composable:**
+
+```typescript
+// modules/payment-requests/composables/usePaymentRequests.ts
+import { useApiQuery } from '@/core/composables/useApiQuery'
+import { paymentRequestService } from '../services/payment-requests.service'
+import { toViewModel } from '../mappers/payment-request.mapper'
+
+export function usePaymentRequests() {
+  const { data, isLoading, error } = useApiQuery(
+    ['payment-requests'],
+    async () => {
+      const dtos = await paymentRequestService.list()
+      return dtos.map(toViewModel)
+    },
+  )
+
+  return { requests: data, isLoading, error }
+}
+```
 
 ---
 
@@ -267,7 +328,7 @@ npm install -D openapi-typescript
 
 # Add script to package.json
 "scripts": {
-  "generate-types": "openapi-typescript http://localhost:8000/api/v1/openapi.json -o src/shared/api/generated.types.ts"
+  "generate-types": "openapi-typescript http://localhost:8000/api/v1/openapi.json -o src/core/api/generated.types.ts"
 }
 ```
 
@@ -285,7 +346,7 @@ npm install -D openapi-typescript
 
 ```typescript
 // The generated file provides all backend schemas
-import type { components } from '@/shared/api/generated.types'
+import type { components } from '@/core/api/generated.types'
 
 // Reference specific DTOs
 type PaymentRequestDTO = components['schemas']['PaymentRequestDTO']
@@ -293,7 +354,7 @@ type PaymentRequestCreateDTO = components['schemas']['PaymentRequestCreateDTO']
 type PaymentRequestPayDTO = components['schemas']['PaymentRequestPayDTO']
 ```
 
-> **Note:** Generated types go into `shared/api/generated.types.ts`. Module-level `api.types.ts` files re-export relevant types for encapsulation. This way, if you switch from OpenAPI codegen to manual types later, only the re-export file changes.
+> **Note:** Generated types go into `core/api/generated.types.ts`. Module-level `api.types.ts` files re-export relevant types for encapsulation. This way, if you switch from OpenAPI codegen to manual types later, only the re-export file changes.
 
 ---
 
@@ -320,7 +381,7 @@ API Call → Axios Error → ApiError class → Composable catch → Store error
 ### 6.3 Global Error Interceptor
 
 ```typescript
-// shared/api/error-handler.ts
+// core/api/error-handler.ts
 httpClient.interceptors.response.use(null, (error) => {
   if (error.response?.status === 401) {
     const authStore = useAuthStore()

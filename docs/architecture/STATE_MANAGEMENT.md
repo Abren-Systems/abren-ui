@@ -1,7 +1,7 @@
 # State Management Architecture
 
 > **Parent:** [Frontend Architecture](ARCHITECTURE.md)
-> **Technology:** Pinia (TypeScript-first Vue Store)
+> **Technology:** Pinia (Client State) + TanStack Query (Server State)
 
 ---
 
@@ -106,56 +106,37 @@ export const usePaymentRequestStore = defineStore('payment-requests', () => {
 sequenceDiagram
     participant C as Component
     participant H as Composable (Use Case)
-    participant A as API Client
+    participant A as Service Client
     participant M as Mapper
-    participant S as Pinia Store
+    participant TQ as TanStack Query
 
-    C->>H: onMounted → fetchRequests()
-    H->>S: store.setLoading(true)
-    H->>A: paymentRequestApi.list()
-    A-->>H: PaymentRequestDTO[]
-    H->>M: dtos.map(toViewModel)
-    M-->>H: PaymentRequestViewModel[]
-    H->>S: store.setRequests(viewModels)
-    H->>S: store.setLoading(false)
-    S-->>C: Reactive update via storeToRefs()
+    C->>H: onMounted → usePaymentRequests()
+    H->>TQ: useApiQuery(['payment-requests'], ...)
+    TQ->>A: paymentRequestService.list()
+    A-->>TQ: PaymentRequestDTO[]
+    TQ->>M: dtos.map(toViewModel)
+    M-->>TQ: PaymentRequestViewModel[]
+    TQ-->>C: Reactive data via computed refs
 ```
 
-### 3.1 Composable Orchestrating the Flow
+### 3.1 Composable with TanStack Query
 
 ```typescript
 // modules/payment-requests/composables/usePaymentRequests.ts
-import { onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { usePaymentRequestStore } from '../stores/payment-requests.store'
-import { paymentRequestApi } from '../api/payment-requests.api'
+import { useApiQuery } from '@/core/composables/useApiQuery'
+import { paymentRequestService } from '../services/payment-requests.service'
 import { toViewModel } from '../mappers/payment-request.mapper'
 
 export function usePaymentRequests() {
-  const store = usePaymentRequestStore()
-  const { requests, isLoading, error } = storeToRefs(store)
+  const { data: requests, isLoading, error } = useApiQuery(
+    ['payment-requests'],
+    async () => {
+      const dtos = await paymentRequestService.list()
+      return dtos.map(toViewModel)
+    },
+  )
 
-  async function fetchRequests() {
-    store.setLoading(true)
-    store.setError(null)
-    try {
-      const dtos = await paymentRequestApi.list()
-      store.setRequests(dtos.map(toViewModel))
-    } catch (e) {
-      store.setError(e instanceof Error ? e.message : 'Failed to load requests')
-    } finally {
-      store.setLoading(false)
-    }
-  }
-
-  onMounted(fetchRequests)
-
-  return {
-    requests,
-    isLoading,
-    error,
-    refresh: fetchRequests,
-  }
+  return { requests, isLoading, error }
 }
 ```
 
@@ -167,7 +148,7 @@ Stores **never** import other stores. When Module A's action should refresh Modu
 
 ```typescript
 // modules/payment-requests/composables/usePayRequest.ts
-import { eventBus } from '@/shared/event-bus/event-bus'
+import { eventBus } from '@/core/event-bus/event-bus'
 
 export function usePayRequest() {
   async function payRequest(id: string, dto: PayRequestDTO) {
@@ -230,10 +211,10 @@ export function useSubmitRequest() {
 
 ## 6. Auth Store (Shared Cross-Cutting Concern)
 
-The auth store is the **only** store in `shared/`. It holds identity state consumed by all modules:
+The auth store is the **only** store in `core/`. It holds identity state consumed by all modules:
 
 ```typescript
-// shared/auth/auth.store.ts
+// core/auth/auth.store.ts
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const currentUser = ref<CurrentUser | null>(null)

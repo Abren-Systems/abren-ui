@@ -101,7 +101,7 @@ npm run dev
 | Composables | camelCase with `use` prefix | `useSubmitRequest.ts` |
 | Stores | kebab-case with `.store` suffix | `payment-requests.store.ts` |
 | Types | PascalCase | `PaymentRequestViewModel` |
-| API clients | kebab-case with `.api` suffix | `payment-requests.api.ts` |
+| API clients | kebab-case with `.service` suffix | `payment-requests.service.ts` |
 | Mappers | kebab-case with `.mapper` suffix | `payment-request.mapper.ts` |
 | Constants | UPPER_SNAKE_CASE | `STATUS_COLORS` |
 
@@ -112,9 +112,9 @@ npm run dev
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 
-// 2. Shared kernel imports
-import { Money } from '@/shared/domain/money'
-import { httpClient } from '@/shared/api/http-client'
+// 2. Core infrastructure imports
+import { Money } from '@/core/domain/money'
+import { useApiQuery } from '@/core/composables/useApiQuery'
 
 // 3. Module-internal imports
 import { usePaymentRequestStore } from '../stores/payment-requests.store'
@@ -143,7 +143,7 @@ refactor/{module}/{description}    e.g. refactor/shared/http-client-interceptors
 feat(accounting): add journal entry form with line grid
 fix(identity): resolve login redirect after token expiry
 docs(architecture): update state management patterns
-refactor(shared): extract idempotency key generator
+refactor(core): extract idempotency key generator
 test(payment-requests): add mapper unit tests
 ```
 
@@ -176,38 +176,34 @@ VITE_API_BASE_URL=https://api.abren.app
 
 ## 7. Design Tokens & Styling
 
-### 7.1 CSS Custom Properties
-All visual tokens are defined in `src/styles/variables.css`:
+### 7.1 Tailwind v4 Design Tokens
+All visual tokens are defined in `src/assets/main.css` using Tailwind v4's `@theme` directive:
 
 ```css
-:root {
-  /* Colors */
-  --color-primary: #2563eb;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
+@import 'tailwindcss';
 
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
+@theme {
+  /* Colors */
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
 
   /* Typography */
-  --font-family: 'Inter', system-ui, sans-serif;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* Borders */
+  /* Radius */
   --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
 }
 ```
 
 ### 7.2 Rules
-- **No hardcoded colors** in component styles — use CSS custom properties.
+- **No hardcoded colors** in component styles — use Tailwind utilities with design tokens.
 - **Scoped styles** in every component.
 - **Dark mode**: Support via `[data-theme="dark"]` attribute on `<html>`.
+- **Always use `core/ui/` components** — never raw HTML elements for buttons, inputs, or tables.
