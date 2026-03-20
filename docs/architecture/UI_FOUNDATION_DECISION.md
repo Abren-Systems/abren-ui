@@ -1,6 +1,6 @@
-# Abren ERP: Custom Design System Strategy
+# Abren ERP: UI Foundation Architecture Decision
 
-*A comprehensive evaluation of UI Primitive libraries for building our proprietary, heavily-customizable Vue 3 ERP Design System.*
+*An architectural decision record evaluating UI Primitive libraries and building the foundation for our proprietary, heavily-customizable Vue 3 ERP.*
 
 ---
 

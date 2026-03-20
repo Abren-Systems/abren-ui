@@ -112,7 +112,7 @@ graph TD
 |---|---|---|
 | **Framework** | Vue 3 (Composition API) | SFC colocation, perfect mapping for backend Use Cases |
 | **Build** | Vite | Sub-second HMR, native ESM, Tailwind v4 native support |
-| **UI System** | **Custom Design System** (`core/ui/`) | Full ownership, zero vendor lock-in, ERP-optimized. *(See [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md))* |
+| **UI System** | **Custom Design System** (`core/ui/`) | Full ownership, zero vendor lock-in, ERP-optimized. *(See [UI_FOUNDATION_DECISION.md](./UI_FOUNDATION_DECISION.md))* |
 | **Accessible Primitives** | **Radix Vue** / **shadcn-vue** | Headless Dialog, Tooltip, Popover, DropdownMenu |
 | **DataGrid Engine** | **TanStack Table** + **TanStack Virtual** | Sorting, filtering, pagination, virtualized scrolling |
 | **Server State** | **TanStack Query** | Caching, background refetch, optimistic updates |
