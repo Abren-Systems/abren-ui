@@ -1,0 +1,326 @@
+# Abren ERP UI — Frontend Architectural Manifesto
+
+> **Version:** 1.0
+> **Last Updated:** March 2026
+> **Status:** AUTHORITATIVE — This document is the single source of truth for all architectural decisions in the Abren ERP UI.
+> **Backend Companion:** [Backend Architecture](../../../abren-erp-api/docs/architecture/ARCHITECTURE.md)
+
+---
+
+## 1. Philosophical Foundation
+
+### 1.1 What We Are Building
+A **domain-aware frontend** for a Financial Operating System — not a collection of CRUD forms. The UI understands the same bounded contexts and business language as the backend, but implements them with frontend-native patterns.
+
+### 1.2 The Alignment Principle
+The frontend is **domain-aware and backend-aligned**, not an exact mirror. The backend's DDD layers (Entity → Service → Repository → UoW) are too granular for a UI. We collapse them into a simpler, pragmatic structure while preserving the same module names, action names, and domain vocabulary.
+
+| Backend Concept | Frontend Analog | Relationship |
+|---|---|---|
+| Bounded Context (module) | Feature Module | **1:1 alignment** — same domain names |
+| Shared Kernel | `shared/` library | **1:1 alignment** — contracts & primitives |
+| Domain Entity | TypeScript interface | **Simplified** — no aggregate behavior |
+| Application Service | Composable (Use Case) | **Aligned** — same action names |
+| Repository + UoW | API Client | **Collapsed** — one layer, not two |
+| Domain Events | Event Bus | **Lightweight** — for cross-module reactivity |
+| Anti-Corruption Layer | Mapper (DTO → ViewModel) | **Frontend-specific** — UI concerns |
+
+### 1.3 Evolution Path
+The project is designed for **zero-rewrite scaling**. Today's module boundaries are tomorrow's micro-frontend packages. The architecture supports:
+
+```
+Phase 1 (Now):     Vue 3 SPA with Module Directories
+Phase 2 (Growth):  Nx/Turborepo Mono-repo with per-module packages
+Phase 3 (Scale):   Module Federation micro-frontends
+```
+
+---
+
+## 2. Core Architectural Principles
+
+### 2.1 The Five Golden Rules
+
+| Rule | Enforcement | Prevents |
+|---|---|---|
+| **Modules own their state** | No cross-store imports | State coupling |
+| **Communication via Event Bus or Props** | Module A never imports Module B's store | Module leakage |
+| **Side effects via Composables** | No raw API calls in components | Untestable UI |
+| **Shared Kernel = Contracts only** | Only types, primitives, and utilities | Business logic in shared |
+| **API layer is replaceable** | Domain types ≠ API DTOs; Mappers enforce this | Backend coupling |
+
+### 2.2 Strict Dependency Flow
+Dependencies point **inward** only. Modules may only depend on `shared/` and never on each other.
+
+```mermaid
+graph TD
+    subgraph Presentation
+        P[Pages / Views]
+    end
+
+    subgraph Composition
+        C[Composables - Use Cases]
+    end
+
+    subgraph State
+        S[Pinia Stores]
+    end
+
+    subgraph Integration
+        A[API Clients]
+        M[Mappers - ACL]
+    end
+
+    subgraph "Shared Kernel"
+        SK_T[Types & Interfaces]
+        SK_C[Shared Components]
+        SK_U[Utilities]
+        SK_EB[Event Bus]
+    end
+
+    P --> C
+    P --> SK_C
+    C --> S
+    C --> A
+    C --> SK_EB
+    A --> M
+    M --> SK_T
+
+    style Presentation fill:#1a472a,stroke:#2d6a4f,color:#fff
+    style "Shared Kernel" fill:#1b3a4b,stroke:#3d5a80,color:#fff
+    style Integration fill:#3d2b1f,stroke:#6b4226,color:#fff
+```
+
+### 2.3 Layer Responsibilities
+
+| Layer | Responsibility | Contains | May Import |
+|---|---|---|---|
+| **Pages** | Route-level views, layout composition | `*Page.vue` | Composables, Shared Components |
+| **Components** | Reusable UI elements within a module | `*.vue` | Shared Components, Types |
+| **Composables** | Use case orchestration, business logic | `use*.ts` | Stores, API Clients, Event Bus |
+| **Stores** | Module-scoped reactive state | `*.store.ts` | Types only |
+| **API Clients** | HTTP request/response, error handling | `*.api.ts` | Mappers, Shared HTTP Client |
+| **Mappers** | DTO ↔ ViewModel transformation (ACL) | `*.mapper.ts` | Types only |
+| **Types** | TypeScript interfaces, enums, unions | `*.types.ts` | Nothing (leaf nodes) |
+
+---
+
+## 3. Technology Stack
+
+### 3.1 Core Stack
+
+| Layer | Technology | Rationale |
+|---|---|---|
+| **Framework** | Vue 3 (Composition API) | SFC colocation, `provide/inject` mirrors backend DI, opinionated conventions |
+| **Build** | Vite | Sub-second HMR, native ESM, per-module code splitting |
+| **State** | Pinia | TypeScript-first, modular by default, one store = one bounded context |
+| **Language** | TypeScript (strict) | Compile-time safety, discriminated unions for state machines |
+| **HTTP** | Axios | Interceptors for auth, idempotency keys, and error envelopes |
+| **Routing** | Vue Router | Lazy-loaded module routes, route guards for feature gates |
+
+### 3.2 Development & Quality
+
+| Tool | Purpose |
+|---|---|
+| **ESLint** | Code quality and import boundary enforcement |
+| **Vitest** | Unit and integration testing (Vite-native) |
+| **Vue Test Utils** | Component testing |
+| **Playwright** | End-to-end testing |
+| **MSW** (Mock Service Worker) | API mocking for integration tests |
+| **openapi-typescript** | Auto-generate TS types from backend OpenAPI spec |
+
+---
+
+## 4. Module Architecture
+
+### 4.1 What Is a Module?
+A **module** is a self-contained directory under `src/modules/` that represents one backend bounded context. It owns its:
+- **Pages** (route-level views)
+- **Components** (reusable within the module)
+- **Store** (Pinia state)
+- **API client** (HTTP calls to its backend counterpart)
+- **Mappers** (DTO → ViewModel transformation)
+- **Types** (TypeScript interfaces)
+- **Routes** (lazy-loaded route definitions)
+
+### 4.2 Module Internal Structure (Mandatory)
+
+```
+src/modules/{module-name}/
+├── api/             # HTTP client for this module's backend endpoints
+├── components/      # Vue components scoped to this module
+├── composables/     # Use Case Hooks (business logic orchestration)
+├── mappers/         # DTO → ViewModel transformers (Anti-Corruption Layer)
+├── pages/           # Route-level page components
+├── stores/          # Pinia store(s) for this module
+├── types/           # TypeScript interfaces, enums, view models
+└── routes.ts        # Lazy-loaded route definitions for this module
+```
+
+### 4.3 Module Rules
+1. **No cross-module imports**: `modules/accounting/` must NEVER import from `modules/payment-requests/`.
+2. **Public API**: If Module A needs data from Module B, it goes through the Event Bus or a Shared Kernel type.
+3. **One store per module**: Each module gets exactly one Pinia store. No global stores outside `shared/`.
+4. **Route ownership**: Each module defines and exports its own routes. The central `app/router.ts` aggregates them.
+
+---
+
+## 5. Anti-Corruption Layer (The Mapper Pattern)
+
+### 5.1 Why Mappers?
+The backend will evolve independently. DTO field names will change, new fields will appear, and deprecated fields will be removed. Without a Mapper layer, every backend change cascades through dozens of Vue components.
+
+### 5.2 The Contract
+
+```typescript
+// modules/payment-requests/mappers/payment-request.mapper.ts
+
+import type { PaymentRequestDTO } from '../types/api.types'
+import type { PaymentRequestViewModel } from '../types/view.types'
+
+export function toViewModel(dto: PaymentRequestDTO): PaymentRequestViewModel {
+  return {
+    id: dto.id,
+    beneficiary: dto.beneficiary_name,
+    amount: Money.from(dto.amount, dto.currency),
+    status: dto.status,
+    statusLabel: STATUS_LABELS[dto.status],       // UI-specific
+    statusColor: STATUS_COLORS[dto.status],       // UI-specific
+    canSubmit: dto.status === 'DRAFT',            // UI invariant
+    canApprove: dto.status === 'SUBMITTED',       // UI invariant
+    submittedAt: dto.submitted_at
+      ? formatDate(dto.submitted_at)
+      : null,
+  }
+}
+```
+
+### 5.3 Rules
+- Components **NEVER** consume raw API DTOs. They receive `ViewModels` from the mapper.
+- Mappers are **pure functions** — no side effects, no API calls, no store access.
+- Mappers have **100% unit test coverage**. They are the cheapest and most critical tests.
+- When the backend changes a DTO field, **only the mapper file changes** — components remain untouched.
+
+---
+
+## 6. Cross-Module Communication
+
+### 6.1 The Event Bus
+Modules communicate via a typed Event Bus in the Shared Kernel. This mirrors the backend's domain event system.
+
+```typescript
+// shared/event-bus/event-bus.ts
+type EventMap = {
+  'payment-request:submitted': { id: string }
+  'payment-request:paid':      { id: string; amount: Money }
+  'journal-entry:posted':      { id: string; entryNumber: string }
+  'tenant:feature-toggled':    { feature: string; enabled: boolean }
+}
+```
+
+### 6.2 When to Use What
+
+| Scenario | Mechanism | Example |
+|---|---|---|
+| Parent → Child data | Props | `<UserTable :users="users" />` |
+| Child → Parent action | Emits | `emit('select', user)` |
+| Module → Module reactivity | Event Bus | Payment paid → Refresh journal list |
+| Global cross-cutting state | Shared Store (Auth) | `useAuthStore().currentUser` |
+
+### 6.3 Anti-Pattern: Direct Imports
+```typescript
+// ❌ BANNED: Module A importing Module B's internals
+import { useAccountingStore } from '@/modules/accounting/stores/accounting.store'
+
+// ✅ CORRECT: Listen via Event Bus
+eventBus.on('journal-entry:posted', ({ id }) => {
+  // React to the event within our own module
+  refreshRelatedData(id)
+})
+```
+
+---
+
+## 7. Shared Kernel (`src/shared/`)
+
+### 7.1 What Goes in the Shared Kernel
+
+| Directory | Contents | Rule |
+|---|---|---|
+| `api/` | HTTP client, response types, error handler | Infrastructure only |
+| `auth/` | Auth store, route guard, token types | Cross-cutting identity concern |
+| `components/` | Design system primitives | Generic, module-agnostic |
+| `composables/` | `useFeatureGate`, `usePagination`, etc. | Cross-cutting utilities |
+| `domain/` | `Money` VO, `Currency` enum, branded types | Mirrors backend Shared Kernel |
+| `event-bus/` | Typed event bus | Module communication contract |
+| `utils/` | Date formatters, number formatters | Pure utility functions |
+
+### 7.2 What Does NOT Go in the Shared Kernel
+- Business logic specific to any module
+- Components that are only used by one module
+- Module-specific types or interfaces
+- API clients (these belong in each module's `api/` directory)
+
+---
+
+## 8. API Design Standards (Frontend Perspective)
+
+### 8.1 Consuming Action-Oriented Endpoints
+The backend exposes action-oriented endpoints (`POST /{id}/submit`, `POST /{id}/approve`). The frontend mirrors this with action-specific composables:
+
+```
+Backend Endpoint                     → Frontend Composable
+POST /payment-requests               → useCreateRequest()
+POST /payment-requests/{id}/submit   → useSubmitRequest()
+POST /payment-requests/{id}/approve  → useApproveRequest()
+POST /payment-requests/{id}/reject   → useRejectRequest()
+POST /payment-requests/{id}/pay      → usePayRequest()
+```
+
+### 8.2 Response Envelope Handling
+All backend responses follow the envelope `{ success, data, meta }` or `{ success, detail, code }`. The shared HTTP client unwraps these automatically:
+
+```typescript
+// shared/api/http-client.ts
+async function request<T>(config: AxiosRequestConfig): Promise<T> {
+  const response = await axios(config)
+  if (response.data.success) {
+    return response.data.data as T
+  }
+  throw new ApiError(response.data.detail, response.data.code)
+}
+```
+
+### 8.3 Idempotency Key Integration
+All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempotency-Key` header via the shared HTTP client interceptor.
+
+---
+
+## 9. Anti-Pattern Catalog (Banned List)
+
+| Anti-Pattern | Why It Fails | Alternative |
+|---|---|---|
+| **Raw API types in components** | Backend DTO change breaks 50 components | Mapper → ViewModel pattern |
+| **Cross-module store imports** | Creates invisible dependency graphs | Event Bus or Shared Kernel |
+| **Business logic in templates** | Untestable, duplicated across views | Composables (Use Case Hooks) |
+| **Global CSS classes** | Styling conflicts across modules | Scoped styles + design tokens |
+| **`any` types** | Defeats TypeScript's entire purpose | Strict mode, branded types |
+| **Direct Axios calls in components** | Untestable, no error interception | Module-scoped API client |
+| **Storing tokens in localStorage** | XSS vulnerability | httpOnly cookies or in-memory |
+| **Inline styles for theming** | Unmaintainable at scale | CSS custom properties (design tokens) |
+
+---
+
+## 10. Related Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Module Structure](MODULE_STRUCTURE.md) | Detailed module boundaries and folder conventions |
+| [State Management](STATE_MANAGEMENT.md) | Pinia store patterns and reactive state flows |
+| [API Integration](API_INTEGRATION.md) | HTTP client, mapper patterns, OpenAPI type generation |
+| [Testing Strategy](TESTING_STRATEGY.md) | Frontend testing pyramid and coverage targets |
+| [Development Guide](../DEVELOPMENT.md) | Local setup, coding standards, and conventions |
+| [Repository Strategy](../REPOSITORY_STRATEGY.md) | How the UI repo coexists with the API repo |
+
+---
+
+*This document is the authoritative reference for all frontend architectural decisions. Every pull request is reviewed against these principles.*
