@@ -3,16 +3,12 @@ import { h } from 'vue'
 import { type ColumnDef } from '@tanstack/vue-table'
 import { DataTable } from '@/core/ui/data-table'
 import { Button } from '@/core/ui/button'
-import { Plus, Download } from 'lucide-vue-next'
+import { Plus, Download, FileText, CheckCircle2 } from 'lucide-vue-next'
+import { useApiQuery } from '@/core/composables/useApiQuery'
+import { accountingService } from '../api/accounting.service'
+import type { components } from '@/core/api/generated.types'
 
-interface JournalEntry {
-  id: string
-  date: string
-  reference: string
-  description: string
-  amount: number
-  status: 'Draft' | 'Posted'
-}
+type JournalEntry = components['schemas']['JournalEntryRead']
 
 const columns: ColumnDef<JournalEntry>[] = [
   {
@@ -20,43 +16,36 @@ const columns: ColumnDef<JournalEntry>[] = [
     header: 'Date',
   },
   {
-    accessorKey: 'reference',
-    header: 'Reference',
+    accessorKey: 'entry_number',
+    header: 'Entry #',
+    cell: ({ row }) => h('div', { class: 'font-mono text-xs' }, row.getValue('entry_number')),
   },
   {
     accessorKey: 'description',
     header: 'Description',
   },
   {
-    accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, 'Amount'),
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('amount'))
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(amount)
-      return h('div', { class: 'text-right font-medium' }, formatted)
-    },
-  },
-  {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
       const status = row.getValue('status') as string
-      return h('span', { 
-        class: `px-2 py-1 rounded-full text-xs font-semibold ${
-          status === 'Posted' ? 'bg-success-100 text-success-800' : 'bg-neutral-100 text-neutral-800'
+      const isPosted = status === 'POSTED'
+      return h('div', { 
+        class: `inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+          isPosted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
         }` 
-      }, status)
+      }, [
+        isPosted ? h(CheckCircle2, { class: 'mr-1 h-3 w-3' }) : h(FileText, { class: 'mr-1 h-3 w-3' }),
+        status
+      ])
     },
   },
 ]
 
-const data: JournalEntry[] = [
-  { id: '1', date: '2026-03-21', reference: 'JE-001', description: 'Monthly Rent', amount: 2500.00, status: 'Posted' },
-  { id: '2', date: '2026-03-21', reference: 'JE-002', description: 'Office Supplies', amount: 150.75, status: 'Draft' },
-]
+const { data, isLoading } = useApiQuery(
+  ['journal-entries'],
+  () => accountingService.getJournalEntries()
+)
 </script>
 
 <template>
@@ -78,8 +67,11 @@ const data: JournalEntry[] = [
       </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4">
-      <DataTable :columns="columns" :data="data" />
+    <div v-if="isLoading" class="flex items-center justify-center p-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+    </div>
+    <div v-else class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4">
+      <DataTable :columns="columns" :data="data || []" />
     </div>
   </div>
 </template>

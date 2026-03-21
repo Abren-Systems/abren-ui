@@ -3,16 +3,12 @@ import { h } from 'vue'
 import { type ColumnDef } from '@tanstack/vue-table'
 import { DataTable } from '@/core/ui/data-table'
 import { Button } from '@/core/ui/button'
-import { Plus } from 'lucide-vue-next'
+import { Plus, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { useApiQuery } from '@/core/composables/useApiQuery'
+import { accountingService } from '../api/accounting.service'
+import type { components } from '@/core/api/generated.types'
 
-interface Account {
-  id: string
-  code: string
-  name: string
-  type: string
-  balance: number
-  currency: string
-}
+type Account = components['schemas']['AccountRead']
 
 const columns: ColumnDef<Account>[] = [
   {
@@ -24,32 +20,28 @@ const columns: ColumnDef<Account>[] = [
     header: 'Name',
   },
   {
-    accessorKey: 'type',
+    accessorKey: 'account_type',
     header: 'Type',
   },
   {
-    accessorKey: 'currency',
-    header: 'Currency',
-  },
-  {
-    accessorKey: 'balance',
-    header: () => h('div', { class: 'text-right' }, 'Balance'),
+    accessorKey: 'is_active',
+    header: 'Status',
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('balance'))
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: row.getValue('currency') as string,
-      }).format(amount)
-      return h('div', { class: 'text-right font-medium' }, formatted)
+      const isActive = row.getValue('is_active') as boolean
+      return h('div', { class: 'flex items-center gap-2' }, [
+        isActive
+          ? h(CheckCircle2, { class: 'h-4 w-4 text-green-500' })
+          : h(XCircle, { class: 'h-4 w-4 text-neutral-400' }),
+        h('span', isActive ? 'Active' : 'Inactive'),
+      ])
     },
   },
 ]
 
-const data: Account[] = [
-  { id: '1', code: '1000', name: 'Cash in Hand', type: 'Asset', balance: 12500.00, currency: 'USD' },
-  { id: '2', code: '1100', name: 'Bank Account - ETB', type: 'Asset', balance: 450000.00, currency: 'ETB' },
-  { id: '3', code: '2000', name: 'Accounts Payable', type: 'Liability', balance: -2500.00, currency: 'USD' },
-]
+const { data, isLoading } = useApiQuery(
+  ['accounts'],
+  () => accountingService.getAccounts()
+)
 </script>
 
 <template>
@@ -65,8 +57,11 @@ const data: Account[] = [
       </Button>
     </div>
 
-    <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4">
-      <DataTable :columns="columns" :data="data" />
+    <div v-if="isLoading" class="flex items-center justify-center p-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+    </div>
+    <div v-else class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4">
+      <DataTable :columns="columns" :data="data || []" />
     </div>
   </div>
 </template>
