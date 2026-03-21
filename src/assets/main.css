@@ -85,7 +85,25 @@
   --z-dropdown: 1000;
   --z-modal: 1050;
   --z-overlay: 1100;
-  
+
+  /*
+   * Data Grid — semantic surface tokens (light mode defaults)
+   * Dark mode overrides are defined below under .dark / prefers-color-scheme.
+   */
+  --color-grid-bg:                 var(--color-neutral-50);
+  --color-grid-row-hover:          var(--color-neutral-100);
+  --color-grid-row-selected:       var(--color-primary-50);
+  --color-grid-row-selected-hover: var(--color-primary-100);
+  --color-grid-divider:            var(--color-neutral-200);
+  --color-grid-col-divider:        var(--color-neutral-200);
+  --color-grid-header-bg:          var(--color-neutral-100);
+  --color-grid-header-border:      var(--color-neutral-200);
+  --color-grid-header-text:        var(--color-neutral-500);
+  --color-grid-text:               var(--color-neutral-900);
+  --color-grid-text-muted:         var(--color-neutral-400);
+  --color-grid-skeleton:           var(--color-neutral-200);
+  --color-grid-skeleton-shine:     var(--color-neutral-100);
+
   /*
    * Breakpoints
    */
@@ -115,4 +133,48 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * ═══════════════════════════════════════════════════════
+ * Dark Mode — Grid Token Overrides
+ * Triggered by: .dark class on <html> (explicit toggle)
+ *           OR: @media (prefers-color-scheme: dark) (system preference)
+ * ═══════════════════════════════════════════════════════
+ */
+
+/* Explicit toggle — add class="dark" to <html> */
+.dark {
+  --color-grid-bg:                 #0d1117;
+  --color-grid-row-hover:          #111827;
+  --color-grid-row-selected:       #0f2942;
+  --color-grid-row-selected-hover: #163353;
+  --color-grid-divider:            #1b2433;
+  --color-grid-col-divider:        #1f2937;
+  --color-grid-header-bg:          #161d28;
+  --color-grid-header-border:      #273244;
+  --color-grid-header-text:        #94a3b8;
+  --color-grid-text:               #e2e8f0;
+  --color-grid-text-muted:         #64748b;
+  --color-grid-skeleton:           #1b2433;
+  --color-grid-skeleton-shine:     #273244;
+}
+
+/* System preference — respects OS dark mode setting */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --color-grid-bg:                 #0d1117;
+    --color-grid-row-hover:          #111827;
+    --color-grid-row-selected:       #0f2942;
+    --color-grid-row-selected-hover: #163353;
+    --color-grid-divider:            #1b2433;
+    --color-grid-col-divider:        #1f2937;
+    --color-grid-header-bg:          #161d28;
+    --color-grid-header-border:      #273244;
+    --color-grid-header-text:        #94a3b8;
+    --color-grid-text:               #e2e8f0;
+    --color-grid-text-muted:         #64748b;
+    --color-grid-skeleton:           #1b2433;
+    --color-grid-skeleton-shine:     #273244;
+  }
 }
