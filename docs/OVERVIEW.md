@@ -27,6 +27,8 @@ Navigate by concern:
 | [State Management](architecture/STATE_MANAGEMENT.md) | Pinia store patterns, module-scoped state, and cross-module reactivity |
 | [API Integration](architecture/API_INTEGRATION.md) | HTTP client, Anti-Corruption Layer (Mappers), OpenAPI type generation |
 | [Testing Strategy](architecture/TESTING_STRATEGY.md) | Frontend testing pyramid, coverage targets, and tooling |
+| [UI Foundation Decision](architecture/UI_FOUNDATION_DECISION.md) | **ADR** — Evaluation of Primitive libraries and library selection |
+| [Design System](architecture/DESIGN_SYSTEM.md) | **Visual Specs** — Colors, spacing, typography, and UX principles |
 
 ### Development
 | Document | Description |

@@ -10,7 +10,7 @@
 ## 1. Philosophical Foundation
 
 ### 1.1 What We Are Building
-A **domain-aware frontend** for a Financial Operating System — not a collection of CRUD forms. The UI understands the same bounded contexts and business language as the backend, but implements them with frontend-native patterns.
+A **domain-aware frontend** for a Financial Operating System — not a collection of CRUD forms. We strictly adhere to the **Modular Monolith Mirroring** principle: the frontend is structurally aligned with the backend's bounded contexts, ensuring that business logic boundaries are preserved from the database all the way to the UI.
 
 ### 1.2 The Alignment Principle
 The frontend is **domain-aware and backend-aligned**, not an exact mirror. The backend's DDD layers (Entity → Service → Repository → UoW) are too granular for a UI. We collapse them into a simpler, pragmatic structure while preserving the same module names, action names, and domain vocabulary.

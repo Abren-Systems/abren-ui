@@ -6,7 +6,18 @@ This document strictly reflects the design tokens implemented via **Tailwind CSS
 
 ---
 
-## 1. Color System
+## 1. Aesthetic Principles
+
+To ensure Abren ERP feels like a state-of-the-art financial platform, we adhere to the following premium design pillars:
+
+*   **Vibrant Professionalism**: We avoid muddy grays. Our neutrals use a cool slate base, and our primary actions use high-vibrancy sky blues to draw the eye without creating fatigue.
+*   **Layered Depth (Glassmorphism)**: We use subtle background blurs (`backdrop-blur`) and semi-transparent surfaces on modals and sidebars to create a sense of physical layering.
+*   **Balanced Density**: ERPs are data-heavy. We optimize for high information density while maintaining legibility through strict adherence to our spacing scale and professional typography.
+*   **Dynamic Response**: The interface must feel "alive." Every interactive element should have a smooth hover transition, and critical state changes (e.g., submitting a form) should utilize subtle micro-animations to provide immediate tactile feedback.
+
+---
+
+## 2. Color System
 
 We use a heavily curated palette designed for maximum legibility in dense, data-heavy ERP environments. We avoid pure grays, preferring a cool slate under-tone for neutrals, and professional, energetic sky-blues for brand interactions.
 
