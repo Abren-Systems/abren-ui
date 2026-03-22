@@ -183,6 +183,7 @@ Each column must support:
 
 * Slide-out panel from the right edge (40-50% width).
 * Best for complex records.
+* **Smart Buttons:** The top of the drawer should feature a row of `DataGridSmartButton` components displaying relational KPIs (e.g., "4 Invoices") that navigate and filter target grids on click.
 * **Never use full page reloads or center modals** for grid record editing, as they destroy the user's filtered background context.
 
 ---
@@ -212,10 +213,10 @@ Each column must support:
 
 ## 7.1 Levels
 
-### Global Search
+### Global Search (Omni-bar)
 
 * Top toolbar
-* Searches across columns
+* Functions as an **Omni-Search**: Parses structural intent (e.g., converting "Status: Active" into a hard column filter) alongside cross-column text matching.
 
 ### Column Filters
 
@@ -472,6 +473,7 @@ src/core/ui/data-grid/
 │
 ├── Overlays/ [PHASE 2]
 │   ├── DataGridDrawer.vue          ← Right-edge context editor
+│   ├── DataGridSmartButton.vue     ← Relational KPI navigation button
 │   └── DataGridCommandPalette.vue  ← ⌘K global action overlay
 │
 └── Editors/ [PHASE 2]

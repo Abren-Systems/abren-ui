@@ -159,8 +159,8 @@ Shadows have a dual-layer softness to match the Radix Slate tone and are applied
 
 ## 7. ERP Interaction Patterns
 
-### 7.1 Command Palette (⌘K)
-A global Command Palette is required. It provides power users instant keyboard access to jump to any module, search any entity ID, or initiate global actions (e.g., "Create Journal Entry") without touching the mouse.
+### 7.1 Command Palette & Omni-Search (⌘K)
+A global Command Palette is required. It provides power users instant keyboard access to jump to any module or initiate global actions. Crucially, its search logic must function as an **Omni-Search**: parsing semantic intent (e.g., typing "Status: Paid") to instantly build data grid filters, rather than just performing basic string matching.
 
 ### 7.2 Context Preservation (Drawers)
 For editing records in a dense grid context, prefer **slide-out Drawers** over new page navigations. This preserves the user's scroll position and applied filters in the background grid.
@@ -192,7 +192,11 @@ Unlike legacy top-ribbon interfaces, we utilize a collapsible left-hand navigati
 ### 8.2 Progressive Disclosure (Context Drawers)
 We reject "all-fields-on-one-screen" forms. Editing or creating complex records relies on Progressive Disclosure.
 *   **Implementation:** Use right-aligned **Context Drawers** (`DataGridDrawer.vue`).
-*   **Tabs:** Information within the drawer must be segmented (e.g., "Summary" tab, "Audit Log" tab) so users only see fields relevant to their immediate task.
+*   **Segmented Tabs:** Information within the drawer must be tabbed (e.g., "Summary", "Settings").
+*   **Smart Buttons:** The top row of a Drawer should utilize compact "Smart Buttons" to display live relational KPIs (e.g., `[ 12 ] Invoices`) that, when clicked, instantly navigate and filter the relevant background grid.
+
+### 8.3 Integrated Audit Logs (The "Chatter" Pattern)
+Every major entity Context Drawer in Abren ERP must include an "Audit & Notes" tab. This tab combines automated system lifecycle logs ("User X changed Status to Paid") with manual user notes and `@mentions`. This unifies record context and eliminates off-platform communication.
 
 ---
 
