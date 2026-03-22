@@ -1,13 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { modules } from '@/modules'
+import { allModules } from '@/modules'
 import { authGuard } from './guards'
 
 /**
  * Central Route Aggregator
  *
  * This router handles the high-level layout switching.
- * Individual module routes are registered dynamically or spread
- * into the children array.
  */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +17,7 @@ const router = createRouter({
         {
           path: '',
           name: 'LoginPage',
-          component: () => import('@/modules/core/pages/LoginPage.vue'),
+          component: () => import('@/modules/platform/core/pages/LoginPage.vue'),
         },
       ],
     },
@@ -31,10 +29,17 @@ const router = createRouter({
         {
           path: '',
           name: 'DashboardPage',
-          component: () => import('@/modules/core/pages/DashboardPage.vue'),
+          component: () => import('@/modules/platform/core/pages/DashboardPage.vue'),
         },
         // Dynamically register module routes
-        ...await Promise.all(modules.map(m => m.routes().catch(() => []))).then(r => r.flat()),
+        ...await Promise.all(allModules.map(async (m) => {
+          const routes = await m.routes()
+          // Optional: prefix routes with module ID for isolation
+          return routes.map(r => ({
+            ...r,
+            path: `${m.id}/${r.path}`.replace(/\/+/g, '/')
+          }))
+        })).then(r => r.flat()),
       ],
     },
     {

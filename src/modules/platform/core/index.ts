@@ -1,8 +1,9 @@
-import type { ModuleDefinition } from '@/core/types/module'
+import type { PlatformEngine } from '@/core/types/module.types'
 
-export const coreModule: ModuleDefinition = {
+export const coreModule: PlatformEngine = {
   id: 'core',
   name: 'Core',
+  category: 'platform',
   routes: () => import('./routes').then(m => m.default),
   permissions: ['core.view', 'core.edit'],
   menuItems: [

@@ -4,11 +4,9 @@ import { type ColumnDef } from '@tanstack/vue-table'
 import { DataGrid, DataGridColumnHeader, useDataGrid } from '@/core/ui/data-grid'
 import { Button } from '@/core/ui/button'
 import { Plus } from 'lucide-vue-next'
-import { useApiQuery } from '@/core/composables/useApiQuery'
-import { ledgerService } from '../api/ledger.service'
-import type { components } from '@/core/api/generated.types'
-
-type Account = components['schemas']['AccountRead']
+import { useLedgerAccounts } from '../application/composables/useLedgerAccounts'
+import * as formatter from '../ui/utils/account-formatter'
+import type { Account } from '../domain/account.types'
 
 // ── Grid state (sorting, selection, global filter) ─────────────
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
@@ -36,21 +34,14 @@ const columns: ColumnDef<Account>[] = [
       h('span', { style: 'font-weight: 500;' }, row.getValue('name')),
   },
   {
-    accessorKey: 'account_type',
+    accessorKey: 'type',
     size: 140,
     enableSorting: true,
     header: ({ column }) =>
       h(DataGridColumnHeader, { column, title: 'Type' }),
     cell: ({ row }) => {
-      const type = row.getValue<string>('account_type')
-      const colorMap: Record<string, string> = {
-        asset: '#22c55e',
-        liability: '#f59e0b',
-        equity: '#818cf8',
-        revenue: '#38bdf8',
-        expense: '#f87171',
-      }
-      const color = colorMap[type?.toLowerCase()] ?? 'var(--color-grid-text-muted)'
+      const account = row.original as Account
+      const color = formatter.getAccountTypeColor(account.type)
       return h('span', {
         style: `
           display: inline-block;
@@ -63,28 +54,28 @@ const columns: ColumnDef<Account>[] = [
           padding: 2px 6px;
           border-radius: 3px;
         `,
-      }, type)
+      }, account.type)
     },
   },
   {
-    accessorKey: 'currency_code',
+    accessorKey: 'currency',
     size: 80,
     enableSorting: false,
     header: ({ column }) =>
       h(DataGridColumnHeader, { column, title: 'Currency' }),
     cell: ({ row }) =>
       h('span', { style: 'text-align: right; display: block;' },
-        row.getValue('currency_code') ?? '—',
+        row.getValue('currency') ?? '—',
       ),
   },
   {
-    accessorKey: 'is_active',
+    accessorKey: 'isActive',
     size: 80,
     enableSorting: true,
     header: ({ column }) =>
       h(DataGridColumnHeader, { column, title: 'Status' }),
     cell: ({ row }) => {
-      const isActive = row.getValue<boolean>('is_active')
+      const isActive = row.getValue<boolean>('isActive')
       return h('span', {
         style: `
           display: inline-block;
@@ -94,16 +85,13 @@ const columns: ColumnDef<Account>[] = [
           padding: 2px 6px; border-radius: 3px;
           text-transform: uppercase; letter-spacing: 0.04em;
         `,
-      }, isActive ? 'Active' : 'Inactive')
+      }, formatter.getAccountStatusLabel(isActive))
     },
   },
 ]
 
 // ── Data fetching ──────────────────────────────────────────────
-const { data, isPending } = useApiQuery(
-  ['ledger-accounts'],
-  () => ledgerService.getAccounts(),
-)
+const { accounts: data, isPending } = useLedgerAccounts()
 </script>
 
 <template>

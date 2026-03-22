@@ -1,8 +1,9 @@
-import type { ModuleDefinition } from '@/core/types/module'
+import type { BusinessDomain } from '@/core/types/module.types'
 
-export const paymentRequestsModule: ModuleDefinition = {
+export const paymentRequestsModule: BusinessDomain = {
   id: 'payment-requests',
   name: 'Payment Requests',
+  category: 'business',
   routes: () => import('./routes').then(m => m.default),
   permissions: ['payment_requests.view'],
   menuItems: [

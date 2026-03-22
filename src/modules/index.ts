@@ -1,19 +1,25 @@
-import { coreModule } from './core'
-import { ledgerModule } from './finance/ledger'
-import { bankModule } from './finance/bank'
-import { paymentRequestsModule } from './finance/ap/payment-requests'
-import { workflowsModule } from './workflows'
+import { coreModule } from './platform/core'
+import { ledgerModule } from './business/finance/ledger'
+import { bankModule } from './business/finance/bank'
+import { paymentRequestsModule } from './business/finance/ap/payment-requests'
+import { workflowsModule } from './platform/workflows'
+import type { BusinessDomain, PlatformEngine } from '@/core/types/module.types'
 
 /**
- * Central Module Registry
+ * Categorized Module Registry
  * 
- * All bounded context modules must be exported here for 
- * dynamic registration in the router and menu system.
+ * Separates "Business Domains" (User Apps) from "Platform Engines" (Internals).
  */
-export const modules = [
-  coreModule,
+export const businessModules: BusinessDomain[] = [
   ledgerModule,
   bankModule,
   paymentRequestsModule,
+]
+
+export const platformModules: PlatformEngine[] = [
+  coreModule,
   workflowsModule,
 ]
+
+// All modules for convenience (e.g. router)
+export const allModules = [...businessModules, ...platformModules]
