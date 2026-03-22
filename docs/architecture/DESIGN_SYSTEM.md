@@ -160,7 +160,34 @@ For editing records in a dense grid context, prefer **slide-out Drawers** over n
 
 ---
 
-## 8. Localization & Finance Readiness
+## 8. Core Enterprise UX Architecture
+
+Based on enterprise software best practices (adapting successful patterns from platforms like Microsoft Dynamics 365 while discarding their consumer bloat), Abren ERP rigidly enforces the following structural layouts:
+
+### 8.1 The Consistent Left-Hand Navigation Rail
+Unlike legacy top-ribbon interfaces, we utilize a collapsible left-hand navigation rail.
+*   **Dimensions:** `220px` expanded, `64px` collapsed (icon-only).
+*   **Behavior:** Must be toggleable via keyboard shortcut (e.g., `⌘ + \`) to instantly yield horizontal space back to dense data grids.
+
+### 8.2 Progressive Disclosure (Context Drawers)
+We reject "all-fields-on-one-screen" forms. Editing or creating complex records relies on Progressive Disclosure.
+*   **Implementation:** Use right-aligned **Context Drawers** (`DataGridDrawer.vue`).
+*   **Tabs:** Information within the drawer must be segmented (e.g., "Summary" tab, "Audit Log" tab) so users only see fields relevant to their immediate task.
+
+---
+
+## 9. Explicitly Rejected Patterns (The "Anti-Patterns")
+
+To maintain high operational density and avoid the pitfalls of generalized "consumer-friendly" SaaS design, the following UX defaults are **strictly banned** in Abren ERP:
+
+*   **🚫 Consumer-Grade Size Metrics**: UI libraries (including generalized Fluent / Tailwind defaults) ship with massive `40px` tap targets. These are forbidden in Abren ERP. We strictly enforce our **Compact Mode** (30px row height).
+*   **🚫 Hidden Contextual Commands ("..." Menus)**: Primary grid actions (Edit, Delete, Export) must not be buried inside overflow ellipses menus just to make the UI look "cleaner." Use native Right-Click context menus or expose icons on hover.
+*   **🚫 "Wizard" Flows for Basic Entry**: Power users despise paginated wizards because they break flow state. Use single-view Drawers or inline grid editors. Save wizards exclusively for rare, complex configurations (e.g., Year-End Close).
+*   **🚫 Blinding `#FFFFFF` Backgrounds**: Staring at pure white canvases for 8 hours causes optical fatigue. Always use the Radix Slate token (`--color-neutral-50` / `#f8fafc`) as the base application background.
+
+---
+
+## 10. Localization & Finance Readiness
 
 The UI layer must remain isolated from hardcoded currency symbols or date formats.
 *   **Multi-currency Support**: All amounts must be formatted via `Intl.NumberFormat` supporting ETB, USD, etc.
@@ -168,7 +195,7 @@ The UI layer must remain isolated from hardcoded currency symbols or date format
 
 ---
 
-## 9. Primitive Components (`core/ui/`)
+## 11. Primitive Components (`core/ui/`)
 
 All base UI components (`AppButton`, `AppInput`, `AppSelect`, etc.) are physically owned in `src/core/ui/` and strictly utilize the tokens above.
 
