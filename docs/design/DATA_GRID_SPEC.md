@@ -153,7 +153,7 @@ Each column must support:
 | TAB    | Next cell   |
 | ENTER  | Edit cell (or open Drawer) |
 | ESC    | Cancel edit |
-| ⌘K / Ctrl+K | **Command Palette** (Context-aware grid actions) |
+| ⌘K / Ctrl+K | **Command Palette** (Scopes immediately to bulk actions if rows are selected) |
 | CTRL+C | Copy        |
 | CTRL+V | Paste       |
 
@@ -500,8 +500,8 @@ src/core/composables/
 3. User types / picks value
 4. User presses ENTER or TAB → triggers validation (field-level Zod schema)
    - If INVALID → show inline error, remain in EDITING state
-   - If VALID   → optimistic update: patch local data immediately
-5. API mutation fires in background
+   - If VALID   → **0ms Optimistic Update**. Patch the local table data immediately to its "saved" state. **DO NOT** block the UI or show an inline loading spinner.
+5. API mutation fires silently in the background
    - On success: nothing to do (already updated)
    - On failure: rollback to original value, show error toast
 6. ESC at any point → cancel edit, restore original value

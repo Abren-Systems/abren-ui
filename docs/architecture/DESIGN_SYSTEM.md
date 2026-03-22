@@ -81,7 +81,7 @@ The ERP uses a clean, highly legible font stack optimized for numeric data and d
   * Used for code snippets, UUIDs, and specific financial/ledger tables.
 
 ### 3.2 Semantic Text Scale
-Components must reference **semantic role tokens**, not raw pixel sizes.
+Components must reference **semantic role tokens**, not raw pixel sizes. All numeric data (amounts, IDs, ratios) must globally enforce `font-variant-numeric: tabular-nums` to guarantee perfect vertical alignment in lists without relying on fixed-width hacking.
 
 | Token | CSS Target | Target Usage |
 | :--- | :--- | :--- |
@@ -160,10 +160,14 @@ Shadows have a dual-layer softness to match the Radix Slate tone and are applied
 ## 7. ERP Interaction Patterns
 
 ### 7.1 Command Palette & Omni-Search (⌘K)
-A global Command Palette is required. It provides power users instant keyboard access to jump to any module or initiate global actions. Crucially, its search logic must function as an **Omni-Search**: parsing semantic intent (e.g., typing "Status: Paid") to instantly build data grid filters, rather than just performing basic string matching.
+A global Command Palette is required. It provides power users instant keyboard access to jump to any module or initiate global actions. 
+*   **Omni-Search Logic:** The input must parse semantic intent (e.g., typing "Status: Paid" builds a grid filter).
+*   **Context-Aware Actions:** If the user has multiple rows selected in a data grid, pressing ⌘K automatically scopes the palette to bulk actions applicable to those specific rows (e.g., "Approve 3 records", "Delete selected").
 
-### 7.2 Context Preservation (Drawers)
-For editing records in a dense grid context, prefer **slide-out Drawers** over new page navigations. This preserves the user's scroll position and applied filters in the background grid.
+### 7.2 Overlay Taxonomy: Drawers vs Modals
+Abren ERP enforces a strict functional split for floating surfaces to preserve background context:
+*   **Drawers (For Reading):** Right-aligned slide-out Drawers (`DataGridDrawer.vue`) are used for reading deep context, viewing audit logs, and editing complex records. 
+*   **Modals (For Executing):** Center-aligned dialog Modals are strictly reserved for executing active, focused mutations (e.g., Delete Confirmation, Refund Processing, Bulk Submit). Never use a center modal for a complex, multi-field data entry form.
 
 ### 7.3 Destructive Confirmations
 Any action that deletes a record or irrevocably alters a ledger state must trigger a blocking **AlertDialog** (using Radix Vue primitives). The dialog must force the user to explicitly click an Indigo or Red confirmation button. Passive "Are you sure?" tooltips are insufficient for destructive financial actions.
