@@ -5,7 +5,7 @@ import { DataTable } from '@/core/ui/data-table'
 import { Button } from '@/core/ui/button'
 import { Plus, Download, FileText, CheckCircle2 } from 'lucide-vue-next'
 import { useApiQuery } from '@/core/composables/useApiQuery'
-import { accountingService } from '../api/accounting.service'
+import { ledgerService } from '../api/ledger.service'
 import type { components } from '@/core/api/generated.types'
 
 type JournalEntry = components['schemas']['JournalEntryRead']
@@ -43,8 +43,8 @@ const columns: ColumnDef<JournalEntry>[] = [
 ]
 
 const { data, isLoading } = useApiQuery(
-  ['journal-entries'],
-  () => accountingService.getJournalEntries()
+  ['ledger-journal-entries'],
+  () => ledgerService.getJournalEntries()
 )
 </script>
 

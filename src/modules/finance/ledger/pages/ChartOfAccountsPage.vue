@@ -5,7 +5,7 @@ import { DataGrid, DataGridColumnHeader, useDataGrid } from '@/core/ui/data-grid
 import { Button } from '@/core/ui/button'
 import { Plus } from 'lucide-vue-next'
 import { useApiQuery } from '@/core/composables/useApiQuery'
-import { accountingService } from '../api/accounting.service'
+import { ledgerService } from '../api/ledger.service'
 import type { components } from '@/core/api/generated.types'
 
 type Account = components['schemas']['AccountRead']
@@ -101,8 +101,8 @@ const columns: ColumnDef<Account>[] = [
 
 // ── Data fetching ──────────────────────────────────────────────
 const { data, isPending } = useApiQuery(
-  ['accounts'],
-  () => accountingService.getAccounts(),
+  ['ledger-accounts'],
+  () => ledgerService.getAccounts(),
 )
 </script>
 

@@ -19,7 +19,7 @@ const router = createRouter({
         {
           path: '',
           name: 'LoginPage',
-          component: () => import('@/modules/identity/pages/LoginPage.vue'),
+          component: () => import('@/modules/core/pages/LoginPage.vue'),
         },
       ],
     },
@@ -31,7 +31,7 @@ const router = createRouter({
         {
           path: '',
           name: 'DashboardPage',
-          component: () => import('@/modules/identity/pages/DashboardPage.vue'),
+          component: () => import('@/modules/core/pages/DashboardPage.vue'),
         },
         // Dynamically register module routes
         ...await Promise.all(modules.map(m => m.routes().catch(() => []))).then(r => r.flat()),

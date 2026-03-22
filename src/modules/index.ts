@@ -1,5 +1,8 @@
-import { identityModule } from './identity'
-import { accountingModule } from './accounting'
+import { coreModule } from './core'
+import { ledgerModule } from './finance/ledger'
+import { bankModule } from './finance/bank'
+import { paymentRequestsModule } from './finance/ap/payment-requests'
+import { workflowsModule } from './workflows'
 
 /**
  * Central Module Registry
@@ -8,6 +11,9 @@ import { accountingModule } from './accounting'
  * dynamic registration in the router and menu system.
  */
 export const modules = [
-  identityModule,
-  accountingModule,
+  coreModule,
+  ledgerModule,
+  bankModule,
+  paymentRequestsModule,
+  workflowsModule,
 ]

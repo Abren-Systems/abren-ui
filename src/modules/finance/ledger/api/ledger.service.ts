@@ -6,35 +6,35 @@ type JournalEntryRead = components['schemas']['JournalEntryRead'];
 type JournalEntryCreate = components['schemas']['JournalEntryCreate'];
 
 /**
- * Accounting Module - API Service
+ * Ledger Module - API Service
  * Provides type-safe methods for ledger and Chart of Accounts operations.
  */
-export const accountingService = {
+export const ledgerService = {
   /**
    * Fetches the complete Chart of Accounts for the current tenant.
    */
   async getAccounts(): Promise<AccountRead[]> {
-    return apiGet<AccountRead[]>('/accounting/accounts');
+    return apiGet<AccountRead[]>('/finance/ledger/accounts');
   },
 
   /**
    * Fetches all journal entries with optional pagination/filtering.
    */
   async getJournalEntries(): Promise<JournalEntryRead[]> {
-    return apiGet<JournalEntryRead[]>('/accounting/journal-entries');
+    return apiGet<JournalEntryRead[]>('/finance/ledger/journal-entries');
   },
 
   /**
    * Creates a new draft journal entry.
    */
   async createJournalEntry(data: JournalEntryCreate): Promise<JournalEntryRead> {
-    return apiPost<JournalEntryRead>('/accounting/journal-entries', data);
+    return apiPost<JournalEntryRead>('/finance/ledger/journal-entries', data);
   },
 
   /**
    * Posts a draft journal entry to the General Ledger.
    */
   async postJournalEntry(entryId: string): Promise<JournalEntryRead> {
-    return apiPost<JournalEntryRead>(`/accounting/journal-entries/${entryId}/post`);
+    return apiPost<JournalEntryRead>(`/finance/ledger/journal-entries/${entryId}/post`);
   },
 };

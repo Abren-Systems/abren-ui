@@ -28,7 +28,7 @@ async function handleLogin() {
       {
         id: '754b3739-4526-4441-979f-fc0aab15b8d9',
         name: 'Default Tenant',
-        features: { 'accounting': true }
+        features: { 'ledger': true }
       }
     )
     

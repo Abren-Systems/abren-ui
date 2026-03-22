@@ -2,13 +2,13 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: 'accounting/coa',
-    name: 'AccountingCoa',
+    path: 'finance/ledger/coa',
+    name: 'LedgerCoa',
     component: () => import('./pages/ChartOfAccountsPage.vue'),
   },
   {
-    path: 'accounting/journals',
-    name: 'AccountingJournals',
+    path: 'finance/ledger/journals',
+    name: 'LedgerJournals',
     component: () => import('./pages/JournalEntriesPage.vue'),
   },
 ]
