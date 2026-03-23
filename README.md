@@ -4,19 +4,19 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Vue 3 + TypeScript (Composition API) |
-| Build | Vite |
-| UI System | Custom Design System (`core/ui/`) |
-| Accessible Primitives | Radix Vue |
-| DataGrid Engine | TanStack Table + TanStack Virtual |
-| Server State | TanStack Query |
-| Form State | TanStack Form + Zod |
-| Client State | Pinia |
-| Styling | Tailwind CSS v4 |
-| HTTP | Axios |
-| Testing | Vitest + Playwright |
+| Layer                 | Technology                           |
+| --------------------- | ------------------------------------ |
+| Framework             | Vue 3 + TypeScript (Composition API) |
+| Build                 | Vite                                 |
+| UI System             | Custom Design System (`core/ui/`)    |
+| Accessible Primitives | Radix Vue                            |
+| DataGrid Engine       | TanStack Table + TanStack Virtual    |
+| Server State          | TanStack Query                       |
+| Form State            | TanStack Form + Zod                  |
+| Client State          | Pinia                                |
+| Styling               | Tailwind CSS v4                      |
+| HTTP                  | Axios                                |
+| Testing               | Vitest + Playwright                  |
 
 ## Quick Start
 
@@ -58,12 +58,12 @@ src/
 
 ## Documentation
 
-| Document | Path |
-|---|---|
-| Architecture | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) |
-| Module Structure | [docs/architecture/MODULE_STRUCTURE.md](docs/architecture/MODULE_STRUCTURE.md) |
-| State Management | [docs/architecture/STATE_MANAGEMENT.md](docs/architecture/STATE_MANAGEMENT.md) |
-| API Integration | [docs/architecture/API_INTEGRATION.md](docs/architecture/API_INTEGRATION.md) |
-| Testing Strategy | [docs/architecture/TESTING_STRATEGY.md](docs/architecture/TESTING_STRATEGY.md) |
-| Repository Strategy | [docs/REPOSITORY_STRATEGY.md](docs/REPOSITORY_STRATEGY.md) |
-| Development Guide | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
+| Document            | Path                                                                           |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Architecture        | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)         |
+| Module Structure    | [docs/architecture/MODULE_STRUCTURE.md](docs/architecture/MODULE_STRUCTURE.md) |
+| State Management    | [docs/architecture/STATE_MANAGEMENT.md](docs/architecture/STATE_MANAGEMENT.md) |
+| API Integration     | [docs/architecture/API_INTEGRATION.md](docs/architecture/API_INTEGRATION.md)   |
+| Testing Strategy    | [docs/architecture/TESTING_STRATEGY.md](docs/architecture/TESTING_STRATEGY.md) |
+| Repository Strategy | [docs/REPOSITORY_STRATEGY.md](docs/REPOSITORY_STRATEGY.md)                     |
+| Development Guide   | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)                                     |

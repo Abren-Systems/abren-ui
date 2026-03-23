@@ -43,6 +43,7 @@ src/
 ```
 
 Each module has this internal structure:
+
 ```
 modules/{name}/
 ├── api/              → {name}.api.ts        (HTTP client)
@@ -61,49 +62,49 @@ modules/{name}/
 
 ```vue
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { usePaymentRequests } from '../composables/usePaymentRequests'
-import type { PaymentRequestViewModel } from '../types/view.types'
+import { ref, computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { usePaymentRequests } from "../composables/usePaymentRequests";
+import type { PaymentRequestViewModel } from "../types/view.types";
 
 // ── Props ────────────────────────────────────────────────
 interface Props {
-  tenantId: string
-  showDraftsOnly?: boolean
+  tenantId: string;
+  showDraftsOnly?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   showDraftsOnly: false,
-})
+});
 
 // ── Emits ────────────────────────────────────────────────
 interface Emits {
-  (e: 'select', request: PaymentRequestViewModel): void
-  (e: 'create'): void
+  (e: "select", request: PaymentRequestViewModel): void;
+  (e: "create"): void;
 }
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 // ── Composable (Use Case) ────────────────────────────────
-const { requests, isLoading, error, refresh } = usePaymentRequests()
+const { requests, isLoading, error, refresh } = usePaymentRequests();
 
 // ── Local State ──────────────────────────────────────────
-const searchQuery = ref('')
+const searchQuery = ref("");
 
 // ── Computed ─────────────────────────────────────────────
 const filteredRequests = computed(() => {
-  let result = requests.value
+  let result = requests.value;
   if (props.showDraftsOnly) {
-    result = result.filter(r => r.status === 'DRAFT')
+    result = result.filter((r) => r.status === "DRAFT");
   }
   if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase()
-    result = result.filter(r => r.beneficiary.toLowerCase().includes(q))
+    const q = searchQuery.value.toLowerCase();
+    result = result.filter((r) => r.beneficiary.toLowerCase().includes(q));
   }
-  return result
-})
+  return result;
+});
 
 // ── Methods ──────────────────────────────────────────────
 function handleSelect(request: PaymentRequestViewModel) {
-  emit('select', request)
+  emit("select", request);
 }
 </script>
 
@@ -119,19 +120,13 @@ function handleSelect(request: PaymentRequestViewModel) {
           class="search-input"
           data-testid="search-requests"
         />
-        <button
-          class="btn btn-primary"
-          data-testid="create-request"
-          @click="emit('create')"
-        >
+        <button class="btn btn-primary" data-testid="create-request" @click="emit('create')">
           New Request
         </button>
       </div>
     </header>
 
-    <div v-if="isLoading" class="loading-state" data-testid="loading">
-      Loading...
-    </div>
+    <div v-if="isLoading" class="loading-state" data-testid="loading">Loading...</div>
 
     <div v-else-if="error" class="error-state" data-testid="error">
       {{ error }}
@@ -162,7 +157,7 @@ function handleSelect(request: PaymentRequestViewModel) {
               {{ request.statusLabel }}
             </span>
           </td>
-          <td>{{ request.submittedAt ?? '—' }}</td>
+          <td>{{ request.submittedAt ?? "—" }}</td>
         </tr>
       </tbody>
     </table>
@@ -220,10 +215,22 @@ function handleSelect(request: PaymentRequestViewModel) {
   font-weight: 500;
 }
 
-.status-gray { background: var(--color-gray-100); color: var(--color-gray-700); }
-.status-blue { background: var(--color-blue-100); color: var(--color-blue-700); }
-.status-green { background: var(--color-green-100); color: var(--color-green-700); }
-.status-red { background: var(--color-red-100); color: var(--color-red-700); }
+.status-gray {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+.status-blue {
+  background: var(--color-blue-100);
+  color: var(--color-blue-700);
+}
+.status-green {
+  background: var(--color-green-100);
+  color: var(--color-green-700);
+}
+.status-red {
+  background: var(--color-red-100);
+  color: var(--color-red-700);
+}
 </style>
 ```
 
@@ -235,69 +242,77 @@ function handleSelect(request: PaymentRequestViewModel) {
 
 ```typescript
 // modules/payment-requests/stores/payment-requests.store.ts
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { PaymentRequestViewModel } from '../types/view.types'
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import type { PaymentRequestViewModel } from "../types/view.types";
 
-export const usePaymentRequestStore = defineStore('payment-requests', () => {
+export const usePaymentRequestStore = defineStore("payment-requests", () => {
   // ── State (use ref for each) ───────────────────────────
-  const requests = ref<PaymentRequestViewModel[]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-  const selectedId = ref<string | null>(null)
+  const requests = ref<PaymentRequestViewModel[]>([]);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
+  const selectedId = ref<string | null>(null);
 
   // ── Computed (derived state) ───────────────────────────
-  const selectedRequest = computed(() =>
-    requests.value.find(r => r.id === selectedId.value) ?? null
-  )
+  const selectedRequest = computed(
+    () => requests.value.find((r) => r.id === selectedId.value) ?? null,
+  );
 
-  const draftCount = computed(() =>
-    requests.value.filter(r => r.status === 'DRAFT').length
-  )
+  const draftCount = computed(() => requests.value.filter((r) => r.status === "DRAFT").length);
 
   // ── Actions (plain functions) ──────────────────────────
   function setRequests(data: PaymentRequestViewModel[]) {
-    requests.value = data
+    requests.value = data;
   }
 
   function updateRequest(updated: PaymentRequestViewModel) {
-    const idx = requests.value.findIndex(r => r.id === updated.id)
+    const idx = requests.value.findIndex((r) => r.id === updated.id);
     if (idx >= 0) {
-      requests.value[idx] = updated
+      requests.value[idx] = updated;
     }
   }
 
   function setLoading(state: boolean) {
-    isLoading.value = state
+    isLoading.value = state;
   }
 
   function setError(msg: string | null) {
-    error.value = msg
+    error.value = msg;
   }
 
   function clearSelection() {
-    selectedId.value = null
+    selectedId.value = null;
   }
 
   function $reset() {
-    requests.value = []
-    isLoading.value = false
-    error.value = null
-    selectedId.value = null
+    requests.value = [];
+    isLoading.value = false;
+    error.value = null;
+    selectedId.value = null;
   }
 
   return {
     // State
-    requests, isLoading, error, selectedId,
+    requests,
+    isLoading,
+    error,
+    selectedId,
     // Computed
-    selectedRequest, draftCount,
+    selectedRequest,
+    draftCount,
     // Actions
-    setRequests, updateRequest, setLoading, setError, clearSelection, $reset,
-  }
-})
+    setRequests,
+    updateRequest,
+    setLoading,
+    setError,
+    clearSelection,
+    $reset,
+  };
+});
 ```
 
 **WRONG (Options syntax — NEVER use this):**
+
 ```typescript
 // ❌ DO NOT USE THIS PATTERN
 export const useStore = defineStore('name', {
@@ -315,20 +330,21 @@ Composables orchestrate: API call → Mapper → Returned reactive state (via Ta
 
 ```typescript
 // modules/payment-requests/composables/usePaymentRequests.ts
-import { useApiQuery } from '@/core/composables/useApiQuery'
-import { paymentRequestApi } from '../api/payment-requests.api'
-import { toViewModel } from '../mappers/payment-request.mapper'
+import { useApiQuery } from "@/core/composables/useApiQuery";
+import { paymentRequestApi } from "../api/payment-requests.api";
+import { toViewModel } from "../mappers/payment-request.mapper";
 
 export function usePaymentRequests() {
-  const { data: requests, isLoading, error } = useApiQuery(
-    ['payment-requests'],
-    async () => {
-      const dtos = await paymentRequestApi.list()
-      return dtos.map(toViewModel)
-    },
-  )
+  const {
+    data: requests,
+    isLoading,
+    error,
+  } = useApiQuery(["payment-requests"], async () => {
+    const dtos = await paymentRequestApi.list();
+    return dtos.map(toViewModel);
+  });
 
-  return { requests, isLoading, error }
+  return { requests, isLoading, error };
 }
 ```
 
@@ -336,26 +352,26 @@ export function usePaymentRequests() {
 
 ```typescript
 // modules/payment-requests/composables/useSubmitRequest.ts
-import { useApiMutation } from '@/core/composables/useApiMutation'
-import { paymentRequestApi } from '../api/payment-requests.api'
-import { toViewModel } from '../mappers/payment-request.mapper'
-import { eventBus } from '@/core/event-bus/event-bus'
+import { useApiMutation } from "@/core/composables/useApiMutation";
+import { paymentRequestApi } from "../api/payment-requests.api";
+import { toViewModel } from "../mappers/payment-request.mapper";
+import { eventBus } from "@/core/event-bus/event-bus";
 
 export function useSubmitRequest() {
   return useApiMutation(
     async (id: string) => {
       // 1. Call action endpoint
-      const dto = await paymentRequestApi.submit(id)
-      return toViewModel(dto)
+      const dto = await paymentRequestApi.submit(id);
+      return toViewModel(dto);
     },
     {
       onSuccess: (vm) => {
         // 2. Notify other modules
-        eventBus.emit('payment-request:submitted', { id: vm.id })
+        eventBus.emit("payment-request:submitted", { id: vm.id });
       },
-      invalidateKeys: [['payment-requests']], // Invalidate list query
-    }
-  )
+      invalidateKeys: [["payment-requests"]], // Invalidate list query
+    },
+  );
 }
 ```
 
@@ -365,37 +381,32 @@ export function useSubmitRequest() {
 
 ```typescript
 // modules/payment-requests/api/payment-requests.api.ts
-import { httpClient } from '@/core/api/http-client'
+import { httpClient } from "@/core/api/http-client";
 import type {
   PaymentRequestDTO,
   PaymentRequestCreateDTO,
   PaymentRequestPayDTO,
-} from '../types/api.types'
+} from "../types/api.types";
 
-const BASE = '/payment-requests'
+const BASE = "/payment-requests";
 
 export const paymentRequestApi = {
-  list: (): Promise<PaymentRequestDTO[]> =>
-    httpClient.get(BASE),
+  list: (): Promise<PaymentRequestDTO[]> => httpClient.get(BASE),
 
-  get: (id: string): Promise<PaymentRequestDTO> =>
-    httpClient.get(`${BASE}/${id}`),
+  get: (id: string): Promise<PaymentRequestDTO> => httpClient.get(`${BASE}/${id}`),
 
-  create: (dto: PaymentRequestCreateDTO): Promise<PaymentRequestDTO> =>
-    httpClient.post(BASE, dto),
+  create: (dto: PaymentRequestCreateDTO): Promise<PaymentRequestDTO> => httpClient.post(BASE, dto),
 
-  submit: (id: string): Promise<PaymentRequestDTO> =>
-    httpClient.post(`${BASE}/${id}/submit`),
+  submit: (id: string): Promise<PaymentRequestDTO> => httpClient.post(`${BASE}/${id}/submit`),
 
-  approve: (id: string): Promise<PaymentRequestDTO> =>
-    httpClient.post(`${BASE}/${id}/approve`),
+  approve: (id: string): Promise<PaymentRequestDTO> => httpClient.post(`${BASE}/${id}/approve`),
 
   reject: (id: string, reason: string): Promise<PaymentRequestDTO> =>
     httpClient.post(`${BASE}/${id}/reject`, { reason }),
 
   pay: (id: string, dto: PaymentRequestPayDTO): Promise<PaymentRequestDTO> =>
     httpClient.post(`${BASE}/${id}/pay`, dto),
-}
+};
 ```
 
 ---
@@ -406,26 +417,26 @@ Mappers are pure functions: DTO in → ViewModel out. No side effects.
 
 ```typescript
 // modules/payment-requests/mappers/payment-request.mapper.ts
-import { Money } from '@/core/domain/money'
-import { formatDate } from '@/core/utils/date'
-import type { PaymentRequestDTO } from '../types/api.types'
-import type { PaymentRequestViewModel } from '../types/view.types'
+import { Money } from "@/core/domain/money";
+import { formatDate } from "@/core/utils/date";
+import type { PaymentRequestDTO } from "../types/api.types";
+import type { PaymentRequestViewModel } from "../types/view.types";
 
 const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'Draft',
-  SUBMITTED: 'Pending Approval',
-  APPROVED: 'Approved',
-  REJECTED: 'Rejected',
-  PAID: 'Paid',
-}
+  DRAFT: "Draft",
+  SUBMITTED: "Pending Approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  PAID: "Paid",
+};
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: 'gray',
-  SUBMITTED: 'blue',
-  APPROVED: 'green',
-  REJECTED: 'red',
-  PAID: 'emerald',
-}
+  DRAFT: "gray",
+  SUBMITTED: "blue",
+  APPROVED: "green",
+  REJECTED: "red",
+  PAID: "emerald",
+};
 
 export function toViewModel(dto: PaymentRequestDTO): PaymentRequestViewModel {
   return {
@@ -434,14 +445,14 @@ export function toViewModel(dto: PaymentRequestDTO): PaymentRequestViewModel {
     amount: Money.from(dto.amount, dto.currency),
     status: dto.status,
     statusLabel: STATUS_LABELS[dto.status] ?? dto.status,
-    statusColor: STATUS_COLORS[dto.status] ?? 'gray',
-    canSubmit: dto.status === 'DRAFT',
-    canApprove: dto.status === 'SUBMITTED',
-    canReject: dto.status === 'SUBMITTED',
-    canPay: dto.status === 'APPROVED',
+    statusColor: STATUS_COLORS[dto.status] ?? "gray",
+    canSubmit: dto.status === "DRAFT",
+    canApprove: dto.status === "SUBMITTED",
+    canReject: dto.status === "SUBMITTED",
+    canPay: dto.status === "APPROVED",
     submittedAt: dto.submitted_at ? formatDate(dto.submitted_at) : null,
     paidAt: dto.paid_at ? formatDate(dto.paid_at) : null,
-  }
+  };
 }
 
 export function toCreateDTO(form: PaymentRequestFormData): PaymentRequestCreateDTO {
@@ -450,7 +461,7 @@ export function toCreateDTO(form: PaymentRequestFormData): PaymentRequestCreateD
     amount: form.amount,
     currency: form.currency,
     description: form.description,
-  }
+  };
 }
 ```
 
@@ -462,57 +473,57 @@ export function toCreateDTO(form: PaymentRequestFormData): PaymentRequestCreateD
 // modules/payment-requests/types/api.types.ts
 // These mirror backend Pydantic DTOs (ideally auto-generated from OpenAPI)
 export interface PaymentRequestDTO {
-  id: string
-  beneficiary_name: string
-  amount: number
-  currency: string
-  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PAID'
-  description: string | null
-  bank_account_id: string | null
-  submitted_at: string | null
-  paid_at: string | null
-  current_approval_step: number
-  assigned_approver_id: string | null
+  id: string;
+  beneficiary_name: string;
+  amount: number;
+  currency: string;
+  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "PAID";
+  description: string | null;
+  bank_account_id: string | null;
+  submitted_at: string | null;
+  paid_at: string | null;
+  current_approval_step: number;
+  assigned_approver_id: string | null;
 }
 
 export interface PaymentRequestCreateDTO {
-  beneficiary_name: string
-  amount: number
-  currency: string
-  description: string | null
+  beneficiary_name: string;
+  amount: number;
+  currency: string;
+  description: string | null;
 }
 
 export interface PaymentRequestPayDTO {
-  payment_method: string
-  disbursement_reference: string
+  payment_method: string;
+  disbursement_reference: string;
 }
 ```
 
 ```typescript
 // modules/payment-requests/types/view.types.ts
 // These are what Vue components consume — UI-optimized
-import type { Money } from '@/core/domain/money'
+import type { Money } from "@/core/domain/money";
 
 export interface PaymentRequestViewModel {
-  id: string
-  beneficiary: string                // Renamed for UI clarity
-  amount: Money                       // Value Object, not raw number
-  status: string
-  statusLabel: string                 // "Draft", "Pending Approval"
-  statusColor: string                 // CSS class name
-  canSubmit: boolean                  // Derived UI permission
-  canApprove: boolean
-  canReject: boolean
-  canPay: boolean
-  submittedAt: string | null          // Formatted date string
-  paidAt: string | null
+  id: string;
+  beneficiary: string; // Renamed for UI clarity
+  amount: Money; // Value Object, not raw number
+  status: string;
+  statusLabel: string; // "Draft", "Pending Approval"
+  statusColor: string; // CSS class name
+  canSubmit: boolean; // Derived UI permission
+  canApprove: boolean;
+  canReject: boolean;
+  canPay: boolean;
+  submittedAt: string | null; // Formatted date string
+  paidAt: string | null;
 }
 
 export interface PaymentRequestFormData {
-  beneficiary: string
-  amount: number
-  currency: string
-  description: string
+  beneficiary: string;
+  amount: number;
+  currency: string;
+  description: string;
 }
 ```
 
@@ -522,32 +533,32 @@ export interface PaymentRequestFormData {
 
 ```typescript
 // modules/payment-requests/routes.ts
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw } from "vue-router";
 
 export const paymentRequestRoutes: RouteRecordRaw[] = [
   {
-    path: '/payments',
-    meta: { requiresAuth: true, feature: 'payment_requests' },
+    path: "/payments",
+    meta: { requiresAuth: true, feature: "payment_requests" },
     children: [
       {
-        path: '',
-        name: 'payments.list',
-        component: () => import('./pages/PaymentRequestListPage.vue'),
+        path: "",
+        name: "payments.list",
+        component: () => import("./pages/PaymentRequestListPage.vue"),
       },
       {
-        path: ':id',
-        name: 'payments.detail',
-        component: () => import('./pages/PaymentRequestDetailPage.vue'),
+        path: ":id",
+        name: "payments.detail",
+        component: () => import("./pages/PaymentRequestDetailPage.vue"),
         props: true,
       },
       {
-        path: 'create',
-        name: 'payments.create',
-        component: () => import('./pages/PaymentRequestCreatePage.vue'),
+        path: "create",
+        name: "payments.create",
+        component: () => import("./pages/PaymentRequestCreatePage.vue"),
       },
     ],
   },
-]
+];
 ```
 
 ---
@@ -559,20 +570,20 @@ Pages are thin — they compose components and call composables.
 ```vue
 <!-- modules/payment-requests/pages/PaymentRequestListPage.vue -->
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { usePaymentRequests } from '../composables/usePaymentRequests'
-import PaymentRequestList from '../components/PaymentRequestList.vue'
-import type { PaymentRequestViewModel } from '../types/view.types'
+import { useRouter } from "vue-router";
+import { usePaymentRequests } from "../composables/usePaymentRequests";
+import PaymentRequestList from "../components/PaymentRequestList.vue";
+import type { PaymentRequestViewModel } from "../types/view.types";
 
-const router = useRouter()
-const { requests, isLoading, error, refresh } = usePaymentRequests()
+const router = useRouter();
+const { requests, isLoading, error, refresh } = usePaymentRequests();
 
 function handleSelect(request: PaymentRequestViewModel) {
-  router.push({ name: 'payments.detail', params: { id: request.id } })
+  router.push({ name: "payments.detail", params: { id: request.id } });
 }
 
 function handleCreate() {
-  router.push({ name: 'payments.create' })
+  router.push({ name: "payments.create" });
 }
 </script>
 
@@ -604,53 +615,53 @@ function handleCreate() {
 ```typescript
 // core/domain/money.ts
 export enum Currency {
-  ETB = 'ETB',
-  USD = 'USD',
-  EUR = 'EUR',
+  ETB = "ETB",
+  USD = "USD",
+  EUR = "EUR",
 }
 
 export class Money {
   private constructor(
     public readonly amount: number,
-    public readonly currency: Currency | string
+    public readonly currency: Currency | string,
   ) {}
 
   static from(amount: number, currency: Currency | string): Money {
-    return new Money(amount, currency)
+    return new Money(amount, currency);
   }
 
   static zero(currency: Currency | string): Money {
-    return new Money(0, currency)
+    return new Money(0, currency);
   }
 
-  format(locale: string = 'en-ET'): string {
+  format(locale: string = "en-ET"): string {
     return new Intl.NumberFormat(locale, {
-      style: 'currency',
+      style: "currency",
       currency: String(this.currency),
       minimumFractionDigits: 2,
-    }).format(this.amount)
+    }).format(this.amount);
   }
 
   add(other: Money): Money {
     if (this.currency !== other.currency) {
-      throw new Error(`Cannot add ${this.currency} and ${other.currency}`)
+      throw new Error(`Cannot add ${this.currency} and ${other.currency}`);
     }
-    return new Money(this.amount + other.amount, this.currency)
+    return new Money(this.amount + other.amount, this.currency);
   }
 
   subtract(other: Money): Money {
     if (this.currency !== other.currency) {
-      throw new Error(`Cannot subtract ${this.currency} and ${other.currency}`)
+      throw new Error(`Cannot subtract ${this.currency} and ${other.currency}`);
     }
-    return new Money(this.amount - other.amount, this.currency)
+    return new Money(this.amount - other.amount, this.currency);
   }
 
   isZero(): boolean {
-    return this.amount === 0
+    return this.amount === 0;
   }
 
   isPositive(): boolean {
-    return this.amount > 0
+    return this.amount > 0;
   }
 }
 ```
@@ -661,58 +672,52 @@ export class Money {
 
 ```typescript
 // core/event-bus/event-bus.ts
-import type { Money } from '@/core/domain/money'
+import type { Money } from "@/core/domain/money";
 
 export type EventMap = {
-  'payment-request:submitted': { id: string }
-  'payment-request:approved': { id: string }
-  'payment-request:rejected': { id: string; reason: string }
-  'payment-request:paid': { id: string; amount: Money }
-  'journal-entry:posted': { id: string; entryNumber: string }
-  'journal-entry:voided': { id: string }
-  'tenant:switched': { tenantId: string }
-  'tenant:feature-toggled': { feature: string; enabled: boolean }
-  'auth:logged-out': Record<string, never>
-}
+  "payment-request:submitted": { id: string };
+  "payment-request:approved": { id: string };
+  "payment-request:rejected": { id: string; reason: string };
+  "payment-request:paid": { id: string; amount: Money };
+  "journal-entry:posted": { id: string; entryNumber: string };
+  "journal-entry:voided": { id: string };
+  "tenant:switched": { tenantId: string };
+  "tenant:feature-toggled": { feature: string; enabled: boolean };
+  "auth:logged-out": Record<string, never>;
+};
 
-type EventHandler<T> = (payload: T) => void
+type EventHandler<T> = (payload: T) => void;
 
 class TypedEventBus {
-  private listeners = new Map<string, Set<Function>>()
+  private listeners = new Map<string, Set<Function>>();
 
   emit<K extends keyof EventMap>(event: K, payload: EventMap[K]): void {
-    const handlers = this.listeners.get(event as string)
+    const handlers = this.listeners.get(event as string);
     if (handlers) {
-      handlers.forEach(handler => handler(payload))
+      handlers.forEach((handler) => handler(payload));
     }
   }
 
-  on<K extends keyof EventMap>(
-    event: K,
-    handler: EventHandler<EventMap[K]>
-  ): () => void {
+  on<K extends keyof EventMap>(event: K, handler: EventHandler<EventMap[K]>): () => void {
     if (!this.listeners.has(event as string)) {
-      this.listeners.set(event as string, new Set())
+      this.listeners.set(event as string, new Set());
     }
-    this.listeners.get(event as string)!.add(handler)
+    this.listeners.get(event as string)!.add(handler);
 
     // Return unsubscribe function
-    return () => this.off(event, handler)
+    return () => this.off(event, handler);
   }
 
-  off<K extends keyof EventMap>(
-    event: K,
-    handler: EventHandler<EventMap[K]>
-  ): void {
-    this.listeners.get(event as string)?.delete(handler)
+  off<K extends keyof EventMap>(event: K, handler: EventHandler<EventMap[K]>): void {
+    this.listeners.get(event as string)?.delete(handler);
   }
 
   clear(): void {
-    this.listeners.clear()
+    this.listeners.clear();
   }
 }
 
-export const eventBus = new TypedEventBus()
+export const eventBus = new TypedEventBus();
 ```
 
 ---
@@ -721,70 +726,70 @@ export const eventBus = new TypedEventBus()
 
 ```typescript
 // modules/payment-requests/mappers/__tests__/payment-request.mapper.test.ts
-import { describe, it, expect } from 'vitest'
-import { toViewModel } from '../payment-request.mapper'
-import type { PaymentRequestDTO } from '../../types/api.types'
+import { describe, it, expect } from "vitest";
+import { toViewModel } from "../payment-request.mapper";
+import type { PaymentRequestDTO } from "../../types/api.types";
 
 const baseDTO: PaymentRequestDTO = {
-  id: '550e8400-e29b-41d4-a716-446655440000',
-  beneficiary_name: 'Acme Corp',
-  amount: 15000.50,
-  currency: 'ETB',
-  status: 'DRAFT',
-  description: 'Office supplies',
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  beneficiary_name: "Acme Corp",
+  amount: 15000.5,
+  currency: "ETB",
+  status: "DRAFT",
+  description: "Office supplies",
   bank_account_id: null,
   submitted_at: null,
   paid_at: null,
   current_approval_step: 0,
   assigned_approver_id: null,
-}
+};
 
-describe('PaymentRequest Mapper', () => {
-  it('maps beneficiary_name to beneficiary', () => {
-    const vm = toViewModel(baseDTO)
-    expect(vm.beneficiary).toBe('Acme Corp')
-  })
+describe("PaymentRequest Mapper", () => {
+  it("maps beneficiary_name to beneficiary", () => {
+    const vm = toViewModel(baseDTO);
+    expect(vm.beneficiary).toBe("Acme Corp");
+  });
 
-  it('wraps amount in Money value object', () => {
-    const vm = toViewModel(baseDTO)
-    expect(vm.amount.amount).toBe(15000.50)
-    expect(vm.amount.format()).toContain('15,000.50')
-  })
+  it("wraps amount in Money value object", () => {
+    const vm = toViewModel(baseDTO);
+    expect(vm.amount.amount).toBe(15000.5);
+    expect(vm.amount.format()).toContain("15,000.50");
+  });
 
-  it('derives canSubmit=true for DRAFT', () => {
-    const vm = toViewModel(baseDTO)
-    expect(vm.canSubmit).toBe(true)
-    expect(vm.canApprove).toBe(false)
-    expect(vm.canPay).toBe(false)
-  })
+  it("derives canSubmit=true for DRAFT", () => {
+    const vm = toViewModel(baseDTO);
+    expect(vm.canSubmit).toBe(true);
+    expect(vm.canApprove).toBe(false);
+    expect(vm.canPay).toBe(false);
+  });
 
-  it('derives canApprove=true for SUBMITTED', () => {
-    const vm = toViewModel({ ...baseDTO, status: 'SUBMITTED' })
-    expect(vm.canApprove).toBe(true)
-    expect(vm.canSubmit).toBe(false)
-  })
+  it("derives canApprove=true for SUBMITTED", () => {
+    const vm = toViewModel({ ...baseDTO, status: "SUBMITTED" });
+    expect(vm.canApprove).toBe(true);
+    expect(vm.canSubmit).toBe(false);
+  });
 
-  it('derives canPay=true for APPROVED', () => {
-    const vm = toViewModel({ ...baseDTO, status: 'APPROVED' })
-    expect(vm.canPay).toBe(true)
-    expect(vm.canApprove).toBe(false)
-  })
+  it("derives canPay=true for APPROVED", () => {
+    const vm = toViewModel({ ...baseDTO, status: "APPROVED" });
+    expect(vm.canPay).toBe(true);
+    expect(vm.canApprove).toBe(false);
+  });
 
-  it('formats submittedAt when present', () => {
+  it("formats submittedAt when present", () => {
     const vm = toViewModel({
       ...baseDTO,
-      status: 'SUBMITTED',
-      submitted_at: '2026-03-20T15:30:00Z',
-    })
-    expect(vm.submittedAt).toBeTruthy()
-    expect(vm.submittedAt).not.toBe('2026-03-20T15:30:00Z') // Should be formatted
-  })
+      status: "SUBMITTED",
+      submitted_at: "2026-03-20T15:30:00Z",
+    });
+    expect(vm.submittedAt).toBeTruthy();
+    expect(vm.submittedAt).not.toBe("2026-03-20T15:30:00Z"); // Should be formatted
+  });
 
-  it('leaves submittedAt null when not set', () => {
-    const vm = toViewModel(baseDTO)
-    expect(vm.submittedAt).toBeNull()
-  })
-})
+  it("leaves submittedAt null when not set", () => {
+    const vm = toViewModel(baseDTO);
+    expect(vm.submittedAt).toBeNull();
+  });
+});
 ```
 
 ---
@@ -795,17 +800,17 @@ Always use these path aliases:
 
 ```typescript
 // ✅ Correct imports
-import { Money } from '@/core/domain/money'
-import { httpClient } from '@/core/api/http-client'
-import { eventBus } from '@/core/event-bus/event-bus'
-import { useAuthStore } from '@/core/auth/auth.store'
+import { Money } from "@/core/domain/money";
+import { httpClient } from "@/core/api/http-client";
+import { eventBus } from "@/core/event-bus/event-bus";
+import { useAuthStore } from "@/core/auth/auth.store";
 
 // ✅ Module-internal (relative)
-import { usePaymentRequestStore } from '../stores/payment-requests.store'
-import { toViewModel } from '../mappers/payment-request.mapper'
+import { usePaymentRequestStore } from "../stores/payment-requests.store";
+import { toViewModel } from "../mappers/payment-request.mapper";
 
 // ❌ BANNED: Cross-module imports
-import { useAccountingStore } from '@/modules/accounting/stores/accounting.store'
+import { useAccountingStore } from "@/modules/accounting/stores/accounting.store";
 ```
 
 ---

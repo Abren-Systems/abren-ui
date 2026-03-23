@@ -8,14 +8,14 @@
 
 Each backend module has a 1:1 frontend counterpart:
 
-| Module | Category | Sub-Path | Description |
-|---|---|---|---|
-| `core` | Platform | `platform/core` | Identity, Tenants, RBAC |
-| `workflows` | Platform | `platform/workflows` | State Machine, Engine |
-| `ledger` | Business | `business/finance/ledger` | Chart of Accounts, G/L |
-| `bank` | Business | `business/finance/bank` | Cash Management, Reconciliation |
-| `ap` | Business | `business/finance/ap` | Accounts Payable, Payments |
-| `reporting` | Platform | `platform/reporting` | Cross-domain analytics |
+| Module      | Category | Sub-Path                  | Description                     |
+| ----------- | -------- | ------------------------- | ------------------------------- |
+| `core`      | Platform | `platform/core`           | Identity, Tenants, RBAC         |
+| `workflows` | Platform | `platform/workflows`      | State Machine, Engine           |
+| `ledger`    | Business | `business/finance/ledger` | Chart of Accounts, G/L          |
+| `bank`      | Business | `business/finance/bank`   | Cash Management, Reconciliation |
+| `ap`        | Business | `business/finance/ap`     | Accounts Payable, Payments      |
+| `reporting` | Platform | `platform/reporting`      | Cross-domain analytics          |
 
 ---
 
@@ -48,22 +48,25 @@ src/modules/{category}/{module}/
 ## 3. Naming Conventions
 
 ### Files
-| Type | Pattern | Example |
-|---|---|---|
-| Adapter | `{module}_adapter.ts` | `ledger_adapter.ts` |
-| Mapper | `{entity}.mapper.ts` | `account.mapper.ts` |
-| Composable | `use{Action}.ts` | `useLedgerAccounts.ts` |
-| Types | `{entity}.types.ts` | `account.types.ts` |
-| Formatter | `{entity}-formatter.ts`| `account-formatter.ts` |
-| Routes | `routes.ts` | — |
-| Entry | `index.ts` | — |
+
+| Type       | Pattern                 | Example                |
+| ---------- | ----------------------- | ---------------------- |
+| Adapter    | `{module}_adapter.ts`   | `ledger_adapter.ts`    |
+| Mapper     | `{entity}.mapper.ts`    | `account.mapper.ts`    |
+| Composable | `use{Action}.ts`        | `useLedgerAccounts.ts` |
+| Types      | `{entity}.types.ts`     | `account.types.ts`     |
+| Formatter  | `{entity}-formatter.ts` | `account-formatter.ts` |
+| Routes     | `routes.ts`             | —                      |
+| Entry      | `index.ts`              | —                      |
 
 ### Data Types
+
 - **DTOs**: Raw as-received-from-server types (from `generated.types.ts`).
 - **Domain Types**: Clean, reactive frontend-owned interfaces.
 - **View Models**: UI-specific derivations (colors, labels, permissions).
 
 ### Composable Naming (Action Alignment)
+
 Composable names mirror the backend's action-oriented API endpoints:
 
 ```
@@ -81,18 +84,19 @@ Backend: GET  /accounts                   →  useAccountList()
 
 ```typescript
 // ✅ ALLOWED: Module imports from core
-import { Money } from '@/core/domain/money'
-import { httpClient } from '@/core/api/http-client'
+import { Money } from "@/core/domain/money";
+import { httpClient } from "@/core/api/http-client";
 
 // ✅ ALLOWED: Module imports from itself
-import { useLedgerAccounts } from '../application/composables/useLedgerAccounts'
-import { mapAccount } from '../infrastructure/ledger.mapper'
+import { useLedgerAccounts } from "../application/composables/useLedgerAccounts";
+import { mapAccount } from "../infrastructure/ledger.mapper";
 
 // ❌ BANNED: Module imports from another module
-import { usePaymentStore } from '@/modules/business/finance/ap/payment-requests/...'
+import { usePaymentStore } from "@/modules/business/finance/ap/payment-requests/...";
 ```
 
 ### 4.2 ESLint Rule Configuration
+
 ```javascript
 // eslint.config.js
 {
@@ -131,42 +135,40 @@ Each module exports a `ModuleDefinition` that includes its routes, permissions, 
 
 ```typescript
 // modules/business/finance/ledger/index.ts
-import type { ModuleDefinition } from '@/core/types/module.types'
+import type { ModuleDefinition } from "@/core/types/module.types";
 
 export const ledgerModule: ModuleDefinition = {
-  id: 'ledger',
-  name: 'General Ledger',
-  category: 'business',
-  routes: () => import('./routes').then(m => m.default),
-  permissions: ['ledger.view', 'ledger.edit'],
-  menuItems: [
-    { label: 'Chart of Accounts', route: 'LedgerCoa', icon: 'book-open' },
-  ],
-}
+  id: "ledger",
+  name: "General Ledger",
+  category: "business",
+  routes: () => import("./routes").then((m) => m.default),
+  permissions: ["ledger.view", "ledger.edit"],
+  menuItems: [{ label: "Chart of Accounts", route: "LedgerCoa", icon: "book-open" }],
+};
 ```
 
 The central `app/router/index.ts` aggregates all module definitions dynamically:
 
 ```typescript
 // app/router/index.ts
-import { modules } from '@/modules'
+import { modules } from "@/modules";
 
 const router = createRouter({
   routes: [
     {
-      path: '/app',
+      path: "/app",
       component: AuthenticatedLayout,
       beforeEnter: [requiresAuth],
       children: [], // Populated dynamically from module definitions
     },
   ],
-})
+});
 
 // Register module routes dynamically
 for (const mod of modules) {
-  mod.routes().then(routes => {
-    routes.forEach(route => router.addRoute('app', route))
-  })
+  mod.routes().then((routes) => {
+    routes.forEach((route) => router.addRoute("app", route));
+  });
 }
 ```
 

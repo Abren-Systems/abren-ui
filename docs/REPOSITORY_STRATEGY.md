@@ -47,14 +47,14 @@ abren-erp/                           # Parent directory (NOT a git repo)
 
 ## 2. Why Sibling Repos (Not Monorepo or Polyrepo)
 
-| Criterion | Monorepo | Polyrepo | **Sibling Repos** ✅ |
-|---|---|---|---|
-| **Tooling complexity** | Mixed Python + Node in one CI | Totally separate | Separate CI, but projects are nearby |
-| **Atomic commits** | ✅ Cross-stack changes in one commit | ❌ Requires coordination | ❌ Same trade-off, but locality helps |
-| **Type safety** | ✅ Shared types directly | ❌ Manual sync, drift risk | ✅ OpenAPI codegen bridges the gap |
-| **IDE experience** | Mixed language noise | Clean per-project | ✅ Open both as workspace roots |
-| **Independent deploys** | Requires careful CI config | ✅ Natural | ✅ Natural |
-| **Solo developer ergonomics** | Overhead from monorepo tooling | Projects feel disconnected | ✅ Side-by-side, no tooling overhead |
+| Criterion                     | Monorepo                             | Polyrepo                   | **Sibling Repos** ✅                  |
+| ----------------------------- | ------------------------------------ | -------------------------- | ------------------------------------- |
+| **Tooling complexity**        | Mixed Python + Node in one CI        | Totally separate           | Separate CI, but projects are nearby  |
+| **Atomic commits**            | ✅ Cross-stack changes in one commit | ❌ Requires coordination   | ❌ Same trade-off, but locality helps |
+| **Type safety**               | ✅ Shared types directly             | ❌ Manual sync, drift risk | ✅ OpenAPI codegen bridges the gap    |
+| **IDE experience**            | Mixed language noise                 | Clean per-project          | ✅ Open both as workspace roots       |
+| **Independent deploys**       | Requires careful CI config           | ✅ Natural                 | ✅ Natural                            |
+| **Solo developer ergonomics** | Overhead from monorepo tooling       | Projects feel disconnected | ✅ Side-by-side, no tooling overhead  |
 
 ---
 
@@ -145,8 +145,8 @@ Open both projects as a multi-root workspace:
 {
   "folders": [
     { "path": "abren-erp-api", "name": "API (Backend)" },
-    { "path": "abren-erp-ui",  "name": "UI (Frontend)" }
-  ]
+    { "path": "abren-erp-ui", "name": "UI (Frontend)" },
+  ],
 }
 ```
 
@@ -154,13 +154,13 @@ Open both projects as a multi-root workspace:
 
 ## 5. Deployment Independence
 
-| Concern | Backend | Frontend |
-|---|---|---|
-| **Deploy target** | VPS / Container (Uvicorn) | CDN / Static hosting (Vercel, Netlify) |
-| **Build trigger** | Push to `main` on `abren-erp-api` | Push to `main` on `abren-erp-ui` |
-| **Release cycle** | Independent | Independent |
-| **Versioning** | SemVer (Python) | SemVer (npm) |
-| **API contract** | OpenAPI spec is the contract | Consumes the spec via codegen |
+| Concern           | Backend                           | Frontend                               |
+| ----------------- | --------------------------------- | -------------------------------------- |
+| **Deploy target** | VPS / Container (Uvicorn)         | CDN / Static hosting (Vercel, Netlify) |
+| **Build trigger** | Push to `main` on `abren-erp-api` | Push to `main` on `abren-erp-ui`       |
+| **Release cycle** | Independent                       | Independent                            |
+| **Versioning**    | SemVer (Python)                   | SemVer (npm)                           |
+| **API contract**  | OpenAPI spec is the contract      | Consumes the spec via codegen          |
 
 ### 5.1 Contract Stability Rule
 

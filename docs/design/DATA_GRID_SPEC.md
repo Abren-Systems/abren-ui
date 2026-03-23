@@ -23,9 +23,9 @@
 
 ## 1.2 Core Principles
 
-* **Virtualized rendering** (mandatory beyond ~100 rows)
-* **Column-driven architecture** (not row-driven)
-* **Stateful grid** (user preferences persist)
+- **Virtualized rendering** (mandatory beyond ~100 rows)
+- **Column-driven architecture** (not row-driven)
+- **Stateful grid** (user preferences persist)
 
 ---
 
@@ -35,13 +35,13 @@
 
 We adhere to the **3-tier density system** defined in `DESIGN_SYSTEM.md`. The grid defaults to **Compact** mode for ERP power users.
 
-| Metric | Compact (Default) | Comfortable | Touch |
-| --- | --- | --- | --- |
-| Row Height | 30px | 40px | 48px |
-| Header Height | 30px | 40px | 48px |
-| Cell Padding | 6px 8px | 8px 12px | 12px 16px |
-| Font Size | 12.5px | 13px | 14px |
-| Line Height | 1.3 | 1.4 | 1.5 |
+| Metric        | Compact (Default) | Comfortable | Touch     |
+| ------------- | ----------------- | ----------- | --------- |
+| Row Height    | 30px              | 40px        | 48px      |
+| Header Height | 30px              | 40px        | 48px      |
+| Cell Padding  | 6px 8px           | 8px 12px    | 12px 16px |
+| Font Size     | 12.5px            | 13px        | 14px      |
+| Line Height   | 1.3               | 1.4         | 1.5       |
 
 ---
 
@@ -103,9 +103,9 @@ Header border:    --color-grid-header-border
 
 ## 3.3 Text Rules
 
-* Left align → text
-* Right align → numbers
-* Center → status/icons
+- Left align → text
+- Right align → numbers
+- Center → status/icons
 
 ---
 
@@ -134,11 +134,11 @@ Each column must support:
 
 ## 4.2 Column Features (Mandatory)
 
-* Resize (drag edge)
-* Reorder (drag header)
-* Show/hide (column menu)
-* Pin left/right
-* Sort (single + multi)
+- Resize (drag edge)
+- Reorder (drag header)
+- Show/hide (column menu)
+- Pin left/right
+- Sort (single + multi)
 
 ---
 
@@ -146,16 +146,16 @@ Each column must support:
 
 ## 5.1 Keyboard Navigation
 
-| Key    | Action      |
-| ------ | ----------- |
-| ↑ ↓    | Move rows   |
-| ← →    | Move cells  |
-| TAB    | Next cell   |
-| ENTER  | Edit cell (or open Drawer) |
-| ESC    | Cancel edit |
+| Key         | Action                                                                        |
+| ----------- | ----------------------------------------------------------------------------- |
+| ↑ ↓         | Move rows                                                                     |
+| ← →         | Move cells                                                                    |
+| TAB         | Next cell                                                                     |
+| ENTER       | Edit cell (or open Drawer)                                                    |
+| ESC         | Cancel edit                                                                   |
 | ⌘K / Ctrl+K | **Command Palette** (Scopes immediately to bulk actions if rows are selected) |
-| CTRL+C | Copy        |
-| CTRL+V | Paste       |
+| CTRL+C      | Copy                                                                          |
+| CTRL+V      | Paste                                                                         |
 
 👉 This is non-negotiable for ERP usability. The **Command Palette (⌘K)** specifically must intercept standard typing to provide instant filtering or bulk action dispatching on selected rows.
 
@@ -163,10 +163,10 @@ Each column must support:
 
 ## 5.2 Mouse Interaction
 
-* Single click → select cell
-* Double click → edit
-* Drag → multi-select
-* Right click → context menu
+- Single click → select cell
+- Double click → edit
+- Drag → multi-select
+- Right click → context menu
 
 ---
 
@@ -176,15 +176,15 @@ Each column must support:
 
 ### Cell Mode (Fastest)
 
-* Edit one cell at a time directly inline.
-* Best for rapid data entry (e.g., updating statuses or amounts).
+- Edit one cell at a time directly inline.
+- Best for rapid data entry (e.g., updating statuses or amounts).
 
 ### Drawer Mode (Context-Preserving)
 
-* Slide-out panel from the right edge (40-50% width).
-* Best for complex records.
-* **Smart Buttons:** The top of the drawer should feature a row of `DataGridSmartButton` components displaying relational KPIs (e.g., "4 Invoices") that navigate and filter target grids on click.
-* **Never use full page reloads or center modals** for grid record editing, as they destroy the user's filtered background context.
+- Slide-out panel from the right edge (40-50% width).
+- Best for complex records.
+- **Smart Buttons:** The top of the drawer should feature a row of `DataGridSmartButton` components displaying relational KPIs (e.g., "4 Invoices") that navigate and filter target grids on click.
+- **Never use full page reloads or center modals** for grid record editing, as they destroy the user's filtered background context.
 
 ---
 
@@ -202,10 +202,10 @@ Each column must support:
 
 ## 6.3 Editing UX Rules
 
-* Enter → save + move down
-* Tab → save + move right
-* Immediate validation feedback
-* No full page reloads
+- Enter → save + move down
+- Tab → save + move right
+- Immediate validation feedback
+- No full page reloads
 
 ---
 
@@ -215,17 +215,16 @@ Each column must support:
 
 ### Global Search (Omni-bar)
 
-* Top toolbar
-* Functions as an **Omni-Search**: Parses structural intent (e.g., converting "Status: Active" into a hard column filter) alongside cross-column text matching.
+- Top toolbar
+- Functions as an **Omni-Search**: Parses structural intent (e.g., converting "Status: Active" into a hard column filter) alongside cross-column text matching.
 
 ### Column Filters
 
-* Per column
-* Type-specific:
-
-  * Text → contains
-  * Number → range
-  * Date → range
+- Per column
+- Type-specific:
+  - Text → contains
+  - Number → range
+  - Date → range
 
 ---
 
@@ -233,10 +232,10 @@ Each column must support:
 
 Users can save:
 
-* Filters
-* Column visibility
-* Sorting
-* Grouping
+- Filters
+- Column visibility
+- Sorting
+- Grouping
 
 👉 This is a **major ERP differentiator**
 
@@ -246,18 +245,18 @@ Users can save:
 
 ## 8.1 Selection
 
-* Checkbox column (left)
-* Shift-click range selection
-* “Select all” (with server awareness)
+- Checkbox column (left)
+- Shift-click range selection
+- “Select all” (with server awareness)
 
 ---
 
 ## 8.2 Bulk Actions
 
-* Delete
-* Update field
-* Export
-* Approve / Reject
+- Delete
+- Update field
+- Export
+- Approve / Reject
 
 ---
 
@@ -265,7 +264,7 @@ Users can save:
 
 ## 9.1 Loading
 
-* Skeleton rows (NOT spinner)
+- Skeleton rows (NOT spinner)
 
 ## 9.2 Empty
 
@@ -276,7 +275,7 @@ Users can save:
 
 ## 9.3 Error
 
-* Inline error row or banner
+- Inline error row or banner
 
 ---
 
@@ -284,8 +283,8 @@ Users can save:
 
 ## Required:
 
-* First column pinned (ID or name)
-* Optional right pin (actions)
+- First column pinned (ID or name)
+- Optional right pin (actions)
 
 ---
 
@@ -293,14 +292,14 @@ Users can save:
 
 ## Must Handle:
 
-* 10,000+ rows
-* 50+ columns
+- 10,000+ rows
+- 50+ columns
 
 ## Techniques:
 
-* Virtual scrolling
-* Memoized cells
-* Server-side filtering/sorting
+- Virtual scrolling
+- Memoized cells
+- Server-side filtering/sorting
 
 ---
 
@@ -308,9 +307,9 @@ Users can save:
 
 Optional but recommended:
 
-* Totals (sum, avg)
-* Record count
-* Pagination (if not infinite scroll)
+- Totals (sum, avg)
+- Record count
+- Pagination (if not infinite scroll)
 
 ---
 
@@ -318,30 +317,30 @@ Optional but recommended:
 
 ## Grouping
 
-* Group by column
-* Collapsible rows
+- Group by column
+- Collapsible rows
 
 ## Aggregations
 
-* Sum / Avg per group
+- Sum / Avg per group
 
 ## Inline Row Creation
 
-* “+ New Row” at top
+- “+ New Row” at top
 
 ## Audit Indicators
 
-* Edited cells highlighted
+- Edited cells highlighted
 
 ---
 
 # 14. 🎯 UX MICRO-DETAILS (THIS IS WHERE YOU WIN)
 
-* Hover delay: **0ms**
-* Resize feedback: live
-* Drag preview: subtle
-* No flicker on scroll
-* Preserve scroll position on update
+- Hover delay: **0ms**
+- Resize feedback: live
+- Drag preview: subtle
+- No flicker on scroll
+- Preserve scroll position on update
 
 ---
 
@@ -349,9 +348,9 @@ Optional but recommended:
 
 ## Recommended Stack
 
-* TanStack Table (core logic)
-* Vue 3 (Composition API)
-* Virtualizer (TanStack Virtual)
+- TanStack Table (core logic)
+- Vue 3 (Composition API)
+- Virtualizer (TanStack Virtual)
 
 ---
 
@@ -368,6 +367,7 @@ DataGrid/
 ├── Filters/
 ├── Editors/
 ```
+
 ---
 
 # 16. 📐 TYPESCRIPT CONTRACT
@@ -377,34 +377,34 @@ DataGrid/
 ```ts
 export interface GridColumnDef<TData> {
   /** Unique column id, maps to TanStack Table accessorKey */
-  id: string
-  accessorKey: keyof TData | string
-  label: string
+  id: string;
+  accessorKey: keyof TData | string;
+  label: string;
   /** Controls cell renderer + inline editor selection */
-  type: 'text' | 'number' | 'currency' | 'date' | 'status' | 'badge'
+  type: "text" | "number" | "currency" | "date" | "status" | "badge";
   /** Pixel width. Defaults per §2.2 */
-  width?: number
-  minWidth?: number
-  maxWidth?: number
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
   /** Text alignment override. Defaults: text→left, number/currency→right, status→center */
-  align?: 'left' | 'right' | 'center'
-  sortable?: boolean
-  filterable?: boolean
-  editable?: boolean
-  pinned?: 'left' | 'right'
+  align?: "left" | "right" | "center";
+  sortable?: boolean;
+  filterable?: boolean;
+  editable?: boolean;
+  pinned?: "left" | "right";
   /** Accessor for display value. If omitted, raw value is used. */
-  formatter?: (value: unknown, row: TData) => string
+  formatter?: (value: unknown, row: TData) => string;
   /** Short label for column menu; falls back to label */
-  headerTooltip?: string
+  headerTooltip?: string;
   /** If true, inline editor will require a non-empty value */
-  required?: boolean
+  required?: boolean;
 }
 ```
 
 ## 16.2 ColumnType → Renderer Mapping
 
 | type       | Cell Renderer          | Default Width | Alignment |
-|------------|------------------------|---------------|-----------|
+| ---------- | ---------------------- | ------------- | --------- |
 | `text`     | Plain span             | 180px         | left      |
 | `number`   | Locale-formatted span  | 100px         | right     |
 | `currency` | `Intl` money formatter | 120px         | right     |
@@ -421,20 +421,20 @@ The grid component is a **controlled component** — it emits state changes via 
 
 ```ts
 // In the page component:
-const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
+const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid();
 ```
 
 ## 17.1 useDataGrid() — Returns
 
-| Ref | Type | Purpose |
-|-----|------|---------|
-| `sorting` | `Ref<SortingState>` | TanStack sort state |
-| `rowSelection` | `Ref<RowSelectionState>` | Selected row IDs |
-| `columnVisibility` | `Ref<VisibilityState>` | Hidden column IDs |
-| `globalFilter` | `Ref<string>` | Search string |
-| `columnFilters` | `Ref<ColumnFiltersState>` | Per-column filter values |
-| `selectedCount()` | `() => number` | # of selected rows |
-| `resetAll()` | `() => void` | Clear all state |
+| Ref                | Type                      | Purpose                  |
+| ------------------ | ------------------------- | ------------------------ |
+| `sorting`          | `Ref<SortingState>`       | TanStack sort state      |
+| `rowSelection`     | `Ref<RowSelectionState>`  | Selected row IDs         |
+| `columnVisibility` | `Ref<VisibilityState>`    | Hidden column IDs        |
+| `globalFilter`     | `Ref<string>`             | Search string            |
+| `columnFilters`    | `Ref<ColumnFiltersState>` | Per-column filter values |
+| `selectedCount()`  | `() => number`            | # of selected rows       |
+| `resetAll()`       | `() => void`              | Clear all state          |
 
 ## 17.2 DataGrid Prop Bindings (v-model)
 
@@ -509,11 +509,11 @@ src/core/composables/
 
 ## Dirty State Rule
 
-If a row has unsaved changes and the user navigates away, show a confirmation dialog: *"You have unsaved changes. Discard?"*
+If a row has unsaved changes and the user navigates away, show a confirmation dialog: _"You have unsaved changes. Discard?"_
 
 ## OCC / Conflict Resolution
 
-Because the backend uses `version_id` (Optimistic Concurrency Control), a 409 Conflict response means another user saved. Show: *"This record was updated by another user. Reload to see the latest version."*
+Because the backend uses `version_id` (Optimistic Concurrency Control), a 409 Conflict response means another user saved. Show: _"This record was updated by another user. Reload to see the latest version."_
 
 ---
 
@@ -523,14 +523,14 @@ Because the backend uses `version_id` (Optimistic Concurrency Control), a 409 Co
 
 ```ts
 interface GridView {
-  id: string
-  name: string
-  userId: string       // personal, or null for shared
-  tenantId: string
-  filters: ColumnFiltersState
-  sorting: SortingState
-  columnVisibility: VisibilityState
-  globalFilter: string
+  id: string;
+  name: string;
+  userId: string; // personal, or null for shared
+  tenantId: string;
+  filters: ColumnFiltersState;
+  sorting: SortingState;
+  columnVisibility: VisibilityState;
+  globalFilter: string;
 }
 ```
 
@@ -545,13 +545,13 @@ interface GridView {
 
 Triggered by right-click on a data row.
 
-| Action | Condition |
-|--------|-----------|
-| Copy row | Always |
-| Copy cell | Always |
-| Open in new tab | If row has a detail route |
-| Edit | If row is editable |
-| Delete | If user has delete permission |
+| Action          | Condition                     |
+| --------------- | ----------------------------- |
+| Copy row        | Always                        |
+| Copy cell       | Always                        |
+| Open in new tab | If row has a detail route     |
+| Edit            | If row is editable            |
+| Delete          | If user has delete permission |
 
 Implementation: Radix Vue `ContextMenu` primitive.
 
@@ -568,13 +568,13 @@ Implementation: Radix Vue `ContextMenu` primitive.
 
 # 23. ♿ ACCESSIBILITY (a11y)
 
-| Element | ARIA attribute |
-|---------|---------------|
-| `<table>` | `role="grid"` |
-| Sortable `<th>` | `aria-sort="ascending | descending | none"` |
-| Selected row `<tr>` | `aria-selected="true"` |
-| Skeleton `<tbody>` | `aria-busy="true"`, `aria-label="Loading data"` |
-| Toolbar search | `aria-label="Search records"` |
+| Element             | ARIA attribute                                  |
+| ------------------- | ----------------------------------------------- | ---------- | ------ |
+| `<table>`           | `role="grid"`                                   |
+| Sortable `<th>`     | `aria-sort="ascending                           | descending | none"` |
+| Selected row `<tr>` | `aria-selected="true"`                          |
+| Skeleton `<tbody>`  | `aria-busy="true"`, `aria-label="Loading data"` |
+| Toolbar search      | `aria-label="Search records"`                   |
 
 ---
 
@@ -582,8 +582,8 @@ Implementation: Radix Vue `ContextMenu` primitive.
 
 The DataGrid is a **desktop-first ERP component**. On narrow viewports:
 
-| Breakpoint | Behavior |
-|------------|----------|
-| `≥ 1024px` | Full grid |
+| Breakpoint   | Behavior                                                 |
+| ------------ | -------------------------------------------------------- |
+| `≥ 1024px`   | Full grid                                                |
 | `768–1023px` | Hide pinned-right columns, collapse actions to icon-only |
-| `< 768px` | Show card list view (not a table) — Phase 3 |
+| `< 768px`    | Show card list view (not a table) — Phase 3              |

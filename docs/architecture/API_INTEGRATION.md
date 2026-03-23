@@ -8,17 +8,18 @@
 ## 1. Architecture Overview
 
     ↓  HTTP (JSON Response)
+
 ┌─────────────────────────────────────────────────────┐
-│  Core HTTP Client (core/api/)                       │ ← Response Envelope Unwrap
+│ Core HTTP Client (core/api/) │ ← Response Envelope Unwrap
 ├─────────────────────────────────────────────────────┤
-│  Adapter (infrastructure/{m}.adapter.ts)            │ ← Fetches **DTOs** from API
+│ Adapter (infrastructure/{m}.adapter.ts) │ ← Fetches **DTOs** from API
 ├─────────────────────────────────────────────────────┤
-│  Mapper (infrastructure/{m}.mapper.ts)              │ ← Converts **DTO** → **Domain Type**
+│ Mapper (infrastructure/{m}.mapper.ts) │ ← Converts **DTO** → **Domain Type**
 ├─────────────────────────────────────────────────────┤
-│  Application (application/composables/use*.ts)      │ ← Orchestrates via **TanStack Query**
+│ Application (application/composables/use\*.ts) │ ← Orchestrates via **TanStack Query**
 └─────────────────────────────────────────────────────┘
-             ↓
-    Vue components (SFC)
+↓
+Vue components (SFC)
 
 ---
 
@@ -30,39 +31,39 @@ All modules share a single Axios instance configured with interceptors for authe
 
 ```typescript
 // core/api/http-client.ts
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { useAuthStore } from '@/core/auth/auth.store'
-import { generateIdempotencyKey } from '@/core/composables/useIdempotencyKey'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import { useAuthStore } from "@/core/auth/auth.store";
+import { generateIdempotencyKey } from "@/core/composables/useIdempotencyKey";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const httpClient: AxiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
   timeout: 15000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-})
+});
 
 // ── Request Interceptors ─────────────────────────────────
 
 // 1. Auth: Attach Bearer token
 httpClient.interceptors.request.use((config) => {
-  const authStore = useAuthStore()
+  const authStore = useAuthStore();
   if (authStore.token) {
-    config.headers.Authorization = `Bearer ${authStore.token}`
+    config.headers.Authorization = `Bearer ${authStore.token}`;
   }
-  return config
-})
+  return config;
+});
 
 // 2. Idempotency: Attach key for mutating requests
 httpClient.interceptors.request.use((config) => {
-  const mutatingMethods = ['post', 'put', 'patch']
-  if (mutatingMethods.includes(config.method?.toLowerCase() ?? '')) {
-    config.headers['Idempotency-Key'] = generateIdempotencyKey()
+  const mutatingMethods = ["post", "put", "patch"];
+  if (mutatingMethods.includes(config.method?.toLowerCase() ?? "")) {
+    config.headers["Idempotency-Key"] = generateIdempotencyKey();
   }
-  return config
-})
+  return config;
+});
 
 // ── Response Interceptors ────────────────────────────────
 
@@ -71,21 +72,21 @@ httpClient.interceptors.response.use(
   (response) => {
     // Backend wraps all responses: { success: true, data: ... }
     if (response.data?.success !== undefined) {
-      return response.data.data
+      return response.data.data;
     }
-    return response.data
+    return response.data;
   },
   (error) => {
     // Backend wraps errors: { success: false, detail: "...", code: "..." }
     if (error.response?.data) {
-      const { detail, code } = error.response.data
-      throw new ApiError(detail, code, error.response.status)
+      const { detail, code } = error.response.data;
+      throw new ApiError(detail, code, error.response.status);
     }
-    throw error
-  }
-)
+    throw error;
+  },
+);
 
-export { httpClient }
+export { httpClient };
 ```
 
 ### 2.2 Error Types
@@ -96,31 +97,31 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly status: number
+    public readonly status: number,
   ) {
-    super(message)
-    this.name = 'ApiError'
+    super(message);
+    this.name = "ApiError";
   }
 }
 
 // Backend response envelope types
 export interface ApiResponse<T> {
-  success: true
-  data: T
-  meta: Record<string, unknown> | null
+  success: true;
+  data: T;
+  meta: Record<string, unknown> | null;
 }
 
 export interface ApiErrorResponse {
-  success: false
-  detail: string
-  code: string
+  success: false;
+  detail: string;
+  code: string;
 }
 
 export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  page_size: number
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 ```
 
@@ -132,51 +133,52 @@ Each module has a typed API client that wraps the shared HTTP client with module
 
 // modules/business/finance/ap/payment-requests/infrastructure/payment_request_adapter.ts
 import { httpClient } from '@/core/api/http-client'
-import type { 
-  PaymentRequestRead, 
-  PaymentRequestCreate, 
-  PaymentRequestUpdate 
+import type {
+PaymentRequestRead,
+PaymentRequestCreate,
+PaymentRequestUpdate
 } from '@/core/api/generated.types'
 
 const BASE = '/payment-requests'
 
 export const paymentRequestAdapter = {
-  // GET /api/v1/payment-requests
-  async list(): Promise<PaymentRequestRead[]> {
-    return httpClient.get(BASE)
-  },
+// GET /api/v1/payment-requests
+async list(): Promise<PaymentRequestRead[]> {
+return httpClient.get(BASE)
+},
 
-  // GET /api/v1/payment-requests/:id
-  async get(id: string): Promise<PaymentRequestRead> {
-    return httpClient.get(`${BASE}/${id}`)
-  },
+// GET /api/v1/payment-requests/:id
+async get(id: string): Promise<PaymentRequestRead> {
+return httpClient.get(`${BASE}/${id}`)
+},
 
-  // POST /api/v1/payment-requests
-  async create(dto: PaymentRequestCreateDTO): Promise<PaymentRequestDTO> {
-    return httpClient.post(BASE, dto)
-  },
+// POST /api/v1/payment-requests
+async create(dto: PaymentRequestCreateDTO): Promise<PaymentRequestDTO> {
+return httpClient.post(BASE, dto)
+},
 
-  // POST /api/v1/payment-requests/:id/submit
-  async submit(id: string): Promise<PaymentRequestDTO> {
-    return httpClient.post(`${BASE}/${id}/submit`)
-  },
+// POST /api/v1/payment-requests/:id/submit
+async submit(id: string): Promise<PaymentRequestDTO> {
+return httpClient.post(`${BASE}/${id}/submit`)
+},
 
-  // POST /api/v1/payment-requests/:id/approve
-  async approve(id: string): Promise<PaymentRequestDTO> {
-    return httpClient.post(`${BASE}/${id}/approve`)
-  },
+// POST /api/v1/payment-requests/:id/approve
+async approve(id: string): Promise<PaymentRequestDTO> {
+return httpClient.post(`${BASE}/${id}/approve`)
+},
 
-  // POST /api/v1/payment-requests/:id/reject
-  async reject(id: string, reason: string): Promise<PaymentRequestDTO> {
-    return httpClient.post(`${BASE}/${id}/reject`, { reason })
-  },
+// POST /api/v1/payment-requests/:id/reject
+async reject(id: string, reason: string): Promise<PaymentRequestDTO> {
+return httpClient.post(`${BASE}/${id}/reject`, { reason })
+},
 
-  // POST /api/v1/payment-requests/:id/pay
-  async pay(id: string, dto: PaymentRequestPayDTO): Promise<PaymentRequestDTO> {
-    return httpClient.post(`${BASE}/${id}/pay`, dto)
-  },
+// POST /api/v1/payment-requests/:id/pay
+async pay(id: string, dto: PaymentRequestPayDTO): Promise<PaymentRequestDTO> {
+return httpClient.post(`${BASE}/${id}/pay`, dto)
+},
 }
-```
+
+````
 
 ### 3.2 Rules
 - **One API client per module**. No shared "mega API" file.
@@ -222,26 +224,26 @@ export function useApiMutation<TData, TVariables>(
     },
   })
 }
-```
+````
 
 **Usage in a module composable:**
 
 ```typescript
 // modules/business/finance/ap/payment-requests/application/composables/usePaymentRequests.ts
-import { useQuery } from '@tanstack/vue-query'
-import { paymentRequestAdapter } from '../infrastructure/payment_request_adapter'
-import { mapPaymentRequest } from '../infrastructure/payment_request.mapper'
+import { useQuery } from "@tanstack/vue-query";
+import { paymentRequestAdapter } from "../infrastructure/payment_request_adapter";
+import { mapPaymentRequest } from "../infrastructure/payment_request.mapper";
 
 export function usePaymentRequests() {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['payment-requests'],
+    queryKey: ["payment-requests"],
     queryFn: async () => {
-      const dtos = await paymentRequestAdapter.list()
-      return dtos.map(mapPaymentRequest)
+      const dtos = await paymentRequestAdapter.list();
+      return dtos.map(mapPaymentRequest);
     },
-  })
+  });
 
-  return { requests: data, isLoading, error }
+  return { requests: data, isLoading, error };
 }
 ```
 
@@ -250,7 +252,9 @@ export function usePaymentRequests() {
 ## 4. Anti-Corruption Layer (Mappers)
 
 ### 4.1 Purpose
+
 Mappers are the **firewall** between backend DTOs and frontend ViewModels. They ensure:
+
 1. Backend field renames only propagate to the mapper file, not to 50+ components.
 2. UI-specific computed values (colors, labels, permissions) are derived here.
 3. Data shape is optimized for rendering, not for database normalization.
@@ -260,32 +264,32 @@ Mappers are the **firewall** between backend DTOs and frontend ViewModels. They 
 ```typescript
 // modules/payment-requests/types/api.types.ts (from OpenAPI codegen)
 export interface PaymentRequestDTO {
-  id: string
-  beneficiary_name: string
-  amount: number
-  currency: string
-  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PAID'
-  bank_account_id: string | null
-  submitted_at: string | null
-  paid_at: string | null
-  current_approval_step: number
-  assigned_approver_id: string | null
+  id: string;
+  beneficiary_name: string;
+  amount: number;
+  currency: string;
+  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "PAID";
+  bank_account_id: string | null;
+  submitted_at: string | null;
+  paid_at: string | null;
+  current_approval_step: number;
+  assigned_approver_id: string | null;
 }
 
 // modules/payment-requests/types/view.types.ts
 export interface PaymentRequestViewModel {
-  id: string
-  beneficiary: string           // renamed for UI clarity
-  amount: Money                  // Value Object, not raw number
-  status: PaymentRequestStatus
-  statusLabel: string            // "Draft", "Pending Approval", etc.
-  statusColor: string            // CSS class for badge color
-  canSubmit: boolean             // Derived permission
-  canApprove: boolean            // Derived permission
-  canReject: boolean             // Derived permission
-  canPay: boolean                // Derived permission
-  submittedAt: string | null     // Formatted date string
-  paidAt: string | null          // Formatted date string
+  id: string;
+  beneficiary: string; // renamed for UI clarity
+  amount: Money; // Value Object, not raw number
+  status: PaymentRequestStatus;
+  statusLabel: string; // "Draft", "Pending Approval", etc.
+  statusColor: string; // CSS class for badge color
+  canSubmit: boolean; // Derived permission
+  canApprove: boolean; // Derived permission
+  canReject: boolean; // Derived permission
+  canPay: boolean; // Derived permission
+  submittedAt: string | null; // Formatted date string
+  paidAt: string | null; // Formatted date string
 }
 ```
 
@@ -333,12 +337,12 @@ npm install -D openapi-typescript
 
 ```typescript
 // The generated file provides all backend schemas
-import type { components } from '@/core/api/generated.types'
+import type { components } from "@/core/api/generated.types";
 
 // Reference specific DTOs
-type PaymentRequestDTO = components['schemas']['PaymentRequestDTO']
-type PaymentRequestCreateDTO = components['schemas']['PaymentRequestCreateDTO']
-type PaymentRequestPayDTO = components['schemas']['PaymentRequestPayDTO']
+type PaymentRequestDTO = components["schemas"]["PaymentRequestDTO"];
+type PaymentRequestCreateDTO = components["schemas"]["PaymentRequestCreateDTO"];
+type PaymentRequestPayDTO = components["schemas"]["PaymentRequestPayDTO"];
 ```
 
 > **Note:** Generated types go into `core/api/generated.types.ts`. Module-level `api.types.ts` files re-export relevant types for encapsulation. This way, if you switch from OpenAPI codegen to manual types later, only the re-export file changes.
@@ -355,15 +359,15 @@ API Call → Axios Error → ApiError class → Composable catch → Store error
 
 ### 6.2 Global vs Local Error Handling
 
-| Error Type | Handling | Example |
-|---|---|---|
-| `401 Unauthorized` | **Global**: Auto-redirect to login | Token expired |
-| `403 Forbidden` | **Global**: Show "access denied" toast | Feature not enabled |
-| `429 Too Many Requests` | **Global**: Show rate limit warning | Rapid API calls |
-| `404 Not Found` | **Local**: Module composable handles it | Entity deleted |
-| `422 Validation` | **Local**: Show field-level errors on form | Invalid form data |
-| `409 Conflict` | **Local**: Show conflict resolution UI | Optimistic concurrency violation |
-| `5xx Server Error` | **Global**: Show generic error banner | Backend down |
+| Error Type              | Handling                                   | Example                          |
+| ----------------------- | ------------------------------------------ | -------------------------------- |
+| `401 Unauthorized`      | **Global**: Auto-redirect to login         | Token expired                    |
+| `403 Forbidden`         | **Global**: Show "access denied" toast     | Feature not enabled              |
+| `429 Too Many Requests` | **Global**: Show rate limit warning        | Rapid API calls                  |
+| `404 Not Found`         | **Local**: Module composable handles it    | Entity deleted                   |
+| `422 Validation`        | **Local**: Show field-level errors on form | Invalid form data                |
+| `409 Conflict`          | **Local**: Show conflict resolution UI     | Optimistic concurrency violation |
+| `5xx Server Error`      | **Global**: Show generic error banner      | Backend down                     |
 
 ### 6.3 Global Error Interceptor
 
@@ -371,19 +375,19 @@ API Call → Axios Error → ApiError class → Composable catch → Store error
 // core/api/error-handler.ts
 httpClient.interceptors.response.use(null, (error) => {
   if (error.response?.status === 401) {
-    const authStore = useAuthStore()
-    authStore.$reset()
-    router.push({ name: 'login' })
+    const authStore = useAuthStore();
+    authStore.$reset();
+    router.push({ name: "login" });
   }
 
   if (error.response?.status === 429) {
-    toast.warning('Rate limit reached. Please wait a moment.')
+    toast.warning("Rate limit reached. Please wait a moment.");
   }
 
   if (error.response?.status >= 500) {
-    toast.error('Server error. Please try again later.')
+    toast.error("Server error. Please try again later.");
   }
 
-  return Promise.reject(error)
-})
+  return Promise.reject(error);
+});
 ```

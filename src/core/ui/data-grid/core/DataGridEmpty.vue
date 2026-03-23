@@ -1,8 +1,8 @@
 <script setup lang="ts">
 defineProps<{
-  message?: string
-  colspan: number
-}>()
+  message?: string;
+  colspan: number;
+}>();
 </script>
 
 <template>
@@ -10,7 +10,7 @@ defineProps<{
     <td
       :colspan="colspan"
       class="h-40 text-center"
-      style="color: var(--color-grid-text-muted); font-size: 13px;"
+      style="color: var(--color-grid-text-muted); font-size: 13px"
     >
       <div class="flex flex-col items-center justify-center gap-3">
         <!-- Empty grid icon -->
@@ -23,12 +23,12 @@ defineProps<{
           stroke-width="1.2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          style="opacity: 0.35;"
+          style="opacity: 0.35"
         >
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M3 9h18M9 21V9" />
         </svg>
-        <span>{{ message ?? 'No records found' }}</span>
+        <span>{{ message ?? "No records found" }}</span>
         <!-- Optional create action slot -->
         <slot name="action" />
       </div>

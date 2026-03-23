@@ -1,23 +1,20 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    tailwindcss(),
-  ],
+  plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
+      "/api": {
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
@@ -25,15 +22,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-vue': ['vue', 'vue-router', 'pinia'],
-          'vendor-tanstack': [
-            '@tanstack/vue-query',
-            '@tanstack/vue-table',
-            '@tanstack/vue-virtual',
-          ],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+              return 'vendor-vue'
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-tanstack'
+            }
+          }
         },
       },
     },
   },
-})
+});

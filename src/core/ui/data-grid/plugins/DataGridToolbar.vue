@@ -1,34 +1,39 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { Search, X } from 'lucide-vue-next'
+import { ref, watch } from "vue";
+import { Search, X } from "lucide-vue-next";
 
 const props = defineProps<{
-  modelValue: string
-  placeholder?: string
-  loading?: boolean
-  selectedCount?: number
-}>()
+  modelValue: string;
+  placeholder?: string;
+  loading?: boolean;
+  selectedCount?: number;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-}>()
+  (e: "update:modelValue", value: string): void;
+}>();
 
 // Debounced search — avoids firing on every keystroke
-let debounceTimer: ReturnType<typeof setTimeout>
-const localValue = ref(props.modelValue)
+let debounceTimer: ReturnType<typeof setTimeout>;
+const localValue = ref(props.modelValue);
 
-watch(() => props.modelValue, (v) => { localValue.value = v })
+watch(
+  () => props.modelValue,
+  (v) => {
+    localValue.value = v;
+  },
+);
 
 function onInput(e: Event) {
-  const val = (e.target as HTMLInputElement).value
-  localValue.value = val
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => emit('update:modelValue', val), 200)
+  const val = (e.target as HTMLInputElement).value;
+  localValue.value = val;
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => emit("update:modelValue", val), 200);
 }
 
 function clear() {
-  localValue.value = ''
-  emit('update:modelValue', '')
+  localValue.value = "";
+  emit("update:modelValue", "");
 }
 </script>
 
@@ -119,7 +124,9 @@ function clear() {
   padding: 0;
   transition: color 0.12s;
 }
-.clear-btn:hover { color: var(--color-grid-text); }
+.clear-btn:hover {
+  color: var(--color-grid-text);
+}
 
 .selection-badge {
   font-size: 11px;

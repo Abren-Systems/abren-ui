@@ -1,38 +1,29 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from 'vue-router'
-import { businessModules, platformModules } from '@/modules'
-import type { BusinessDomain, PlatformEngine, MenuItem } from '@/core/types/module.types'
-import { Button } from '@/core/ui/button'
-import { 
-  LayoutDashboard, 
-  LogOut, 
-  ChevronRight,
-  Library,
-  Cpu,
-  Settings
-} from 'lucide-vue-next'
+import { RouterView, useRoute } from "vue-router";
+import { businessModules, platformModules } from "@/modules";
+import type { BusinessDomain, PlatformEngine, MenuItem } from "@/core/types/module.types";
+import { Button } from "@/core/ui/button";
+import { LayoutDashboard, LogOut, ChevronRight, Library, Cpu, Settings } from "lucide-vue-next";
 
-const route = useRoute()
+const route = useRoute();
 
 // Primary Navigation (Dashboard + Business Domains)
-const coreItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/app' },
-]
+const coreItems = [{ label: "Dashboard", icon: LayoutDashboard, href: "/app" }];
 
-const businessItems = businessModules.flatMap((m: BusinessDomain) => 
+const businessItems = businessModules.flatMap((m: BusinessDomain) =>
   m.menuItems.map((item: MenuItem) => ({
     ...item,
-    href: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` 
-  }))
-)
+    href: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, "-")}`,
+  })),
+);
 
 // Platform/Infrastructure Navigation
-const platformItems = platformModules.flatMap((m: PlatformEngine) => 
+const platformItems = platformModules.flatMap((m: PlatformEngine) =>
   m.menuItems.map((item: MenuItem) => ({
     ...item,
-    href: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` 
-  }))
-)
+    href: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, "-")}`,
+  })),
+);
 </script>
 
 <template>
@@ -46,24 +37,33 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
       <nav class="flex-1 px-4 space-y-8 overflow-y-auto pt-2 scrollbar-none pb-8">
         <!-- Business Section -->
         <div>
-          <h3 class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60">
+          <h3
+            class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
+          >
             <Library class="h-3 w-3 mr-2" />
             Applications
           </h3>
           <div class="space-y-0.5">
-            <a 
-              v-for="item in [...coreItems, ...businessItems]" 
+            <a
+              v-for="item in [...coreItems, ...businessItems]"
               :key="item.label"
               :href="item.href"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
-                route.path === item.href 
-                  ? 'bg-primary-50 text-primary-900 ring-1 ring-primary-100 shadow-sm' 
-                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 border-transparent'
+                route.path === item.href
+                  ? 'bg-primary-50 text-primary-900 ring-1 ring-primary-100 shadow-sm'
+                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
               ]"
             >
-              <component :is="item.icon" v-if="item.icon" 
-                :class="['mr-3 h-5 w-5 transition-colors', route.path === item.href ? 'text-primary-600' : 'text-neutral-400 group-hover:text-neutral-600']" 
+              <component
+                :is="item.icon"
+                v-if="item.icon"
+                :class="[
+                  'mr-3 h-5 w-5 transition-colors',
+                  route.path === item.href
+                    ? 'text-primary-600'
+                    : 'text-neutral-400 group-hover:text-neutral-600',
+                ]"
               />
               <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
                 <ChevronRight class="h-4 w-4 text-neutral-300" />
@@ -75,24 +75,33 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
 
         <!-- Platform Section -->
         <div>
-          <h3 class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60">
+          <h3
+            class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
+          >
             <Cpu class="h-3 w-3 mr-2" />
             Platform Engine
           </h3>
           <div class="space-y-0.5">
-            <a 
-              v-for="item in platformItems" 
+            <a
+              v-for="item in platformItems"
               :key="item.label"
               :href="item.href"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
-                route.path === item.href 
-                  ? 'bg-neutral-100 text-neutral-900 ring-1 ring-neutral-200 shadow-sm' 
-                  : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 border-transparent'
+                route.path === item.href
+                  ? 'bg-neutral-100 text-neutral-900 ring-1 ring-neutral-200 shadow-sm'
+                  : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
               ]"
             >
-              <component :is="item.icon" v-if="item.icon" 
-                :class="['mr-3 h-5 w-5 transition-colors', route.path === item.href ? 'text-neutral-900' : 'text-neutral-400 group-hover:text-neutral-600']" 
+              <component
+                :is="item.icon"
+                v-if="item.icon"
+                :class="[
+                  'mr-3 h-5 w-5 transition-colors',
+                  route.path === item.href
+                    ? 'text-neutral-900'
+                    : 'text-neutral-400 group-hover:text-neutral-600',
+                ]"
               />
               <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
                 <ChevronRight class="h-4 w-4 text-neutral-300" />
@@ -104,7 +113,10 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
       </nav>
 
       <div class="p-4 border-t border-neutral-100 bg-neutral-50/50">
-        <Button variant="ghost" class="w-full justify-start text-danger-500 hover:text-danger-600 hover:bg-danger-50 h-10">
+        <Button
+          variant="ghost"
+          class="w-full justify-start text-danger-500 hover:text-danger-600 hover:bg-danger-50 h-10"
+        >
           <LogOut class="mr-3 h-5 w-5" />
           Logout
         </Button>
@@ -113,20 +125,24 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col overflow-hidden bg-white">
-      <header class="h-16 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
+      <header
+        class="h-16 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10 shrink-0"
+      >
         <h2 class="text-lg font-bold text-neutral-900 tracking-tight">
-          {{ route.name || 'Dashboard' }}
+          {{ route.name || "Dashboard" }}
         </h2>
         <div class="flex items-center space-x-3">
           <Button variant="ghost" size="icon" class="rounded-full hover:bg-neutral-100 h-9 w-9">
-             <Settings class="h-5 w-5 text-neutral-500" />
+            <Settings class="h-5 w-5 text-neutral-500" />
           </Button>
-          <div class="h-9 w-9 rounded-full border-2 border-primary-100 bg-primary-600 flex items-center justify-center text-white font-bold text-xs ring-offset-2 ring-1 ring-transparent hover:ring-primary-400 cursor-pointer shadow-sm transition-all duration-200">
+          <div
+            class="h-9 w-9 rounded-full border-2 border-primary-100 bg-primary-600 flex items-center justify-center text-white font-bold text-xs ring-offset-2 ring-1 ring-transparent hover:ring-primary-400 cursor-pointer shadow-sm transition-all duration-200"
+          >
             AD
           </div>
         </div>
       </header>
-      
+
       <div class="flex-1 overflow-y-auto p-10 bg-[#fafafa]">
         <div class="max-w-[1400px] mx-auto">
           <RouterView />
@@ -138,7 +154,7 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
 
 <style scoped>
 .shelf-shadow {
-  box-shadow: 0 0 40px rgba(0,0,0,0.03);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
 }
 
 .scrollbar-none::-webkit-scrollbar {
