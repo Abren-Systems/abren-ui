@@ -1,6 +1,6 @@
 # Abren ERP UI — Frontend Architectural Manifesto
 
-> **Version:** 1.0
+> **Version:** 2.0
 > **Last Updated:** March 2026
 > **Status:** AUTHORITATIVE — This document is the single source of truth for all architectural decisions in the Abren ERP UI.
 > **Backend Companion:** [Backend Architecture](../../../abren-erp-api/docs/architecture/ARCHITECTURE.md)
@@ -26,9 +26,14 @@ The frontend is **domain-aware and backend-aligned**, not an exact mirror. The b
 | Use Case                 | Composable          | **Lifecycle Aware** — e.g. `useLedgerAccounts`  |
 | Anti-Corruption Layer    | Mapper + Adapter    | **The Shield** — Infrastructure isolation       |
 
-### 1.3 Evolution Path
+### 1.3 Two Axes of Growth
 
-The project is designed for **zero-rewrite scaling**. We follow an **Architecture First** journey: every module is built with strict statelessness, domain-aligned boundaries, and the full security model from the moment of implementation. The path forward is about expanding functional scope, not fixing architectural debt.
+The project is designed for **zero-rewrite scaling**, following the exact same principles as the backend's **Architecture First** journey. The frontend grows along two independent axes:
+
+1. **Vertical (Architecture): Constant.** Every module is built with strict statelessness, domain-aligned boundaries, mapper isolation, and the full security model from the moment of implementation. No exceptions.
+2. **Horizontal (Product Depth): Additive.** New features plug into the existing routing, state, and API client capabilities without requiring structural rewrites of the core platform.
+
+> **The architecture guarantees that progressive depth is always additive, never corrective.** The path forward is exclusively about expanding functional scope.
 
 ---
 
@@ -187,8 +192,6 @@ export const ledgerModule: ModuleDefinition = {
 ---
 
 ## 5. Anti-Corruption Layer (The Mapper Pattern)
-
-- **Component Foundation**: [Reka UI](https://reka-ui.com/) (formerly Radix Vue) + [shadcn-vue](https://www.shadcn-vue.com/). We use headless primitives to ensure 100% accessibility and full styling control via our custom design system.
 
 ### 5.1 Why Mappers?
 
@@ -355,7 +358,7 @@ The UI works in concert with the backend's **RBAC + ABAC** security model:
 
 ---
 
-## 10. Related Documentation
+## 11. Related Documentation
 
 | Document                                         | Description                                           |
 | ------------------------------------------------ | ----------------------------------------------------- |
