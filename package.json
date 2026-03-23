@@ -9,8 +9,8 @@
     "preview": "vp preview",
     "check": "vp check",
     "check:fix": "vp check --fix",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/",
+    "lint": "vp lint . --fix",
+    "format": "vp fmt src/",
     "test:unit": "vp test",
     "test:unit:watch": "vp test --watch",
     "test:e2e": "playwright test",
@@ -43,11 +43,9 @@
     "@vitejs/plugin-vue": "^5.2.0",
     "@vue/test-utils": "^2.4.0",
     "@vue/tsconfig": "^0.7.0",
-    "eslint": "^9.18.0",
     "eslint-plugin-vue": "^9.32.0",
     "jsdom": "^26.0.0",
     "openapi-typescript": "^7.6.0",
-    "prettier": "^3.4.0",
     "tailwindcss": "^4.0.0",
     "typescript": "~5.7.0",
     "typescript-eslint": "^8.22.0",
@@ -55,5 +53,6 @@
     "vite-plus": "^0.1.13",
     "vitest": "4.1",
     "vue-tsc": "^2.2.0"
-  }
+  },
+  "packageManager": "npm@11.12.0"
 }
