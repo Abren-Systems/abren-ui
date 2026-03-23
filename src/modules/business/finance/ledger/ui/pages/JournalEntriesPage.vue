@@ -1,16 +1,24 @@
 <script setup lang="ts">
+import type { ColumnDef } from '@tanstack/vue-table'
 import { DataGrid, useDataGrid } from '@/core/ui/data-grid'
 
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
 
-const columns = [
+type JournalEntryRow = {
+  id: string
+  date: string
+  description: string
+  status: string
+}
+
+const columns: ColumnDef<JournalEntryRow>[] = [
   { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'date', header: 'Date' },
   { accessorKey: 'description', header: 'Description' },
   { accessorKey: 'status', header: 'Status' },
 ]
 
-const data = []
+const data: JournalEntryRow[] = []
 const isPending = false
 </script>
 

@@ -1,4 +1,5 @@
-import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+import type { NavigationGuardWithThis } from 'vue-router'
+import { useAuthStore } from '@/core/auth/auth.store'
 
 /**
  * authGuard
@@ -6,19 +7,25 @@ import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
  * Prevents unauthenticated users from accessing protected routes.
  * Redirects to /login if no session is active.
  */
-export async function authGuard(
-  to: RouteLocationNormalized,
-  _from: RouteLocationNormalized,
-  next: NavigationGuardNext,
-) {
-  // TODO: Connect to useAuthStore()
-  const isAuthenticated = true // Mocked for now
+export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
+  const authStore = useAuthStore()
+  const isAppRoute = to.path.startsWith('/app')
+  const isLoginRoute = to.path === '/login'
 
-  if (to.path.startsWith('/app') && !isAuthenticated) {
-    next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
-    next('/app')
-  } else {
-    next()
+  if (authStore.isAuthenticated && !authStore.hasSessionContext) {
+    await authStore.hydrateSession()
   }
+
+  if (isAppRoute && (!authStore.isAuthenticated || !authStore.hasSessionContext)) {
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    }
+  }
+
+  if (isLoginRoute && authStore.isAuthenticated && authStore.hasSessionContext) {
+    return { path: '/app' }
+  }
+
+  return true
 }

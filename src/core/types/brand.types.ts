@@ -1,6 +1,6 @@
 /**
  * TypeScript Opaque / Branded Types
- * 
+ *
  * Used to enforce strict type-safety for Identifiers across the application domain.
  * Prevents accidentally passing a \`UserId\` into a function expecting a \`TenantId\`.
  */

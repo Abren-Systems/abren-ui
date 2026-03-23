@@ -1,39 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/core/auth/auth.store'
 import { Button } from '@/core/ui/button'
 import { Input } from '@/core/ui/input'
 import { Label } from '@/core/ui/label'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
+const errorMessage = ref('')
 
 async function handleLogin() {
   isLoading.value = true
-  try {
-    // Mock authentication successful with dev bypass
-    authStore.setAuth(
-      'dev-token',
-      {
-        id: '00000000-0000-0000-0000-000000000001',
-        email: email.value || 'test@example.com',
-        full_name: 'Test User',
-        role: 'admin',
-      },
-      {
-        id: '754b3739-4526-4441-979f-fc0aab15b8d9',
-        name: 'Default Tenant',
-        features: { ledger: true },
-      },
-    )
+  errorMessage.value = ''
 
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    router.push('/app')
+  try {
+    await authStore.login(email.value, password.value)
+    const redirect =
+      typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/app')
+        ? route.query.redirect
+        : '/app'
+    await router.push(redirect)
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : 'Unable to sign in with the supplied credentials.'
   } finally {
     isLoading.value = false
   }
@@ -76,6 +71,13 @@ async function handleLogin() {
           />
         </div>
       </div>
+
+      <p
+        v-if="errorMessage"
+        class="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+      >
+        {{ errorMessage }}
+      </p>
 
       <div class="flex items-center justify-between px-0.5">
         <div class="flex items-center gap-2">

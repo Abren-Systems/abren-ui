@@ -3,7 +3,8 @@ import type { Column } from '@tanstack/vue-table'
 import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-vue-next'
 
 const props = defineProps<{
-  column: Column<unknown, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  column: Column<any, unknown>
   title: string
 }>()
 

@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { businessModules, platformModules } from '@/modules'
 import type { BusinessDomain, PlatformEngine, MenuItem } from '@/core/types/module.types'
+import { useAuthStore } from '@/core/auth/auth.store'
 import { Button } from '@/core/ui/button'
 import { LayoutDashboard, LogOut, ChevronRight, Library, Cpu, Settings } from 'lucide-vue-next'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 // Primary Navigation (Dashboard + Business Domains)
 const coreItems = [{ label: 'Dashboard', icon: LayoutDashboard, href: '/app' }]
@@ -24,6 +27,11 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
     href: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}`,
   })),
 )
+
+async function handleLogout() {
+  authStore.logout()
+  await router.push('/login')
+}
 </script>
 
 <template>
@@ -44,10 +52,10 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
             Applications
           </h3>
           <div class="space-y-0.5">
-            <a
+            <RouterLink
               v-for="item in [...coreItems, ...businessItems]"
               :key="item.label"
-              :href="item.href"
+              :to="item.href"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
                 route.path === item.href
@@ -69,7 +77,7 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
                 <ChevronRight class="h-4 w-4 text-neutral-300" />
               </div>
               {{ item.label }}
-            </a>
+            </RouterLink>
           </div>
         </div>
 
@@ -82,10 +90,10 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
             Platform Engine
           </h3>
           <div class="space-y-0.5">
-            <a
+            <RouterLink
               v-for="item in platformItems"
               :key="item.label"
-              :href="item.href"
+              :to="item.href"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
                 route.path === item.href
@@ -107,7 +115,7 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
                 <ChevronRight class="h-4 w-4 text-neutral-300" />
               </div>
               {{ item.label }}
-            </a>
+            </RouterLink>
           </div>
         </div>
       </nav>
@@ -116,6 +124,7 @@ const platformItems = platformModules.flatMap((m: PlatformEngine) =>
         <Button
           variant="ghost"
           class="w-full justify-start text-danger-500 hover:text-danger-600 hover:bg-danger-50 h-10"
+          @click="handleLogout"
         >
           <LogOut class="mr-3 h-5 w-5" />
           Logout

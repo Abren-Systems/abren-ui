@@ -24,7 +24,6 @@ const router = createRouter({
     {
       path: '/app',
       component: () => import('../layouts/AuthenticatedLayout.vue'),
-      beforeEnter: [authGuard],
       children: [
         {
           path: '',
@@ -50,5 +49,7 @@ const router = createRouter({
     },
   ],
 })
+
+router.beforeEach(authGuard)
 
 export { router }
