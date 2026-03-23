@@ -28,11 +28,7 @@ The frontend is **domain-aware and backend-aligned**, not an exact mirror. The b
 
 ### 1.3 Evolution Path
 
-The project is designed for **zero-rewrite scaling**. We follow a 3-phased modernization journey:
-
-*   **Phase 1 (MVP Solidification)**: Establish strict statelessness, **Hybrid RBAC + ABAC** security, and domain-aligned modules.
-*   **Phase 2 (Strict Decomposition)**: Align with backend API providers and decoupled event communication.
-*   **Phase 3 (Enterprise Scale)**: Deploy advanced caching, load balancing, and production observability.
+The project is designed for **zero-rewrite scaling**. We follow an **Architecture First** journey: every module is built with strict statelessness, domain-aligned boundaries, and the full security model from the moment of implementation. The path forward is about expanding functional scope, not fixing architectural debt.
 
 ---
 
