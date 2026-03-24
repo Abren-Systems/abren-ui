@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosRequestConfig } from 'axios'
+import { AUTH_KEYS } from '../auth/constants'
 
 /**
  * Abren ERP — Shared HTTP Client
@@ -33,14 +34,12 @@ export interface PaginatedResponse<T> {
   total_pages: number
 }
 
-const ACCESS_TOKEN_KEY = 'abren_access_token'
-const REFRESH_TOKEN_KEY = 'abren_refresh_token'
 const USER_KEY = 'abren_current_user'
 const TENANT_KEY = 'abren_current_tenant'
 
 function clearStoredAuth() {
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY)
-  sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+  sessionStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN)
+  sessionStorage.removeItem(AUTH_KEYS.REFRESH_TOKEN)
   sessionStorage.removeItem(USER_KEY)
   sessionStorage.removeItem(TENANT_KEY)
 }
@@ -56,7 +55,7 @@ const httpClient = axios.create({
 
 // ── Request Interceptor: Auth + Tenant + Idempotency ──
 httpClient.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem(ACCESS_TOKEN_KEY)
+  const token = sessionStorage.getItem(AUTH_KEYS.ACCESS_TOKEN)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

@@ -13,37 +13,35 @@ const { accounts: data, isPending } = useLedgerAccounts()
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column; gap: 20px; height: 100%">
+  <div class="flex h-full flex-col gap-5">
     <!-- Page Header -->
-    <div
-      style="display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0"
-    >
+    <div class="flex shrink-0 items-start justify-between">
       <div>
-        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-grid-text); margin: 0">
+        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">
           Chart of Accounts
         </h1>
-        <p style="font-size: 13px; color: var(--color-grid-text-muted); margin: 4px 0 0">
+        <p class="mt-1 text-body-sm text-[var(--color-grid-text-muted)]">
           Manage your ledger accounts and financial structure.
         </p>
       </div>
     </div>
 
     <!-- DataGrid Orchestration -->
-    <div style="flex: 1; min-height: 0">
+    <div class="min-h-0 flex-1">
       <DataGrid
-        :columns="accountColumns"
-        :data="data ?? []"
-        :loading="isPending"
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
         v-model:column-visibility="columnVisibility"
         v-model:global-filter="globalFilter"
+        :columns="accountColumns"
+        :data="data ?? []"
+        :loading="isPending"
         placeholder="Search accounts…"
       >
         <!-- Toolbar actions -->
         <template #toolbar>
-          <Button size="sm" style="height: 26px; font-size: 12px; padding: 0 10px">
-            <Plus :size="13" style="margin-right: 4px" />
+          <Button size="sm" class="h-[26px] px-2.5 text-xs">
+            <Plus :size="13" class="mr-1" />
             New Account
           </Button>
         </template>

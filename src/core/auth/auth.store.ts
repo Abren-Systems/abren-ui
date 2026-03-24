@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiGet, httpClient, type ApiResponse } from '@/core/api/http-client'
+import { AUTH_KEYS } from '@/core/auth/constants'
 
 /**
  * Auth Store — Shared Cross-Cutting Concern
@@ -13,8 +14,6 @@ import { apiGet, httpClient, type ApiResponse } from '@/core/api/http-client'
  * - Tenant feature flags (mirrors backend FeatureGate)
  */
 
-const ACCESS_TOKEN_KEY = 'abren_access_token'
-const REFRESH_TOKEN_KEY = 'abren_refresh_token'
 const USER_KEY = 'abren_current_user'
 const TENANT_KEY = 'abren_current_tenant'
 
@@ -60,8 +59,8 @@ interface UserProfileResponse {
 // ── Store ─────────────────────────────────────────────
 export const useAuthStore = defineStore('auth', () => {
   // ── State ──────────────────────────────────────────
-  const token = ref<string | null>(sessionStorage.getItem(ACCESS_TOKEN_KEY))
-  const refreshToken = ref<string | null>(sessionStorage.getItem(REFRESH_TOKEN_KEY))
+  const token = ref<string | null>(sessionStorage.getItem(AUTH_KEYS.ACCESS_TOKEN))
+  const refreshToken = ref<string | null>(sessionStorage.getItem(AUTH_KEYS.REFRESH_TOKEN))
   const currentUser = ref<CurrentUser | null>(readStoredJson<CurrentUser>(USER_KEY))
   const currentTenant = ref<TenantInfo | null>(readStoredJson<TenantInfo>(TENANT_KEY))
 
@@ -73,15 +72,15 @@ export const useAuthStore = defineStore('auth', () => {
   // ── Actions ────────────────────────────────────────
   function persistState() {
     if (token.value) {
-      sessionStorage.setItem(ACCESS_TOKEN_KEY, token.value)
+      sessionStorage.setItem(AUTH_KEYS.ACCESS_TOKEN, token.value)
     } else {
-      sessionStorage.removeItem(ACCESS_TOKEN_KEY)
+      sessionStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN)
     }
 
     if (refreshToken.value) {
-      sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken.value)
+      sessionStorage.setItem(AUTH_KEYS.REFRESH_TOKEN, refreshToken.value)
     } else {
-      sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+      sessionStorage.removeItem(AUTH_KEYS.REFRESH_TOKEN)
     }
 
     if (currentUser.value) {
