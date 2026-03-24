@@ -40,8 +40,8 @@ src/modules/{category}/{module}/
 │       └── use{Action}.ts   # Mutation composable (write)
 │
 ├── ui/                      # [Presentation] Components, Pages, Formatters
-│   ├── components/          # Module-scoped reusable components
-│   ├── pages/               # Route-level page views
+│   ├── components/          # Module-scoped components & FormDrawers
+│   ├── pages/               # Route-level views (List, Detail, Create, Edit, Wizard)
 │   ├── grids/               # DataGrid column configurations
 │   └── utils/               # UI-specific formatters & helpers
 │
@@ -55,15 +55,21 @@ src/modules/{category}/{module}/
 
 ### Files
 
-| Type       | Pattern                 | Example                |
-| ---------- | ----------------------- | ---------------------- |
-| Adapter    | `{module}_adapter.ts`   | `ledger_adapter.ts`    |
-| Mapper     | `{entity}.mapper.ts`    | `account.mapper.ts`    |
-| Composable | `use{Action}.ts`        | `useLedgerAccounts.ts` |
-| Types      | `{entity}.types.ts`     | `account.types.ts`     |
-| Formatter  | `{entity}-formatter.ts` | `account-formatter.ts` |
-| Routes     | `routes.ts`             | —                      |
-| Entry      | `index.ts`              | —                      |
+| Type        | Pattern                 | Example                 |
+| ----------- | ----------------------- | ----------------------- |
+| List Page   | `*ListPage.vue`         | `AccountListPage.vue`   |
+| Detail Page | `*DetailPage.vue`       | `AccountDetailPage.vue` |
+| Editor Page | `*EditPage.vue`         | `AccountEditPage.vue`   |
+| Create Page | `*CreatePage.vue`       | `AccountCreatePage.vue` |
+| Wizard Page | `*WizardPage.vue`       | `OnboardingWizard.vue`  |
+| Form Drawer | `*FormDrawer.vue`       | `AccountFormDrawer.vue` |
+| Adapter     | `{module}_adapter.ts`   | `ledger_adapter.ts`     |
+| Mapper      | `{entity}.mapper.ts`    | `account.mapper.ts`     |
+| Composable  | `use{Action}.ts`        | `useLedgerAccounts.ts`  |
+| Types       | `{entity}.types.ts`     | `account.types.ts`      |
+| Formatter   | `{entity}-formatter.ts` | `account-formatter.ts`  |
+| Routes      | `routes.ts`             | —                       |
+| Entry       | `index.ts`              | —                       |
 
 ### Data Types
 

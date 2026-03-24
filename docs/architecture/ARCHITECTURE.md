@@ -188,6 +188,8 @@ export const ledgerModule: ModuleDefinition = {
 2. **Public API**: If Module A needs data from Module B, it goes through the Event Bus or a Core type.
 3. **Query-First State**: Domain data stays in TanStack Query. Pinia is for UI-specific toggles.
 4. **Route ownership**: Each module exports a `ModuleDefinition`.
+5. **Composable Orchestration**: All business logic and API orchestration MUST live in Composables, keeping `.vue` files as thin view-only layers.
+6. **Unbreakable DRY**: Domain UI patterns (like specialized selects or status badges) must be extracted and reused, never duplicated.
 
 ---
 

@@ -95,22 +95,29 @@ vp dev
 
 - **Composition API only** (no Options API).
 - **`<script setup lang="ts">`** for all components.
-- **Scoped styles**: Always use `<style scoped>`.
+- **Scoped styles**: Always use `<style scoped>`. Inline `style="..."` is banned.
 - **Props and emits**: Always typed with `defineProps<T>()` and `defineEmits<T>()`.
 - **Single Responsibility**: One component = one concern.
+- **Composable Logic**: All orchestration logic (API calls, state management, toasts) MUST live in a Composable. `.vue` files should be thin view layers.
+- **Unbreakable DRY**: Never duplicate domain-specific UI patterns. If a pattern repeats twice, it's a candidate for `core/ui` or a module-level component.
 
 ### 4.3 Naming Conventions
 
-| Type           | Convention | Example                  | Location          |
-| -------------- | ---------- | ------------------------ | ----------------- |
-| Vue components | PascalCase | `AccountBadge.vue`       | `ui/components/`  |
-| Pages          | PascalCase | `JournalEntriesPage.vue` | `ui/pages/`       |
-| Grid Configs   | dot-suffix | `account.grid.ts`        | `ui/grids/`       |
-| UI Utils       | kebab-case | `account-formatter.ts`   | `ui/utils/`       |
-| Composables    | camelCase  | `useLedgerAccounts.ts`   | `application/`    |
-| Adapters       | snake_case | `ledger_adapter.ts`      | `infrastructure/` |
-| Mappers        | dot-suffix | `ledger.mapper.ts`       | `infrastructure/` |
-| Types          | dot-suffix | `account.types.ts`       | `domain/models/`  |
+| Type           | Convention | Example                 | Location          |
+| -------------- | ---------- | ----------------------- | ----------------- |
+| Vue components | PascalCase | `AccountBadge.vue`      | `ui/components/`  |
+| List Page      | PascalCase | `AccountListPage.vue`   | `ui/pages/`       |
+| Detail Page    | PascalCase | `AccountDetailPage.vue` | `ui/pages/`       |
+| Editor Page    | PascalCase | `AccountEditPage.vue`   | `ui/pages/`       |
+| Create Page    | PascalCase | `AccountCreatePage.vue` | `ui/pages/`       |
+| Wizard Page    | PascalCase | `OnboardingWizard.vue`  | `ui/pages/`       |
+| Form Drawer    | PascalCase | `AccountFormDrawer.vue` | `ui/components/`  |
+| Grid Configs   | dot-suffix | `account.grid.ts`       | `ui/grids/`       |
+| UI Utils       | kebab-case | `account-formatter.ts`  | `ui/utils/`       |
+| Composables    | camelCase  | `useLedgerAccounts.ts`  | `application/`    |
+| Adapters       | snake_case | `ledger_adapter.ts`     | `infrastructure/` |
+| Mappers        | dot-suffix | `ledger.mapper.ts`      | `infrastructure/` |
+| Types          | dot-suffix | `account.types.ts`      | `domain/models/`  |
 
 ### 4.4 Import Order
 
