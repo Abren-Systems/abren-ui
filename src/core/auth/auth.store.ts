@@ -1,14 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiGet, httpClient, type ApiResponse } from '@/core/api/http-client'
-import { AUTH_KEYS } from '@/core/auth/constants'
 
 /**
  * Auth Store — Shared Cross-Cutting Concern
  *
  * This is the ONLY Pinia store in shared/.
  * It holds identity state consumed by all modules:
- * - Access / refresh tokens
  * - Current user profile
  * - Current tenant context (multi-tenancy)
  * - Tenant feature flags (mirrors backend FeatureGate)
@@ -43,10 +41,10 @@ export interface TenantInfo {
   features: Record<string, boolean>
 }
 
-interface LoginTokenPayload {
-  access_token: string
-  refresh_token?: string | null
-  token_type: string
+// The backend sets HttpOnly cookies containing the access/refresh tokens.
+// No physical token string is returned to the javascript client.
+interface LoginResponse {
+  message?: string
 }
 
 interface UserProfileResponse {
@@ -59,30 +57,17 @@ interface UserProfileResponse {
 // ── Store ─────────────────────────────────────────────
 export const useAuthStore = defineStore('auth', () => {
   // ── State ──────────────────────────────────────────
-  const token = ref<string | null>(sessionStorage.getItem(AUTH_KEYS.ACCESS_TOKEN))
-  const refreshToken = ref<string | null>(sessionStorage.getItem(AUTH_KEYS.REFRESH_TOKEN))
+  // ── State ──────────────────────────────────────────
   const currentUser = ref<CurrentUser | null>(readStoredJson<CurrentUser>(USER_KEY))
   const currentTenant = ref<TenantInfo | null>(readStoredJson<TenantInfo>(TENANT_KEY))
 
   // ── Computed ───────────────────────────────────────
-  const isAuthenticated = computed(() => !!token.value)
+  const isAuthenticated = computed(() => !!currentUser.value)
   const hasSessionContext = computed(() => !!currentUser.value && !!currentTenant.value)
   const tenantFeatures = computed(() => currentTenant.value?.features ?? {})
 
   // ── Actions ────────────────────────────────────────
   function persistState() {
-    if (token.value) {
-      sessionStorage.setItem(AUTH_KEYS.ACCESS_TOKEN, token.value)
-    } else {
-      sessionStorage.removeItem(AUTH_KEYS.ACCESS_TOKEN)
-    }
-
-    if (refreshToken.value) {
-      sessionStorage.setItem(AUTH_KEYS.REFRESH_TOKEN, refreshToken.value)
-    } else {
-      sessionStorage.removeItem(AUTH_KEYS.REFRESH_TOKEN)
-    }
-
     if (currentUser.value) {
       sessionStorage.setItem(USER_KEY, JSON.stringify(currentUser.value))
     } else {
@@ -96,14 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function setSession(
-    newToken: string,
-    newRefreshToken: string | null,
-    user: CurrentUser,
-    tenant: TenantInfo,
-  ) {
-    token.value = newToken
-    refreshToken.value = newRefreshToken
+  function setSession(user: CurrentUser, tenant: TenantInfo) {
     currentUser.value = user
     currentTenant.value = tenant
     persistState()
@@ -114,8 +92,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function hydrateSession(): Promise<boolean> {
-    if (!token.value) return false
-
     try {
       const [userProfile, tenant] = await Promise.all([
         apiGet<UserProfileResponse>('/core/users/me'),
@@ -142,19 +118,11 @@ export const useAuthStore = defineStore('auth', () => {
     formData.set('username', email)
     formData.set('password', password)
 
-    const response = await httpClient.post<ApiResponse<LoginTokenPayload>>(
-      '/auth/login',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+    await httpClient.post<ApiResponse<LoginResponse>>('/auth/login', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-    )
-
-    token.value = response.data.data.access_token
-    refreshToken.value = response.data.data.refresh_token ?? null
-    persistState()
+    })
 
     const hydrated = await hydrateSession()
     if (!hydrated) {
@@ -163,8 +131,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
-    token.value = null
-    refreshToken.value = null
     currentUser.value = null
     currentTenant.value = null
     persistState()
@@ -176,8 +142,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     // State
-    token,
-    refreshToken,
     currentUser,
     currentTenant,
     // Computed
