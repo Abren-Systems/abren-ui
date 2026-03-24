@@ -10,7 +10,7 @@ The Abren ERP platform uses **sibling repositories** under a shared parent direc
 
 ```
 abren-erp/                           # Parent directory (NOT a git repo)
-├── abren-erp-api/                   # Backend (existing git repo)
+├── abren-api/                   # Backend (existing git repo)
 │   ├── src/abren_erp_api/
 │   │   └── modules/
 │   │       ├── core/
@@ -25,7 +25,7 @@ abren-erp/                           # Parent directory (NOT a git repo)
 │   ├── pyproject.toml
 │   └── .git/
 │
-└── abren-erp-ui/                    # Frontend (new git repo)
+└── abren-ui/                    # Frontend (new git repo)
     ├── src/
     │   ├── modules/
     │   │   ├── platform/            # Infrastructure & Platform Engines
@@ -121,11 +121,11 @@ export type PaymentRequestPayDTO = components['schemas']['PaymentRequestPayDTO']
 
 ```
 Terminal 1 (Backend):
-  cd abren-erp/abren-erp-api
+  cd abren-erp/abren-api
   uv run uvicorn src.abren_erp_api.main:app --reload
 
 Terminal 2 (Frontend):
-  cd abren-erp/abren-erp-ui
+  cd abren-erp/abren-ui
   npm run dev
 ```
 
@@ -147,8 +147,8 @@ Open both projects as a multi-root workspace:
 // abren-erp.code-workspace
 {
   "folders": [
-    { "path": "abren-erp-api", "name": "API (Backend)" },
-    { "path": "abren-erp-ui", "name": "UI (Frontend)" },
+    { "path": "abren-api", "name": "API (Backend)" },
+    { "path": "abren-ui", "name": "UI (Frontend)" },
   ],
 }
 ```
@@ -157,13 +157,13 @@ Open both projects as a multi-root workspace:
 
 ## 5. Deployment Independence
 
-| Concern           | Backend                           | Frontend                               |
-| ----------------- | --------------------------------- | -------------------------------------- |
-| **Deploy target** | VPS / Container (Uvicorn)         | CDN / Static hosting (Vercel, Netlify) |
-| **Build trigger** | Push to `main` on `abren-erp-api` | Push to `main` on `abren-erp-ui`       |
-| **Release cycle** | Independent                       | Independent                            |
-| **Versioning**    | SemVer (Python)                   | SemVer (npm)                           |
-| **API contract**  | OpenAPI spec is the contract      | Consumes the spec via codegen          |
+| Concern           | Backend                       | Frontend                               |
+| ----------------- | ----------------------------- | -------------------------------------- |
+| **Deploy target** | VPS / Container (Uvicorn)     | CDN / Static hosting (Vercel, Netlify) |
+| **Build trigger** | Push to `main` on `abren-api` | Push to `main` on `abren-ui`           |
+| **Release cycle** | Independent                   | Independent                            |
+| **Versioning**    | SemVer (Python)               | SemVer (npm)                           |
+| **API contract**  | OpenAPI spec is the contract  | Consumes the spec via codegen          |
 
 ### 5.1 Contract Stability Rule
 
@@ -176,9 +176,9 @@ Open both projects as a multi-root workspace:
 Both projects reference each other's documentation but never each other's source code:
 
 ```
-abren-erp-api/docs/architecture/ARCHITECTURE.md   ← Backend manifesto
-abren-erp-ui/docs/architecture/ARCHITECTURE.md     ← Frontend manifesto (you are here)
+abren-api/docs/architecture/ARCHITECTURE.md   ← Backend manifesto
+abren-ui/docs/architecture/ARCHITECTURE.md     ← Frontend manifesto (you are here)
 
-abren-erp-api/docs/architecture/API_STRATEGY.md    ← Action-oriented endpoint rules
-abren-erp-ui/docs/architecture/API_INTEGRATION.md  ← How UI consumes those endpoints
+abren-api/docs/architecture/API_STRATEGY.md    ← Action-oriented endpoint rules
+abren-ui/docs/architecture/API_INTEGRATION.md  ← How UI consumes those endpoints
 ```

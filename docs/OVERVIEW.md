@@ -3,7 +3,7 @@
 > **Version:** 1.0
 > **Status:** Active Development
 > **Last Updated:** March 2026
-> **Backend Companion:** [abren-erp-api docs](../../abren-erp-api/docs/OVERVIEW.md)
+> **Backend Companion:** [abren-api docs](../../abren-api/docs/OVERVIEW.md)
 
 ---
 
@@ -40,12 +40,12 @@ Navigate by concern:
 
 ### Cross-Reference to Backend
 
-| Backend Document                                                              | Relevance to Frontend                             |
-| ----------------------------------------------------------------------------- | ------------------------------------------------- |
-| [Backend Architecture](../../abren-erp-api/docs/architecture/ARCHITECTURE.md) | Domain model definitions, bounded context rules   |
-| [API Strategy](../../abren-erp-api/docs/architecture/API_STRATEGY.md)         | Action-oriented endpoint patterns the UI consumes |
-| [Tenant Features](../../abren-erp-api/docs/architecture/TENANT_FEATURES.md)   | Feature gate rules mirrored in route guards       |
-| [Webhooks](../../abren-erp-api/docs/architecture/WEBHOOKS.md)                 | Webhook management UI requirements                |
+| Backend Document                                                          | Relevance to Frontend                             |
+| ------------------------------------------------------------------------- | ------------------------------------------------- |
+| [Backend Architecture](../../abren-api/docs/architecture/ARCHITECTURE.md) | Domain model definitions, bounded context rules   |
+| [API Strategy](../../abren-api/docs/architecture/API_STRATEGY.md)         | Action-oriented endpoint patterns the UI consumes |
+| [Tenant Features](../../abren-api/docs/architecture/TENANT_FEATURES.md)   | Feature gate rules mirrored in route guards       |
+| [Webhooks](../../abren-api/docs/architecture/WEBHOOKS.md)                 | Webhook management UI requirements                |
 
 ---
 

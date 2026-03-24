@@ -24,10 +24,10 @@
 ## 2. Quick Start
 
 ```bash
-# Clone (assumes abren-erp-api already exists as sibling)
+# Clone (assumes abren-api already exists as sibling)
 cd ~/python-projects/abren-erp
-git clone <repo-url> abren-erp-ui
-cd abren-erp-ui
+git clone <repo-url> abren-ui
+cd abren-ui
 
 # Install dependencies
 vp install
@@ -258,9 +258,9 @@ This instantly creates the strict 4-layer structure and wires up the `index.ts`,
 
 When starting a new module or refactoring an old one, use the **Finance / Ledger** module as the reference implementation. It is the first module to achieve full High-Integrity alignment.
 
-- **Grid Config**: [account.grid.ts](file:///Users/yuma/python-projects/abren-erp/abren-erp-ui/src/modules/business/finance/ledger/ui/grids/account.grid.ts)
-- **Application Logic**: [useLedgerAccounts.ts](file:///Users/yuma/python-projects/abren-erp/abren-erp-ui/src/modules/business/finance/ledger/application/composables/useLedgerAccounts.ts)
-- **Domain Mapping**: [ledger.mapper.ts](file:///Users/yuma/python-projects/abren-erp/abren-erp-ui/src/modules/business/finance/ledger/infrastructure/ledger.mapper.ts)
+- **Grid Config**: [account.grid.ts](file:///Users/yuma/python-projects/abren-erp/abren-ui/src/modules/business/finance/ledger/ui/grids/account.grid.ts)
+- **Application Logic**: [useLedgerAccounts.ts](file:///Users/yuma/python-projects/abren-erp/abren-ui/src/modules/business/finance/ledger/application/composables/useLedgerAccounts.ts)
+- **Domain Mapping**: [ledger.mapper.ts](file:///Users/yuma/python-projects/abren-erp/abren-ui/src/modules/business/finance/ledger/infrastructure/ledger.mapper.ts)
 
 ---
 
@@ -273,7 +273,7 @@ The Abren ERP project is optimized for both human and AI-agent developers. We le
 We use **Vite+** (`vp`) as our single entry point for all development tasks. It wraps Vite, Vitest, Oxlint, Oxfmt, and Rolldown.
 
 - **Human Workflow**: Use `vp dev`, `vp test`, and `vp check` instead of fragmented tool commands.
-- **Agent Workflow**: Always use the `vp` CLI for build, test, and linting verification. Reference the [Vite+ Skill Docs](file:///Users/yuma/python-projects/abren-erp/abren-erp-ui/node_modules/vite-plus/skills/vite-plus/SKILL.md) for advanced usage rules.
+- **Agent Workflow**: Always use the `vp` CLI for build, test, and linting verification. Reference the [Vite+ Skill Docs](file:///Users/yuma/python-projects/abren-erp/abren-ui/node_modules/vite-plus/skills/vite-plus/SKILL.md) for advanced usage rules.
 
 ### 9.2 TanStack Devtools & Observability
 
@@ -281,7 +281,7 @@ For advanced debugging and state inspection, we use the **TanStack Devtools Even
 
 - **Instrumentation**: Place strategic `emit()` calls at architecture boundaries (Middleware entry/exit, State Transitions).
 - **Bidirectional Communication**: The Devtools panel can send commands (e.g., `reset`, `set-state`) back to the application.
-- **Reference**: See the [Devtools Event Client Skill](file:///Users/yuma/python-projects/abren-erp/abren-erp-ui/node_modules/@tanstack/devtools-event-client/skills/devtools-event-client/SKILL.md) for implementation patterns.
+- **Reference**: See the [Devtools Event Client Skill](file:///Users/yuma/python-projects/abren-erp/abren-ui/node_modules/@tanstack/devtools-event-client/skills/devtools-event-client/SKILL.md) for implementation patterns.
 
 > [!TIP]
 > **Always run `vp check --fix` before committing.** This ensures that our Oxlint and Oxfmt rules are strictly enforced and the codebase remains in a high-integrity state.

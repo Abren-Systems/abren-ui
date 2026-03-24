@@ -1,7 +1,7 @@
 # Frontend Testing Strategy
 
 > **Parent:** [Frontend Architecture](ARCHITECTURE.md)
-> **Backend Companion:** [Backend Testing Strategy](../../../abren-erp-api/docs/architecture/TESTING_STRATEGY.md)
+> **Backend Companion:** [Backend Testing Strategy](../../../abren-api/docs/architecture/TESTING_STRATEGY.md)
 
 ---
 
