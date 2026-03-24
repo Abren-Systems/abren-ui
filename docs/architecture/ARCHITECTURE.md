@@ -313,16 +313,36 @@ POST /payment-requests/{id}/pay      → usePayRequest()
 
 ### 8.2 Response Envelope Handling
 
-All backend responses follow the envelope `{ success, data, meta }` or `{ success, detail, code }`. The core HTTP client unwraps these automatically:
+All backend responses follow the envelope `{ success, data, meta }` or `{ success, detail, code }`. The core HTTP client handles this via **two mechanisms**:
+
+1. **Response Interceptor:** Catches errors (401 → session teardown, structured errors → extract `detail`).
+2. **Typed Helper Functions:** Unwrap the `data` field from the success envelope.
 
 ```typescript
-// core/api/http-client.ts
-async function request<T>(config: AxiosRequestConfig): Promise<T> {
-  const response = await axios(config)
-  if (response.data.success) {
-    return response.data.data as T
-  }
-  throw new ApiError(response.data.detail, response.data.code)
+// core/api/http-client.ts — Typed helpers that unwrap the envelope
+export async function apiGet<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  const response = await httpClient.get<ApiResponse<T>>(url, config)
+  return response.data.data // Extracts { success, data, meta } → T
+}
+
+export async function apiPost<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  const response = await httpClient.post<ApiResponse<T>>(url, body, config)
+  return response.data.data
+}
+// apiPut, apiPatch, apiDelete follow the same pattern.
+```
+
+Module adapters import these helpers exclusively — never raw `httpClient`:
+
+```typescript
+// modules/business/finance/ledger/infrastructure/ledger_adapter.ts
+import { apiGet } from '@/core/api/http-client'
+
+export const ledgerAdapter = {
+  async getAccounts(): Promise<Account[]> {
+    const dtos = await apiGet<AccountRead[]>('/finance/ledger/accounts')
+    return dtos.map(mapAccount)
+  },
 }
 ```
 
@@ -334,10 +354,50 @@ All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempote
 
 ## 9. Hybrid Authorization Model (UI Perspective)
 
-The UI works in concert with the backend's **RBAC + ABAC** security model:
+The UI works in concert with the backend's multi-layered security model. **Two distinct mechanisms** control visibility and access:
 
-1.  **RBAC (Feature Visibility)**: The UI uses the `useAuthStore().hasPermission('module:action')` helper to show/hide navigation items, buttons, and views.
-2.  **ABAC (Data Sovereignty)**: The UI is strictly stateless and tenant-scoped. It relies on the backend to filter resources based on attribute ownership. The UI's responsibility is to provide the **Tenant Context** via headers and ensure that "Edit" modes are only enabled when the user's attributes match the record's metadata.
+### 9.1 Feature Gates (Tenant-Level)
+
+Feature gates control whether a **tenant** has access to an entire module or capability. These are configured per-tenant in the backend and surfaced via `TenantInfo.features`.
+
+```typescript
+// core/composables/useFeatureGate.ts
+const { isEnabled, guardRoute } = useFeatureGate('webhooks')
+
+// In templates:
+<MenuItem v-if="isEnabled" label="Webhooks" />
+
+// In route guards:
+beforeEnter: () => guardRoute() // Redirects to feature-disabled page
+```
+
+**Use for:** Module visibility, premium feature gating, tenant plan restrictions.
+
+### 9.2 RBAC Permissions (User-Level)
+
+Permissions control whether a **user** can perform a specific action within an enabled module. Each `ModuleDefinition` declares its required permissions, and the auth store provides a `hasPermission()` helper.
+
+```typescript
+// core/auth/auth.store.ts
+function hasPermission(permission: string): boolean {
+  return currentUser.value?.permissions?.includes(permission) ?? false
+}
+
+// In templates:
+<Button v-if="authStore.hasPermission('ledger.edit')" @click="openEditor">
+  Edit Account
+</Button>
+```
+
+**Use for:** Button visibility, action authorization, menu item filtering.
+
+### 9.3 ABAC (Data Sovereignty)
+
+The UI is strictly **stateless and tenant-scoped**. It relies on the backend to filter resources based on attribute ownership (tenant ID, department, data scope). The UI's responsibility is to:
+
+1. Provide the **Tenant Context** via the `Authorization` header (JWT contains tenant claims).
+2. Enable "Edit" modes only when the user's attributes match the record's metadata.
+3. **Never** implement row-level filtering on the frontend — this is the backend's responsibility.
 
 ---
 
@@ -365,6 +425,8 @@ The UI works in concert with the backend's **RBAC + ABAC** security model:
 | [Module Structure](MODULE_STRUCTURE.md)          | Detailed module boundaries and folder conventions     |
 | [State Management](STATE_MANAGEMENT.md)          | Pinia store patterns and reactive state flows         |
 | [API Integration](API_INTEGRATION.md)            | HTTP client, mapper patterns, OpenAPI type generation |
+| [Form Architecture](FORM_ARCHITECTURE.md)        | TanStack Form + Zod integration and form patterns     |
+| [Error Handling](ERROR_HANDLING.md)               | Error categories, toast system, loading states        |
 | [Testing Strategy](TESTING_STRATEGY.md)          | Frontend testing pyramid and coverage targets         |
 | [Development Guide](../DEVELOPMENT.md)           | Local setup, coding standards, and conventions        |
 | [Repository Strategy](../REPOSITORY_STRATEGY.md) | How the UI repo coexists with the API repo            |

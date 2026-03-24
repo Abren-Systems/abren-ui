@@ -138,36 +138,54 @@ eventBus.on('payment-request:paid', () => {
 
 ## 5. Optimistic Updates Pattern
 
-For actions that should feel instant (like submitting a request), apply state changes before the API confirms:
+For actions that should feel instant (like submitting a request), use TanStack Query's built-in `onMutate` / `onError` mechanism. This keeps domain data inside the query cache — consistent with the **Query-First** rule (§1). Never duplicate server state into a Pinia store for optimistic updates.
 
 ```typescript
+// modules/business/finance/ap/payment-requests/application/composables/useSubmitRequest.ts
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { paymentRequestAdapter } from '../../infrastructure/payment_request_adapter'
+import type { PaymentRequest } from '../../domain/payment-request.types'
+
 export function useSubmitRequest() {
-  const store = usePaymentRequestStore()
+  const queryClient = useQueryClient()
 
-  async function submit(id: string) {
-    const previousState = { ...store.requests }
+  return useMutation({
+    mutationFn: (id: string) => paymentRequestAdapter.submit(id),
 
-    // 1. Optimistic update
-    store.updateRequest({
-      ...store.selectedRequest!,
-      status: 'SUBMITTED',
-      canSubmit: false,
-    })
+    // 1. Optimistic update — modify cache BEFORE server responds
+    onMutate: async (id: string) => {
+      // Cancel in-flight queries to avoid overwriting our optimistic data
+      await queryClient.cancelQueries({ queryKey: ['payment-requests'] })
 
-    try {
-      // 2. Confirm with server
-      const confirmed = await paymentRequestApi.submit(id)
-      store.updateRequest(toViewModel(confirmed))
-    } catch (error) {
-      // 3. Rollback on failure
-      store.setRequests(previousState)
-      throw error
-    }
-  }
+      // Snapshot the previous cache for rollback
+      const previous = queryClient.getQueryData<PaymentRequest[]>(['payment-requests'])
 
-  return { submit }
+      // Optimistically update the cached list
+      queryClient.setQueryData<PaymentRequest[]>(['payment-requests'], (old) =>
+        (old ?? []).map((pr) =>
+          pr.id === id ? { ...pr, status: 'SUBMITTED' as const } : pr,
+        ),
+      )
+
+      return { previous }
+    },
+
+    // 2. Rollback on failure — restore the snapshot
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['payment-requests'], context.previous)
+      }
+    },
+
+    // 3. Always refetch after mutation settles (success or error)
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['payment-requests'] })
+    },
+  })
 }
 ```
+
+> **Key Principle:** The query cache IS the state. Pinia stores must never hold domain data, even temporarily for optimistic updates.
 
 ---
 

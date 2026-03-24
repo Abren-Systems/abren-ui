@@ -85,7 +85,7 @@ The ERP uses a clean, highly legible font stack optimized for numeric data and d
 - **Monospace (`--font-mono`):** `'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace`
   - Used for code snippets, UUIDs, and specific financial/ledger tables.
 
-### 3.2 Semantic Text Scale
+### 2.2 Semantic Text Scale
 
 Components must reference **semantic role tokens**, not raw pixel sizes. All numeric data (amounts, IDs, ratios) must globally enforce `font-variant-numeric: tabular-nums` to guarantee perfect vertical alignment in lists without relying on fixed-width hacking.
 
@@ -116,7 +116,7 @@ Consistency in spacing prevents the UI from feeling disjointed. Never use arbitr
 | `--spacing-lg` | `1.5rem`  | 24px | Distance between major page sections                        |
 | `--spacing-xl` | `2rem`    | 32px | Page margins                                                |
 
-### 4.2 Border Radius
+### 3.2 Border Radius
 
 | Token         | REM        | PX   | Usage                                  |
 | :------------ | :--------- | :--- | :------------------------------------- |
@@ -127,7 +127,7 @@ Consistency in spacing prevents the UI from feeling disjointed. Never use arbitr
 
 ---
 
-## 5. Density System
+## 4. Density System
 
 Abren ERP operates on a 3-tier density scale. The default is **Compact** to serve power users viewing large financial grids.
 
@@ -141,11 +141,11 @@ _Density modes will be exposed via a `data-density` attribute on the `<html>` el
 
 ---
 
-## 6. Elevation (Shadows & Layered Surfaces)
+## 5. Elevation (Shadows & Layered Surfaces)
 
 Elevation is used to create visual hierarchy. In an ERP, excessive drop shadows appear cluttered.
 
-### 6.1 Layered Surfaces Strategy
+### 5.1 Layered Surfaces Strategy
 
 Instead of relying solely on heavy shadows, we use **layered surfaces**—especially critical in Dark Mode.
 
@@ -153,7 +153,7 @@ Instead of relying solely on heavy shadows, we use **layered surfaces**—especi
 - **Elevated (Level 1)**: Cards, Sidebars, and Drawers (`#ffffff` / `#161d28` dark).
 - **Floating (Level 2)**: Modals and Dropdowns (`#ffffff` / `#1e293b` dark + shadow).
 
-### 6.2 Drop Shadows
+### 5.2 Drop Shadows
 
 Shadows have a dual-layer softness to match the Radix Slate tone and are applied only to elevated/floating layers.
 
@@ -162,7 +162,7 @@ Shadows have a dual-layer softness to match the Radix Slate tone and are applied
 - `--shadow-lg`: Dropdown menus, tooltips, and popovers.
 - `--shadow-xl`: Modal dialogs and critical full-screen overlays.
 
-### 6.2 Z-Index Scale
+### 5.3 Z-Index Scale
 
 - `--z-dropdown` (`1000`): Standard floating menus and selects.
 - `--z-modal` (`1050`): Dialog boxes.
@@ -170,29 +170,29 @@ Shadows have a dual-layer softness to match the Radix Slate tone and are applied
 
 ---
 
-## 7. ERP Interaction Patterns
+## 6. ERP Interaction Patterns
 
-### 7.1 Command Palette & Omni-Search (⌘K)
+### 6.1 Command Palette & Omni-Search (⌘K)
 
 A global Command Palette is required. It provides power users instant keyboard access to jump to any module or initiate global actions.
 
 - **Omni-Search Logic:** The input must parse semantic intent (e.g., typing "Status: Paid" builds a grid filter).
 - **Context-Aware Actions:** If the user has multiple rows selected in a data grid, pressing ⌘K automatically scopes the palette to bulk actions applicable to those specific rows (e.g., "Approve 3 records", "Delete selected").
 
-### 7.2 Overlay Taxonomy: Drawers vs Modals
+### 6.2 Overlay Taxonomy: Drawers vs Modals
 
 Abren ERP enforces a strict functional split for floating surfaces to preserve background context:
 
 - **Drawers (For Reading):** Right-aligned slide-out Drawers (`DataGridDrawer.vue`) are used for reading deep context, viewing audit logs, and editing complex records.
 - **Modals (For Executing):** Center-aligned dialog Modals are strictly reserved for executing active, focused mutations (e.g., Delete Confirmation, Refund Processing, Bulk Submit). Never use a center modal for a complex, multi-field data entry form.
 
-### 7.3 Destructive Confirmations
+### 6.3 Destructive Confirmations
 
 Any action that deletes a record or irrevocably alters a ledger state must trigger a blocking **AlertDialog** (using Reka UI primitives). The dialog must force the user to explicitly click an Indigo or Red confirmation button. Passive "Are you sure?" tooltips are insufficient for destructive financial actions.
 
 ---
 
-## 8. Responsive Strategy (Mobile Graceful Degradation)
+## 7. Responsive Strategy (Mobile Graceful Degradation)
 
 Abren ERP is a desktop-first operational console. Attempting full feature parity on mobile devices breaks high-density data requirements. We enforce strict graceful degradation:
 

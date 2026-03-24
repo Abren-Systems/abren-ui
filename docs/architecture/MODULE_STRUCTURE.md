@@ -25,18 +25,28 @@ Every module **MUST** follow this exact directory layout:
 
 ```
 src/modules/{category}/{module}/
-├── infrastructure/          # [Firewall] ACL
-│   ├── {module}.mapper.ts   # DTO Conversion
-│   └── {module}.adapter.ts  # API Communication
+├── domain/                  # [Pure] Business rules & Types
+│   ├── {entity}.types.ts    # Domain interfaces & value objects
+│   └── {vo}.ts              # Value Objects (e.g. Money)
 │
-└── domain/                  # [Pure] Business rules & Types
-    ├── {entity}.types.ts
-    └── {vo}.ts              # Value Objects (e.g. Money)
-
-    ├── components/          # Tier 3 (Stateless)
-    ├── pages/               # Tier 4 (Orchestrators)
-    ├── grids/               # Grid Configurations
-    └── utils/               # UI Logic (Formatters)
+├── infrastructure/          # [Firewall] ACL
+│   ├── {module}.mapper.ts   # DTO → Domain conversion
+│   ├── {module}_adapter.ts  # API Communication
+│   └── api.types.ts         # DTO interfaces (if not using generated types)
+│
+├── application/             # [Orchestration] Use Case Composables
+│   └── composables/
+│       ├── use{Entity}s.ts  # Query composable (read)
+│       └── use{Action}.ts   # Mutation composable (write)
+│
+├── ui/                      # [Presentation] Components, Pages, Formatters
+│   ├── components/          # Module-scoped reusable components
+│   ├── pages/               # Route-level page views
+│   ├── grids/               # DataGrid column configurations
+│   └── utils/               # UI-specific formatters & helpers
+│
+├── routes.ts                # Lazy-loaded route definitions
+└── index.ts                 # ModuleDefinition export
 ```
 
 ---
