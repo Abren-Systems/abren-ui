@@ -120,6 +120,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/core/tenants/current': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve the authenticated user's tenant
+     * @description Read-path endpoint that returns the current tenant metadata for the authenticated user. The tenant is resolved from the JWT `tenant_id` claim, not from any client-supplied header.
+     */
+    get: operations['read_current_tenant_api_v1_core_tenants_current_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/auth/login': {
     parameters: {
       query?: never
@@ -178,7 +198,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/journal-entries': {
+  '/api/v1/finance/ledger/journal-entries': {
     parameters: {
       query?: never
       header?: never
@@ -191,7 +211,7 @@ export interface paths {
      * Create a new journal entry with line items
      * @description Creates a double-entry journal entry in **DRAFT** status with one or more debit/credit line items.  Each line references a GL account from the Chart of Accounts and an amount in the specified currency.
      *
-     *     **Required permission:** `accounting:create_entry`
+     *     **Required permission:** `ledger:create_entry`
      *
      *     **Business rules:**
      *     - The entry is created in DRAFT status and must be explicitly posted.
@@ -203,17 +223,17 @@ export interface paths {
      *
      *     **Error scenarios:**
      *     - `400 Bad Request` — invalid account ID or currency code.
-     *     - `403 Forbidden` — caller lacks `accounting:create_entry`.
+     *     - `403 Forbidden` — caller lacks `ledger:create_entry`.
      *     - `422 Unprocessable Entity` — schema validation failure.
      */
-    post: operations['create_journal_entry_api_v1_accounting_journal_entries_post']
+    post: operations['create_journal_entry_api_v1_finance_ledger_journal_entries_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/journal-entries/{entry_id}/post': {
+  '/api/v1/finance/ledger/journal-entries/{entry_id}/post': {
     parameters: {
       query?: never
       header?: never
@@ -226,7 +246,7 @@ export interface paths {
      * Post a draft journal entry to the ledger
      * @description Transitions a journal entry from **DRAFT** to **POSTED** status, making it an immutable, auditable record in the General Ledger.
      *
-     *     **Required permission:** `accounting:post`
+     *     **Required permission:** `ledger:post`
      *
      *     **Business rules:**
      *     - Only entries in DRAFT status can be posted.
@@ -236,17 +256,17 @@ export interface paths {
      *
      *     **Error scenarios:**
      *     - `400 Bad Request` — entry is not in DRAFT status or is unbalanced.
-     *     - `403 Forbidden` — caller lacks `accounting:post`.
+     *     - `403 Forbidden` — caller lacks `ledger:post`.
      *     - `404 Not Found` — entry ID does not exist.
      */
-    post: operations['post_journal_entry_api_v1_accounting_journal_entries__entry_id__post_post']
+    post: operations['post_journal_entry_api_v1_finance_ledger_journal_entries__entry_id__post_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/journal-entries/{entry_id}/void': {
+  '/api/v1/finance/ledger/journal-entries/{entry_id}/void': {
     parameters: {
       query?: never
       header?: never
@@ -259,7 +279,7 @@ export interface paths {
      * Void a posted journal entry
      * @description Voids an existing **POSTED** journal entry, effectively reversing its impact on the ledger while maintaining an audit trail.  Voiding is only possible for posted entries.
      *
-     *     **Required permission:** `accounting:void`
+     *     **Required permission:** `ledger:void`
      *
      *     **Business rules:**
      *     - Only entries in POSTED status can be voided.
@@ -268,17 +288,17 @@ export interface paths {
      *
      *     **Error scenarios:**
      *     - `400 Bad Request` — entry is not in POSTED status.
-     *     - `403 Forbidden` — caller lacks `accounting:void`.
+     *     - `403 Forbidden` — caller lacks `ledger:void`.
      *     - `404 Not Found` — entry ID does not exist.
      */
-    post: operations['void_journal_entry_api_v1_accounting_journal_entries__entry_id__void_post']
+    post: operations['void_journal_entry_api_v1_finance_ledger_journal_entries__entry_id__void_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/accounts': {
+  '/api/v1/finance/ledger/accounts': {
     parameters: {
       query?: never
       header?: never
@@ -289,7 +309,7 @@ export interface paths {
      * List all GL accounts for the current tenant
      * @description Returns the complete Chart of Accounts for the authenticated user's tenant, including account codes, types, and hierarchy.
      *
-     *     **Required permission:** `accounting:view`
+     *     **Required permission:** `ledger:view`
      *
      *     **Business rules:**
      *     - Results are scoped to the caller's tenant — no cross-tenant access.
@@ -298,15 +318,15 @@ export interface paths {
      *
      *     **Error scenarios:**
      *     - `401 Unauthorized` — missing or invalid Bearer token.
-     *     - `403 Forbidden` — caller lacks `accounting:view`.
+     *     - `403 Forbidden` — caller lacks `ledger:view`.
      */
-    get: operations['list_accounts_api_v1_accounting_accounts_get']
+    get: operations['list_accounts_api_v1_finance_ledger_accounts_get']
     put?: never
     /**
      * Create a new GL account in the Chart of Accounts
      * @description Adds a new General Ledger account to the tenant's Chart of Accounts. Accounts form a tree structure via optional `parent_id`.
      *
-     *     **Required permission:** `accounting:manage_accounts`
+     *     **Required permission:** `ledger:manage_accounts`
      *
      *     **Business rules:**
      *     - Account codes must be unique within the tenant.
@@ -318,17 +338,17 @@ export interface paths {
      *
      *     **Error scenarios:**
      *     - `400 Bad Request` — duplicate code or invalid parent reference.
-     *     - `403 Forbidden` — caller lacks `accounting:manage_accounts`.
+     *     - `403 Forbidden` — caller lacks `ledger:manage_accounts`.
      *     - `422 Unprocessable Entity` — schema validation failure.
      */
-    post: operations['create_account_api_v1_accounting_accounts_post']
+    post: operations['create_account_api_v1_finance_ledger_accounts_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/accounts/{account_id}/deactivate': {
+  '/api/v1/finance/ledger/accounts/{account_id}/deactivate': {
     parameters: {
       query?: never
       header?: never
@@ -341,24 +361,24 @@ export interface paths {
      * Deactivate a GL account
      * @description Disables an account in the Chart of Accounts, preventing any future postings.  The account and its historical transactions remain in the ledger for reporting and audit purposes.
      *
-     *     **Required permission:** `accounting:manage_accounts`
+     *     **Required permission:** `ledger:manage_accounts`
      *
      *     **Business rules:**
      *     - Deactivated accounts are hidden from standard account selectors.
      *     - Existing journal entries referencing this account are not affected.
      *
      *     **Error scenarios:**
-     *     - `403 Forbidden` — caller lacks `accounting:manage_accounts`.
+     *     - `403 Forbidden` — caller lacks `ledger:manage_accounts`.
      *     - `404 Not Found` — account ID does not exist.
      */
-    post: operations['deactivate_account_api_v1_accounting_accounts__account_id__deactivate_post']
+    post: operations['deactivate_account_api_v1_finance_ledger_accounts__account_id__deactivate_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/accounting/accounts/{account_id}/rename': {
+  '/api/v1/finance/ledger/accounts/{account_id}/rename': {
     parameters: {
       query?: never
       header?: never
@@ -371,20 +391,20 @@ export interface paths {
      * Rename a GL account
      * @description Updates the human-readable name of an account.  The unique code and historical data remain unchanged.
      *
-     *     **Required permission:** `accounting:manage_accounts`
+     *     **Required permission:** `ledger:manage_accounts`
      *
      *     **Error scenarios:**
      *     - `400 Bad Request` — name is empty or invalid.
-     *     - `403 Forbidden` — caller lacks `accounting:manage_accounts`.
+     *     - `403 Forbidden` — caller lacks `ledger:manage_accounts`.
      */
-    post: operations['rename_account_api_v1_accounting_accounts__account_id__rename_post']
+    post: operations['rename_account_api_v1_finance_ledger_accounts__account_id__rename_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/approvals/health': {
+  '/api/v1/finance/ledger/fiscal-periods': {
     parameters: {
       query?: never
       header?: never
@@ -392,14 +412,58 @@ export interface paths {
       cookie?: never
     }
     /**
-     * Approvals module health check
-     * @description Returns a simple status indicator confirming the Approvals module is loaded and responsive.  This endpoint requires authentication and is intended for internal diagnostics.
-     *
-     *     **Required permission:** Any authenticated user.
-     *
-     *     **Note:** This is a placeholder endpoint. Full approval workflow CRUD endpoints (define policies, list pending approvals, etc.) will be added in a future release.
+     * List all financial periods
+     * @description Returns all defined fiscal periods for the tenant.
      */
-    get: operations['health_check_api_v1_approvals_health_get']
+    get: operations['list_fiscal_periods_api_v1_finance_ledger_fiscal_periods_get']
+    put?: never
+    /**
+     * Create a new financial period
+     * @description Defines a new fiscal period (e.g. Month or Year) for ledger locking.
+     */
+    post: operations['create_fiscal_period_api_v1_finance_ledger_fiscal_periods_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/finance/ledger/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve global ledger settings
+     * @description Fetches the tenant's ledger configuration (e.g. reconciliation accounts).
+     */
+    get: operations['get_ledger_settings_api_v1_finance_ledger_settings_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * Update global ledger settings
+     * @description Updates the tenant's ledger configuration.
+     */
+    patch: operations['update_ledger_settings_api_v1_finance_ledger_settings_patch']
+    trace?: never
+  }
+  '/api/v1/finance/bank/accounts': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List Bank Accounts
+     * @description Retrieves a list of all bank accounts associated with the current tenant.
+     */
+    get: operations['list_bank_accounts_api_v1_finance_bank_accounts_get']
     put?: never
     post?: never
     delete?: never
@@ -408,7 +472,147 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/api/v1/payment-requests': {
+  '/api/v1/finance/bank/scheduled-payments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create Scheduled Payment
+     * @description Creates a new scheduled payment obligation that will be executed in the future.
+     */
+    post: operations['create_scheduled_payment_api_v1_finance_bank_scheduled_payments_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/finance/bank/scheduled-payments/{payment_id}/release': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Release Scheduled Payment
+     * @description Executes a scheduled payment and updates its status, emitting settlement events.
+     */
+    post: operations['release_scheduled_payment_api_v1_finance_bank_scheduled_payments__payment_id__release_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/workflows/health': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * State Engine health check
+     * @description Infrastructure check for the generic state machine engine.
+     */
+    get: operations['health_check_api_v1_workflows_workflows_health_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/workflows/approvals/pending': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List Pending Approvals
+     * @description Returns all workflow instances awaiting approval from the current user's roles.
+     */
+    get: operations['list_pending_approvals_api_v1_workflows_workflows_approvals_pending_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/workflows/approvals/{instance_id}/actions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Execute an Approval Decision
+     * @description Registers an APPROVE or REJECT action against an active, guarded Workflow Instance.
+     */
+    post: operations['execute_approval_action_api_v1_workflows_workflows_approvals__instance_id__actions_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/state/health': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * State Engine health check
+     * @description Infrastructure check for the generic state machine engine.
+     */
+    get: operations['health_check_api_v1_workflows_state_health_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/state/policies': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create Approval Policy
+     * @description Define a new dynamic approval policy guarding a specific workflow transition.
+     */
+    post: operations['create_approval_policy_api_v1_workflows_state_policies_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/finance/ap/payment-requests': {
     parameters: {
       query?: never
       header?: never
@@ -428,7 +632,7 @@ export interface paths {
      *     **Error scenarios:**
      *     - `401 Unauthorized` — missing or invalid Bearer token.
      */
-    get: operations['list_my_requests_api_v1_payment_requests_get']
+    get: operations['list_my_requests_api_v1_finance_ap_payment_requests_get']
     put?: never
     /**
      * Create a new payment request
@@ -450,14 +654,14 @@ export interface paths {
      *     - `401 Unauthorized` — missing or invalid Bearer token.
      *     - `422 Unprocessable Entity` — schema validation failure.
      */
-    post: operations['create_payment_request_api_v1_payment_requests_post']
+    post: operations['create_payment_request_api_v1_finance_ap_payment_requests_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/payment-requests/{pr_id}': {
+  '/api/v1/finance/ap/payment-requests/{pr_id}': {
     parameters: {
       query?: never
       header?: never
@@ -474,7 +678,7 @@ export interface paths {
      *     - `401 Unauthorized` — missing or invalid Bearer token.
      *     - `404 Not Found` — payment request does not exist or belongs to a different tenant.
      */
-    get: operations['get_payment_request_api_v1_payment_requests__pr_id__get']
+    get: operations['get_payment_request_api_v1_finance_ap_payment_requests__pr_id__get']
     put?: never
     post?: never
     delete?: never
@@ -483,7 +687,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/api/v1/payment-requests/{pr_id}/submit': {
+  '/api/v1/finance/ap/payment-requests/{pr_id}/submit': {
     parameters: {
       query?: never
       header?: never
@@ -498,58 +702,14 @@ export interface paths {
      *
      *     **Required permission:** Requester (owner) of the request.
      */
-    post: operations['submit_payment_request_api_v1_payment_requests__pr_id__submit_post']
+    post: operations['submit_payment_request_api_v1_finance_ap_payment_requests__pr_id__submit_post']
     delete?: never
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/api/v1/payment-requests/{pr_id}/approve': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Approve a submitted payment request
-     * @description Advances a payment request through its approval workflow.  If this is the final approval step, the status transitions to **APPROVED**.
-     *
-     *     **Required permission:** Assigned approver for the current step.
-     */
-    post: operations['approve_payment_request_api_v1_payment_requests__pr_id__approve_post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/v1/payment-requests/{pr_id}/reject': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Reject a submitted payment request
-     * @description Transitions a payment request from **SUBMITTED** to **REJECTED** status.  A reason must be provided for the requester.
-     *
-     *     **Required permission:** Assigned approver for the current step.
-     */
-    post: operations['reject_payment_request_api_v1_payment_requests__pr_id__reject_post']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/v1/payment-requests/{pr_id}/pay': {
+  '/api/v1/finance/ap/payment-requests/{pr_id}/pay': {
     parameters: {
       query?: never
       header?: never
@@ -564,7 +724,7 @@ export interface paths {
      *
      *     **Required permission:** Finance / Disbursement officer.
      */
-    post: operations['pay_payment_request_api_v1_payment_requests__pr_id__pay_post']
+    post: operations['pay_payment_request_api_v1_finance_ap_payment_requests__pr_id__pay_post']
     delete?: never
     options?: never
     head?: never
@@ -794,6 +954,93 @@ export interface components {
         [key: string]: unknown
       }[]
     }
+    /**
+     * ApprovalActionCreate
+     * @description Payload for a user executing an Approve/Reject action on a guarded transition.
+     */
+    ApprovalActionCreate: {
+      /**
+       * Action
+       * @description The decision.
+       * @enum {string}
+       */
+      action: 'APPROVE' | 'REJECT'
+      /**
+       * Comments
+       * @description Mandatory reason or comment.
+       */
+      comments: string
+    }
+    /**
+     * ApprovalPolicyCreate
+     * @description Payload to define dynamic routing rules for a specific state transition.
+     */
+    ApprovalPolicyCreate: {
+      /** Name */
+      name: string
+      /**
+       * Transition Id
+       * Format: uuid
+       * @description The template transition to guard.
+       */
+      transition_id: string
+      /** @default ALWAYS */
+      condition_type: components['schemas']['PolicyConditionType']
+      /** Condition Value */
+      condition_value?: string | null
+      /** Steps */
+      steps: components['schemas']['ApprovalStepCreate'][]
+    }
+    /** ApprovalStepCreate */
+    ApprovalStepCreate: {
+      /** Order */
+      order: number
+      /** Required Role */
+      required_role?: string | null
+      /** Required User Id */
+      required_user_id?: string | null
+    }
+    /** BankAccountDTO */
+    BankAccountDTO: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Tenant Id
+       * Format: uuid
+       */
+      tenant_id: string
+      /** Name */
+      name: string
+      /** Account Number */
+      account_number: string
+      /** Bank Name */
+      bank_name: string
+      /** Account Type */
+      account_type: string
+      /** Currency Code */
+      currency_code: string
+      /** Current Balance */
+      current_balance: number
+      /** Bank Code */
+      bank_code?: string | null
+      /** Branch Name */
+      branch_name?: string | null
+      /** Ledger Account Id */
+      ledger_account_id?: string | null
+      /**
+       * Is Active
+       * @default true
+       */
+      is_active: boolean
+      /**
+       * Is Default
+       * @default false
+       */
+      is_default: boolean
+    }
     /** Body_login_api_v1_auth_login_post */
     Body_login_api_v1_auth_login_post: {
       /** Grant Type */
@@ -828,6 +1075,29 @@ export interface components {
       /** Imported Rows */
       imported_rows: number
     }
+    /** CreateScheduledPaymentRequest */
+    CreateScheduledPaymentRequest: {
+      /**
+       * Bank Account Id
+       * Format: uuid
+       */
+      bank_account_id: string
+      category: components['schemas']['FinancialObligationCategory']
+      /** Description */
+      description: string
+      /** Amount */
+      amount: number | string
+      /**
+       * Currency Code
+       * @default ETB
+       */
+      currency_code: string
+      /**
+       * Due Date
+       * Format: date-time
+       */
+      due_date: string
+    }
     /**
      * CreateTenantRequest
      * @description Request body for provisioning a new tenant organisation.
@@ -843,7 +1113,7 @@ export interface components {
        * Features
        * @description Optional set of feature flags to enable/disable on creation.
        * @example {
-       *       "accounting": true,
+       *       "ledger": true,
        *       "webhooks": true
        *     }
        */
@@ -938,6 +1208,60 @@ export interface components {
        * @example NOT_FOUND
        */
       code: string
+    }
+    /**
+     * FinancialObligationCategory
+     * @enum {string}
+     */
+    FinancialObligationCategory: 'SALARY' | 'RENT' | 'UTILITIES' | 'TAX' | 'SUPPLIER' | 'OTHER'
+    /**
+     * FiscalPeriodCreate
+     * @description Request body for creating a new fiscal period.
+     */
+    FiscalPeriodCreate: {
+      /** Name */
+      name: string
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string
+      /**
+       * End Date
+       * Format: date
+       */
+      end_date: string
+    }
+    /**
+     * FiscalPeriodRead
+     * @description Read model for a financial period.
+     */
+    FiscalPeriodRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Name
+       * @description Human-readable name (e.g. 'FY 2026')
+       */
+      name: string
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string
+      /**
+       * End Date
+       * Format: date
+       */
+      end_date: string
+      /**
+       * Status
+       * @description `OPEN` or `CLOSED`
+       */
+      status: string
     }
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -1142,6 +1466,26 @@ export interface components {
       is_debit: boolean
     }
     /**
+     * LedgerSettingsRead
+     * @description Read model for global ledger configuration.
+     */
+    LedgerSettingsRead: {
+      /** Default Bridge Account Id */
+      default_bridge_account_id?: string | null
+      /** Pr Payable Account Id */
+      pr_payable_account_id?: string | null
+    }
+    /**
+     * LedgerSettingsUpdate
+     * @description Request body for updating ledger settings.
+     */
+    LedgerSettingsUpdate: {
+      /** Default Bridge Account Id */
+      default_bridge_account_id?: string | null
+      /** Pr Payable Account Id */
+      pr_payable_account_id?: string | null
+    }
+    /**
      * PaymentRequestCreateDTO
      * @description Request body for creating a new payment request.
      */
@@ -1152,12 +1496,6 @@ export interface components {
        * @description UUID of the beneficiary (payee) who will receive the payment.
        */
       beneficiary_id: string
-      /**
-       * Amount
-       * @description Monetary amount to be paid.  Must be a positive number.  Precision is determined by the currency's decimal places.
-       * @example 25000
-       */
-      amount: number
       /**
        * Currency
        * @description ISO 4217 currency code for the payment amount.
@@ -1172,10 +1510,20 @@ export interface components {
        */
       justification: string
       /**
+       * Lines
+       * @description List of line items for this payment request.
+       */
+      lines: components['schemas']['PaymentRequestLineCreateDTO'][]
+      /**
        * Bank Account Id
        * @description Optional UUID of the bank account from which the payment should be disbursed.  If omitted, finance selects at payment time.
        */
       bank_account_id?: string | null
+      /**
+       * Target Liability Account Id
+       * @description Optional explicitly defined target liability account to settle against (Used primarily for Mode 2 PRs).
+       */
+      target_liability_account_id?: string | null
     }
     /**
      * PaymentRequestDTO
@@ -1201,11 +1549,11 @@ export interface components {
        */
       beneficiary_id: string
       /**
-       * Amount
-       * @description Payment amount in the specified currency.
+       * Total Amount
+       * @description Total payment amount in the specified currency.
        * @example 25000
        */
-      amount: number
+      total_amount: number
       /**
        * Currency
        * @description ISO 4217 currency code.
@@ -1223,10 +1571,20 @@ export interface components {
        */
       status: components['schemas']['PaymentRequestStatus']
       /**
+       * Lines
+       * @description List of line items associated with this request.
+       */
+      lines: components['schemas']['PaymentRequestLineDTO'][]
+      /**
        * Bank Account Id
        * @description UUID of the selected disbursement bank account, if any.
        */
       bank_account_id?: string | null
+      /**
+       * Target Liability Account Id
+       * @description Target liability account id defining settlement mapping.
+       */
+      target_liability_account_id?: string | null
       /**
        * Submitted At
        * @description Timestamp when the request was submitted for approval (ISO 8601).
@@ -1250,6 +1608,43 @@ export interface components {
       assigned_approver_id?: string | null
     }
     /**
+     * PaymentRequestLineCreateDTO
+     * @description Line item for creating a payment request.
+     */
+    PaymentRequestLineCreateDTO: {
+      /** Description */
+      description: string
+      /** Amount */
+      amount: number
+      /** Account Id */
+      account_id?: string | null
+      /** Category Id */
+      category_id?: string | null
+      /** Tax Amount */
+      tax_amount?: number | null
+    }
+    /**
+     * PaymentRequestLineDTO
+     * @description Read model for a payment request line item.
+     */
+    PaymentRequestLineDTO: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Description */
+      description: string
+      /** Amount */
+      amount: number
+      /** Account Id */
+      account_id: string | null
+      /** Category Id */
+      category_id: string | null
+      /** Tax Amount */
+      tax_amount: number | null
+    }
+    /**
      * PaymentRequestPayDTO
      * @description Request body for marking an approved request as paid.
      */
@@ -1268,22 +1663,52 @@ export interface components {
       disbursement_reference: string
     }
     /**
-     * PaymentRequestRejectDTO
-     * @description Request body for rejecting a payment request (requires reason).
-     */
-    PaymentRequestRejectDTO: {
-      /**
-       * Reason
-       * @description Reason for rejecting the request (reviewed by requester).
-       * @example Budget allocation exceeded for Q1
-       */
-      reason: string
-    }
-    /**
      * PaymentRequestStatus
      * @enum {string}
      */
     PaymentRequestStatus: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PAID'
+    /**
+     * PolicyConditionType
+     * @enum {string}
+     */
+    PolicyConditionType: 'ALWAYS' | 'AMOUNT_GREATER_THAN' | 'DEPARTMENT_IS'
+    /** ScheduledPaymentDTO */
+    ScheduledPaymentDTO: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /**
+       * Tenant Id
+       * Format: uuid
+       */
+      tenant_id: string
+      /**
+       * Bank Account Id
+       * Format: uuid
+       */
+      bank_account_id: string
+      /** Category */
+      category: string
+      /** Description */
+      description: string
+      /** Amount */
+      amount: number
+      /** Currency Code */
+      currency_code: string
+      /**
+       * Due Date
+       * Format: date-time
+       */
+      due_date: string
+      /** Status */
+      status: string
+      /** Source Module */
+      source_module?: string | null
+      /** Source Id */
+      source_id?: string | null
+    }
     /**
      * SetupRequest
      * @description Request body for the one-time ERP bootstrap operation.
@@ -1328,6 +1753,36 @@ export interface components {
        * @example 019524f5-b1a2-7e3f-c256-79d4b8f2a0e1
        */
       user_id: string
+    }
+    /**
+     * TenantDTO
+     * @description CQRS read model for a tenant.
+     */
+    TenantDTO: {
+      /**
+       * Id
+       * Format: uuid
+       * @description Unique identifier of the tenant (UUID v7).
+       */
+      id: string
+      /**
+       * Name
+       * @description Display name of the organisation.
+       * @example Addis Manufacturing PLC
+       */
+      name: string
+      /**
+       * Is Active
+       * @description Whether the tenant is active and accepting API traffic.
+       */
+      is_active: boolean
+      /**
+       * Features
+       * @description Feature flags currently enabled for the tenant.
+       */
+      features?: {
+        [key: string]: boolean
+      }
     }
     /**
      * TokenDTO
@@ -1673,6 +2128,44 @@ export interface operations {
       }
     }
   }
+  read_current_tenant_api_v1_core_tenants_current_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TenantDTO']
+        }
+      }
+      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Resource not found.** The requested entity does not exist or does not belong to the current tenant. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   login_api_v1_auth_login_post: {
     parameters: {
       query?: never
@@ -1764,7 +2257,7 @@ export interface operations {
       }
     }
   }
-  create_journal_entry_api_v1_accounting_journal_entries_post: {
+  create_journal_entry_api_v1_finance_ledger_journal_entries_post: {
     parameters: {
       query?: never
       header?: never
@@ -1824,7 +2317,7 @@ export interface operations {
       }
     }
   }
-  post_journal_entry_api_v1_accounting_journal_entries__entry_id__post_post: {
+  post_journal_entry_api_v1_finance_ledger_journal_entries__entry_id__post_post: {
     parameters: {
       query?: never
       header?: never
@@ -1891,7 +2384,7 @@ export interface operations {
       }
     }
   }
-  void_journal_entry_api_v1_accounting_journal_entries__entry_id__void_post: {
+  void_journal_entry_api_v1_finance_ledger_journal_entries__entry_id__void_post: {
     parameters: {
       query?: never
       header?: never
@@ -1953,7 +2446,7 @@ export interface operations {
       }
     }
   }
-  list_accounts_api_v1_accounting_accounts_get: {
+  list_accounts_api_v1_finance_ledger_accounts_get: {
     parameters: {
       query?: never
       header?: never
@@ -1991,7 +2484,7 @@ export interface operations {
       }
     }
   }
-  create_account_api_v1_accounting_accounts_post: {
+  create_account_api_v1_finance_ledger_accounts_post: {
     parameters: {
       query?: never
       header?: never
@@ -2051,7 +2544,7 @@ export interface operations {
       }
     }
   }
-  deactivate_account_api_v1_accounting_accounts__account_id__deactivate_post: {
+  deactivate_account_api_v1_finance_ledger_accounts__account_id__deactivate_post: {
     parameters: {
       query?: never
       header?: never
@@ -2109,7 +2602,7 @@ export interface operations {
       }
     }
   }
-  rename_account_api_v1_accounting_accounts__account_id__rename_post: {
+  rename_account_api_v1_finance_ledger_accounts__account_id__rename_post: {
     parameters: {
       query?: never
       header?: never
@@ -2171,7 +2664,251 @@ export interface operations {
       }
     }
   }
-  health_check_api_v1_approvals_health_get: {
+  list_fiscal_periods_api_v1_finance_ledger_fiscal_periods_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['FiscalPeriodRead'][]
+        }
+      }
+    }
+  }
+  create_fiscal_period_api_v1_finance_ledger_fiscal_periods_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['FiscalPeriodCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['FiscalPeriodRead']
+        }
+      }
+      /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Insufficient permissions.** The authenticated user does not hold the required RBAC permission for this operation. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Validation error.** One or more request fields failed schema or business-rule validation. */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ValidationErrorResponse']
+        }
+      }
+    }
+  }
+  get_ledger_settings_api_v1_finance_ledger_settings_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LedgerSettingsRead']
+        }
+      }
+    }
+  }
+  update_ledger_settings_api_v1_finance_ledger_settings_patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LedgerSettingsUpdate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LedgerSettingsRead']
+        }
+      }
+      /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Insufficient permissions.** The authenticated user does not hold the required RBAC permission for this operation. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Validation error.** One or more request fields failed schema or business-rule validation. */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ValidationErrorResponse']
+        }
+      }
+    }
+  }
+  list_bank_accounts_api_v1_finance_bank_accounts_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['BankAccountDTO'][]
+        }
+      }
+    }
+  }
+  create_scheduled_payment_api_v1_finance_bank_scheduled_payments_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateScheduledPaymentRequest']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ScheduledPaymentDTO']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  release_scheduled_payment_api_v1_finance_bank_scheduled_payments__payment_id__release_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        payment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ScheduledPaymentDTO']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  health_check_api_v1_workflows_workflows_health_get: {
     parameters: {
       query?: never
       header?: never
@@ -2191,7 +2928,115 @@ export interface operations {
       }
     }
   }
-  list_my_requests_api_v1_payment_requests_get: {
+  list_pending_approvals_api_v1_workflows_workflows_approvals_pending_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+    }
+  }
+  execute_approval_action_api_v1_workflows_workflows_approvals__instance_id__actions_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        instance_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ApprovalActionCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  health_check_api_v1_workflows_state_health_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+    }
+  }
+  create_approval_policy_api_v1_workflows_state_policies_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ApprovalPolicyCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_my_requests_api_v1_finance_ap_payment_requests_get: {
     parameters: {
       query?: never
       header?: never
@@ -2220,7 +3065,7 @@ export interface operations {
       }
     }
   }
-  create_payment_request_api_v1_payment_requests_post: {
+  create_payment_request_api_v1_finance_ap_payment_requests_post: {
     parameters: {
       query?: never
       header?: never
@@ -2280,7 +3125,7 @@ export interface operations {
       }
     }
   }
-  get_payment_request_api_v1_payment_requests__pr_id__get: {
+  get_payment_request_api_v1_finance_ap_payment_requests__pr_id__get: {
     parameters: {
       query?: never
       header?: never
@@ -2329,7 +3174,7 @@ export interface operations {
       }
     }
   }
-  submit_payment_request_api_v1_payment_requests__pr_id__submit_post: {
+  submit_payment_request_api_v1_finance_ap_payment_requests__pr_id__submit_post: {
     parameters: {
       query?: never
       header?: never
@@ -2346,7 +3191,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          'application/json': components['schemas']['PaymentRequestDTO']
         }
       }
       /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
@@ -2387,127 +3232,7 @@ export interface operations {
       }
     }
   }
-  approve_payment_request_api_v1_payment_requests__pr_id__approve_post: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        pr_id: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': unknown
-        }
-      }
-      /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Insufficient permissions.** The authenticated user does not hold the required RBAC permission for this operation. */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Validation error.** One or more request fields failed schema or business-rule validation. */
-      422: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ValidationErrorResponse']
-        }
-      }
-    }
-  }
-  reject_payment_request_api_v1_payment_requests__pr_id__reject_post: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        pr_id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['PaymentRequestRejectDTO']
-      }
-    }
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': unknown
-        }
-      }
-      /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Insufficient permissions.** The authenticated user does not hold the required RBAC permission for this operation. */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description **Validation error.** One or more request fields failed schema or business-rule validation. */
-      422: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ValidationErrorResponse']
-        }
-      }
-    }
-  }
-  pay_payment_request_api_v1_payment_requests__pr_id__pay_post: {
+  pay_payment_request_api_v1_finance_ap_payment_requests__pr_id__pay_post: {
     parameters: {
       query?: never
       header?: never
@@ -2528,7 +3253,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          'application/json': components['schemas']['PaymentRequestDTO']
         }
       }
       /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */

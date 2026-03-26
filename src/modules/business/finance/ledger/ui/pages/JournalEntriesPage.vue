@@ -1,38 +1,66 @@
 <script setup lang="ts">
+import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { DataGrid, useDataGrid } from '@/core/ui/data-grid'
+import { useJournalEntries } from '../../application/composables/useJournalEntries'
+import { Badge } from '@/core/ui/badge'
+import { Button } from '@/core/ui/button'
+import type { components } from '@/core/api/generated.types'
 
+const { entries, isLoading, postEntry } = useJournalEntries()
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
 
-type JournalEntryRow = {
-  id: string
-  date: string
-  description: string
-  status: string
-}
-
-const columns: ColumnDef<JournalEntryRow>[] = [
-  { accessorKey: 'id', header: 'ID' },
+type JournalEntryRead = components['schemas']['JournalEntryRead']
+const columns: ColumnDef<JournalEntryRead>[] = [
+  { accessorKey: 'entry_number', header: 'Entry #' },
   { accessorKey: 'date', header: 'Date' },
   { accessorKey: 'description', header: 'Description' },
-  { accessorKey: 'status', header: 'Status' },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string
+      let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'secondary'
+      if (status === 'POSTED') variant = 'default'
+      if (status === 'VOIDED') variant = 'destructive'
+      if (status === 'DRAFT') variant = 'outline'
+      return h(Badge, { variant }, () => status)
+    },
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => {
+      const entry = row.original
+      if (entry.status !== 'DRAFT') return null
+      return h(
+        Button,
+        {
+          size: 'sm',
+          variant: 'outline',
+          onClick: () => postEntry(entry.id),
+        },
+        () => 'Post',
+      )
+    },
+  },
 ]
-
-const data: JournalEntryRow[] = []
-const isPending = false
 </script>
 
 <template>
   <div style="display: flex; flex-direction: column; gap: 20px; height: 100%">
-    <h1 style="font-size: 22px; font-weight: 700; color: var(--color-grid-text); margin: 0">
-      Journal Entries
-    </h1>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <h1 style="font-size: 22px; font-weight: 700; color: var(--color-grid-text); margin: 0">
+        Journal Entries
+      </h1>
+      <Button variant="default">New Entry</Button>
+    </div>
 
     <div style="flex: 1; min-height: 0">
       <DataGrid
         :columns="columns"
-        :data="data"
-        :loading="isPending"
+        :data="entries"
+        :loading="isLoading"
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
         v-model:column-visibility="columnVisibility"
