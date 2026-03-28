@@ -12,7 +12,11 @@ export function usePendingApprovals() {
     queryKey: ['workflow-pending-tasks'],
     queryFn: async () => {
       const dtos = await workflowsAdapter.getPendingTasks()
-      return dtos.map(mapToPendingApproval)
+      if (!Array.isArray(dtos)) {
+        console.warn('Expected array for pending tasks, got:', dtos)
+        return []
+      }
+      return dtos.filter((d) => !!d).map(mapToPendingApproval)
     },
     // ERP data can stay stale for a bit, but we want freshness for task lists
     staleTime: 1000 * 30,

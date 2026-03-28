@@ -7,6 +7,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/LoginPage.vue'),
     meta: { layout: 'public' },
   },
+  {
+    path: '/users',
+    name: 'CoreUsers',
+    component: () => import('./pages/UsersPage.vue'),
+  },
 ]
 
 export default routes
