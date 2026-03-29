@@ -3,6 +3,7 @@ import { ledgerModule } from './business/finance/ledger'
 import { bankModule } from './business/finance/bank'
 import { paymentRequestsModule } from './business/finance/ap/payment-requests'
 import { vendorBillsModule } from './business/finance/ap/vendor-bills'
+import { reportingModule } from './business/reporting'
 import { workflowsModule } from './platform/workflows'
 import type { BusinessDomain, PlatformEngine } from '@/core/types/module.types'
 
@@ -16,6 +17,7 @@ export const businessModules: BusinessDomain[] = [
   bankModule,
   paymentRequestsModule,
   vendorBillsModule,
+  reportingModule,
 ] as unknown as BusinessDomain[]
 
 export const platformModules: PlatformEngine[] = [coreModule, workflowsModule]
