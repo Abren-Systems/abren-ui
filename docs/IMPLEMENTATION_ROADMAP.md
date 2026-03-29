@@ -149,6 +149,12 @@ _Blueprint: [MODULE_STRUCTURE.md](architecture/MODULE_STRUCTURE.md)_
 | `ui/grids/payment-request.grid.ts`                   | ✅     | Column definitions                      |
 | `index.ts` + `routes.ts`                             | ✅     | Module registered                       |
 
+### 4.4 Reporting (`business/reporting`)
+
+| Component        | Status | Notes                            |
+| ---------------- | ------ | -------------------------------- |
+| Module structure | 🔨     | Initial Cashflow Dashboard built |
+
 ---
 
 ## 5. Platform Modules (`src/modules/platform/`)
@@ -175,19 +181,14 @@ _Blueprint: [MODULE_STRUCTURE.md](architecture/MODULE_STRUCTURE.md)_
 | `ui/components/WorkflowActionDialog.vue`         | ✅     | Approve/reject dialog                     |
 | State Machine Configuration UI                   | 📋     | Backend engine exists, admin UI not built |
 
-### 5.3 Reporting (`platform/reporting`)
+### 5.3 System Administration (`platform/system`)
 
-| Component        | Status | Notes                               |
-| ---------------- | ------ | ----------------------------------- |
-| Module structure | 📋     | Directory exists, no implementation |
+| Component                         | Status | Notes                                                      |
+| --------------------------------- | ------ | ---------------------------------------------------------- |
+| Module structure                  | 📋     | Directory exists, no implementation                        |
+| SettingsProvider Configuration UI | 📋     | Admin interface for system-wide configuration & thresholds |
 
-### 5.4 System Administration (`platform/system`)
-
-| Component        | Status | Notes                               |
-| ---------------- | ------ | ----------------------------------- |
-| Module structure | 📋     | Directory exists, no implementation |
-
-### 5.5 Webhooks (`platform/webhooks`)
+### 5.4 Webhooks (`platform/webhooks`)
 
 | Component        | Status | Notes                               |
 | ---------------- | ------ | ----------------------------------- |
@@ -202,6 +203,7 @@ _Blueprint: [STATE_MANAGEMENT.md](architecture/STATE_MANAGEMENT.md), [FORM_ARCHI
 | Concern                                              | Status | Notes                                        |
 | ---------------------------------------------------- | ------ | -------------------------------------------- |
 | TanStack Query-First State (no domain data in Pinia) | ✅     | Consistently applied across all modules      |
+| Mapper-as-Factory (Zod → Domain Object parsing)      | ✅     | Extensively enforced across all API mappers  |
 | TanStack Form + Zod integration                      | 📋     | Deps installed, no forms implemented yet     |
 | Global toast/notification system                     | 📋     | Prescribed in ERROR_HANDLING.md              |
 | Error boundary composable                            | 📋     | Prescribed in ERROR_HANDLING.md §6           |
@@ -215,13 +217,13 @@ _Blueprint: [STATE_MANAGEMENT.md](architecture/STATE_MANAGEMENT.md), [FORM_ARCHI
 
 ## 7. Cleanup Tasks
 
-| Task                                                    | Priority | Notes                                               |
-| ------------------------------------------------------- | -------- | --------------------------------------------------- |
-| Consolidate brand types (delete `core/domain/types.ts`) | **P0**   | Duplicate `Brand`, `TenantId`, `UserId` definitions |
-| Delete `core/ui/data-table/`                            | **P0**   | Dead code, replaced by `DataGrid`                   |
-| Delete `modules/shared/`                                | **P0**   | Empty placeholder directories                       |
-| Extract auth storage keys to shared constants           | **P1**   | Duplicated in `auth.store.ts` and `http-client.ts`  |
-| Replace inline styles in `ChartOfAccountsPage.vue`      | **P1**   | Violates anti-pattern catalog                       |
+| Task                                                    | Priority | Notes                                              |
+| ------------------------------------------------------- | -------- | -------------------------------------------------- |
+| Consolidate brand types (delete `core/domain/types.ts`) | ✅       | Completed                                          |
+| Delete `core/ui/data-table/`                            | ✅       | Completed                                          |
+| Delete `modules/shared/`                                | **P0**   | Empty placeholder directories                      |
+| Extract auth storage keys to shared constants           | **P1**   | Duplicated in `auth.store.ts` and `http-client.ts` |
+| Replace inline styles in `ChartOfAccountsPage.vue`      | **P1**   | Violates anti-pattern catalog                      |
 
 ---
 
@@ -234,11 +236,11 @@ _Blueprint: [STATE_MANAGEMENT.md](architecture/STATE_MANAGEMENT.md), [FORM_ARCHI
 | Design System — Components  | 6           | 0       | 7       | 1              | 14     |
 | Design System — UX Patterns | 0           | 1       | 6       | 0              | 7      |
 | Application Shell           | 4           | 1       | 1       | 0              | 6      |
-| Business Modules            | 15          | 2       | 1       | 1              | 19     |
+| Business Modules            | 15          | 3       | 1       | 1              | 20     |
 | Platform Modules            | 9           | 1       | 5       | 0              | 15     |
-| Cross-Cutting               | 1           | 1       | 7       | 0              | 9      |
-| **Total**                   | **57**      | **6**   | **29**  | **3**          | **95** |
+| Cross-Cutting               | 2           | 1       | 7       | 0              | 10     |
+| **Total**                   | **58**      | **7**   | **29**  | **3**          | **97** |
 
-> **Implementation Coverage: ~60%** (57 implemented / 95 total specifications)
+> **Implementation Coverage: ~60%** (58 implemented / 97 total specifications)
 
 The architecture is ~100% compliant where implemented. The gap is entirely about scope (features not yet built), not quality (features built wrong). This is the correct trajectory for MVP with full architectural compliance.
