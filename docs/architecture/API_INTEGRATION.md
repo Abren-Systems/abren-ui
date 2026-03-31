@@ -10,11 +10,11 @@
     ↓  HTTP (JSON Response)
 
 ┌─────────────────────────────────────────────────────┐
-│ Core HTTP Client (core/api/) │ ← Response Envelope Unwrap
+│ Core HTTP Client (shared/api/) │ ← Response Envelope Unwrap
 ├─────────────────────────────────────────────────────┤
-│ Adapter (infrastructure/{m}.adapter.ts) │ ← Fetches **DTOs** from API
+│ Adapter (infrastructure/{m}\_adapter.ts) │ ← Fetches **DTOs** from API
 ├─────────────────────────────────────────────────────┤
-│ Mapper (infrastructure/{m}.mapper.ts) │ ← Converts **DTO** → **Domain Type**
+│ Mapper (infrastructure/mappers.ts) │ ← Converts **DTO** ↔ **Domain Type**
 ├─────────────────────────────────────────────────────┤
 │ Application (application/composables/use\*.ts) │ ← Orchestrates via **TanStack Query**
 └─────────────────────────────────────────────────────┘
@@ -30,10 +30,9 @@ All modules share a single Axios instance configured with interceptors for authe
 ### 2.1 Base Configuration
 
 ````typescript
-// core/api/http-client.ts
+// shared/api/http-client.ts
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/shared/auth/auth.store'
-import { generateIdempotencyKey } from '@/shared/composables/useIdempotencyKey'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -60,7 +59,7 @@ httpClient.interceptors.request.use((config) => {
 httpClient.interceptors.request.use((config) => {
   const mutatingMethods = ['post', 'put', 'patch']
   if (mutatingMethods.includes(config.method?.toLowerCase() ?? '')) {
-    config.headers['Idempotency-Key'] = generateIdempotencyKey()
+    config.headers['Idempotency-Key'] = crypto.randomUUID()
   }
   return config
 })
@@ -91,7 +90,7 @@ The backend provides a unified response envelope. The Core HTTP Client is respon
 ### 2.3 Response Types & Unwrapping Logic
 
 ```typescript
-// core/api/types.ts
+// shared/api/types.ts
 
 /**
  * Standard Success Envelope
@@ -140,55 +139,51 @@ Each module has a typed **Adapter** that wraps the shared HTTP client. Adapters 
 
 ### 4.1 Purpose [MANDATORY]
 
-Mappers are the **Integrity Firewall** and **Primary Domain Factory** between backend DTOs and frontend Models. In the Abren ERP, we follow the **Mapper-as-Factory** pattern to achieve full-stack symmetry:
-
-1. **Isolation**: Backend field renames only propagate to the mapper file, not to components.
-2. **Domain Logic Capture**: UI-specific computed values (labels, permissions, formatting) are captured _at the boundary_, not in the component.
-3. **Validation**: Mapping ensures raw API data (DTOs) conforms to strict frontend Typescript models.
-
----
-
-## 3. Module API Clients
-
-Each module has a typed API client that wraps the shared HTTP client with module-specific endpoint methods.
-
-// modules/finance/ap/infrastructure/payment_request_adapter.ts
-import { httpClient } from '@/shared/api/http-client'
+Mappers are the **Integrity Firewall** // modules/finance/ap/infrastructure/payment_request_adapter.ts
+import { apiGet, apiPost } from '@/shared/api/http-client'
 import type {
 PaymentRequestRead,
 PaymentRequestCreate,
-PaymentRequestUpdate
-} from '@/shared/api/generated.types'
+PaymentRequestDTO
+} from './api.types'
 
 const BASE = '/payment-requests'
 
 export const paymentRequestAdapter = {
 // GET /api/v1/payment-requests
 async list(): Promise<PaymentRequestRead[]> {
-return httpClient.get(BASE)
+return apiGet<PaymentRequestRead[]>(BASE)
 },
 
 // GET /api/v1/payment-requests/:id
 async get(id: string): Promise<PaymentRequestRead> {
-return httpClient.get(`${BASE}/${id}`)
+return apiGet<PaymentRequestRead>(`${BASE}/${id}`)
 },
 
 // POST /api/v1/payment-requests
-async create(dto: PaymentRequestCreateDTO): Promise<PaymentRequestDTO> {
-return httpClient.post(BASE, dto)
+async create(dto: PaymentRequestCreate): Promise<PaymentRequestDTO> {
+return apiPost<PaymentRequestDTO>(BASE, dto)
 },
 
 // POST /api/v1/payment-requests/:id/submit
 async submit(id: string): Promise<PaymentRequestDTO> {
-return httpClient.post(`${BASE}/${id}/submit`)
+return apiPost<PaymentRequestDTO>(`${BASE}/${id}/submit`)
 },
 
-// POST /api/v1/payment-requests/:id/approve
-async approve(id: string): Promise<PaymentRequestDTO> {
-return httpClient.post(`${BASE}/${id}/approve`)
+// POST /api/v1/payment-requests/:id/pay
+async pay(id: string, dto: any): Promise<PaymentRequestDTO> {
+return apiPost<PaymentRequestDTO>(`${BASE}/${id}/pay`, dto)
 },
+}
 
-// POST /api/v1/payment-requests/:id/reject
+```
+
+### 3.2 Rules
+- **One API client per module**. No shared "mega API" file.
+- **Return raw DTOs**. Mappers are called by composables, not by the API client.
+- **Use action-oriented method names** matching backend endpoint names (`submit`, `approve`, `reject`, `pay`).
+- **Use apiGet/apiPost helpers**. Never call the raw `httpClient` instance from a module.
+
 async reject(id: string, reason: string): Promise<PaymentRequestDTO> {
 return httpClient.post(`${BASE}/${id}/reject`, { reason })
 },
@@ -199,9 +194,10 @@ return httpClient.post(`${BASE}/${id}/pay`, dto)
 },
 }
 
-````
+```
 
 ### 3.2 Rules
+
 - **One API client per module**. No shared "mega API" file.
 - **Return raw DTOs**. Mappers are called by composables, not by the API client.
 - **Use action-oriented method names** matching backend endpoint names (`submit`, `approve`, `reject`, `pay`).
@@ -245,7 +241,7 @@ export function useApiMutation<TData, TVariables>(
     },
   })
 }
-````
+```
 
 **Usage in a module composable:**
 
@@ -253,14 +249,14 @@ export function useApiMutation<TData, TVariables>(
 // modules/finance/ap/application/composables/usePaymentRequests.ts
 import { useQuery } from '@tanstack/vue-query'
 import { paymentRequestAdapter } from '../infrastructure/payment_request_adapter'
-import { mapPaymentRequest } from '../infrastructure/payment_request.mapper'
+import { APMapper } from '../infrastructure/mappers'
 
 export function usePaymentRequests() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['payment-requests'],
     queryFn: async () => {
       const dtos = await paymentRequestAdapter.list()
-      return dtos.map(mapPaymentRequest)
+      return dtos.map(APMapper.toPaymentRequest)
     },
   })
 
@@ -359,12 +355,13 @@ npm install -D openapi-typescript
 import type { components } from '@/shared/api/generated.types'
 
 // Reference specific DTOs
-type PaymentRequestDTO = components['schemas']['PaymentRequestDTO']
-type PaymentRequestCreateDTO = components['schemas']['PaymentRequestCreateDTO']
-type PaymentRequestPayDTO = components['schemas']['PaymentRequestPayDTO']
-```
+type PaymentRequestDTO = components['schemas']['PaymentRequestRead']
+type PaymentRequestCreateDTO = components['schemas']['PaymentRequestCreate']
 
-> **Note:** Generated types go into `core/api/generated.types.ts`. Module-level `api.types.ts` files re-export relevant types for encapsulation. This way, if you switch from OpenAPI codegen to manual types later, only the re-export file changes.
+/**
+ * Note: Generated types go into shared/api/generated.types.ts.
+ * Module-level infrastructure/api.types.ts files re-export relevant types for encapsulation.
+ */
 
 ---
 
@@ -373,8 +370,10 @@ type PaymentRequestPayDTO = components['schemas']['PaymentRequestPayDTO']
 ### 6.1 Error Flow
 
 ```
+
 API Call → Axios Error → ApiError class → Composable catch → Store error state → Component display
-```
+
+````
 
 ### 6.2 Global vs Local Error Handling
 
@@ -409,4 +408,4 @@ httpClient.interceptors.response.use(null, (error) => {
 
   return Promise.reject(error)
 })
-```
+````

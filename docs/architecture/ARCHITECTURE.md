@@ -19,7 +19,7 @@ The frontend is **domain-aware and backend-aligned**, not an exact mirror. The b
 
 | Backend Concept          | Frontend Analog       | Relationship                                    |
 | ------------------------ | --------------------- | ----------------------------------------------- |
-| Bounded Context (module) | Hierarchical Module   | **Bifurcated** — Business vs Platform           |
+| Bounded Context (module) | Simple Flat Module    | **1:1 alignment** — Mirroring backend modules   |
 | Shared Kernel            | `src/shared/` library | **1:1 alignment** — contracts & primitives      |
 | Domain Entity            | Plain Reactive Type   | **Vue-native** — No classes to break reactivity |
 | Value Object             | Immutable Class       | **Encapsulated Logic** (e.g. `Money`)           |
@@ -64,7 +64,7 @@ The backend's **OpenAPI Specification** is the authoritative contract for the fu
 | **Infra is the Firewall** | Mandatory Mappers in `infrastructure/` | Backend DTO leakage          |
 | **App is Orchestration**  | Side effects ONLY in `application/`    | Logic scattered in UI        |
 | **UI is Presentation**    | Pages use formatters, not domain logic | Presentation coupling        |
-| **Bifurcated Mono-Repo**  | Business vs Platform separation        | Engineering/Business overlap |
+| **Modular Monolith**      | Flat module separation                 | Engineering/Business overlap |
 
 ### 2.2 Strict Dependency Flow
 
@@ -170,14 +170,15 @@ A **module** is a self-contained directory under `src/modules/` that represents 
 ### 4.2 Module Internal Structure (Mandatory)
 
 ```
-src/modules/{category}/{module-name}/
+src/modules/{module-name}/
 ├── infrastructure/  # FIREWALL: Mappers, Adapters (ACL)
 ├── domain/          # PURE: Interfaces, Value Objects, Logic
 ├── application/     # ORCHESTRATION: Use Case Composables
-└── ui/              # PRESENTATION: Components, Pages, Formatters
-    ├── components/
-    ├── pages/       # List, Detail, Create, Edit, Wizard variants
-    └── utils/       # UI-specific formatters
+├── ui/              # 4. PRESENTATION: Components, Pages, Formatters
+│   └── {aggregate}/ # (Optional) Sliced by Aggregate Root for complex modules
+│       ├── components/
+│       ├── pages/   # List, Detail, Create, Edit, Wizard variants
+│       └── utils/   # UI-specific formatters
 ```
 
 ### 4.3 Module Registration Pattern
@@ -228,25 +229,25 @@ Every module infrastructure layer must implement mappers with two standardized f
 - `toDTO()`: Transforms a frontend model back into the raw backend shape for mutations.
 
 ```typescript
-// modules/payment-requests/infrastructure/payment-request.mapper.ts
+// modules/ap/infrastructure/mappers.ts
 
-import type { PaymentRequestDTO } from '../infrastructure/api.types'
-import type { PaymentRequestViewModel } from '../ui/types/view.types'
+import type { VendorBillDTO } from '../infrastructure/api.types'
+import type { VendorBill } from '../domain/vendor-bill.types'
+import { Money } from '@/shared/domain/money'
+import { toId } from '@/shared/types/brand.types'
 
 /**
- * Mapper-as-Factory for Payment Requests.
+ * Mapper-as-Factory for AP.
  * Ensures the UI is never coupled to the backend's raw response shape.
  */
-export function toViewModel(dto: PaymentRequestDTO): PaymentRequestViewModel {
-  return {
-    id: dto.id,
-    beneficiary: dto.beneficiary_name,
-    amount: Money.from(dto.amount, dto.currency),
-    status: dto.status,
-    // derivation/logic capture
-    statusLabel: STATUS_LABELS[dto.status],
-    canSubmit: dto.status === 'DRAFT',
-    submittedAt: dto.submitted_at ? formatDate(dto.submitted_at) : null,
+export class APMapper {
+  static toVendorBill(dto: VendorBillDTO): VendorBill {
+    return {
+      id: toId<VendorBillId>(dto.id),
+      beneficiary: dto.beneficiary_name,
+      amount: Money.from(dto.amount, dto.currency),
+      status: dto.status,
+    }
   }
 }
 ```

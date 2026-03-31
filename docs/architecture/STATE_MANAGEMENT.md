@@ -195,33 +195,27 @@ export function useSubmitRequest() {
 
 ---
 
-## 6. Auth Store (Shared Cross-Cutting Concern)
-
-The auth store is the **only** store in `core/`. It holds identity state consumed by all modules:
-
-```typescript
-// core/auth/auth.store.ts
+// shared/auth/auth.store.ts
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(null)
-  const currentUser = ref<CurrentUser | null>(null)
-  const currentTenant = ref<TenantInfo | null>(null)
+const token = ref<string | null>(null)
+const currentUser = ref<CurrentUser | null>(null)
+const currentTenant = ref<TenantInfo | null>(null)
 
-  const isAuthenticated = computed(() => !!token.value)
-  const tenantFeatures = computed(() => currentTenant.value?.features ?? {})
+const isAuthenticated = computed(() => !!token.value)
+const tenantFeatures = computed(() => currentTenant.value?.features ?? {})
 
-  function hasFeature(feature: string): boolean {
-    return tenantFeatures.value[feature] === true
-  }
+function hasFeature(feature: string): boolean {
+return tenantFeatures.value[feature] === true
+}
 
-  return {
-    token,
-    currentUser,
-    currentTenant,
-    isAuthenticated,
-    tenantFeatures,
-    hasFeature,
-  }
+return {
+token,
+currentUser,
+currentTenant,
+isAuthenticated,
+tenantFeatures,
+hasFeature,
+}
 })
-```
 
-This store is not a bounded context — it's infrastructure that enables module isolation by providing identity context to route guards and API interceptors.
+This store is not a bounded context — it is a **shared technical concern** that enables module isolation by providing identity context to route guards and API interceptors.

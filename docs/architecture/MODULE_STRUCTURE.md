@@ -8,14 +8,14 @@
 
 Each backend module has a 1:1 frontend counterpart:
 
-| Module      | Category | Sub-Path             | Description                     |
-| ----------- | -------- | -------------------- | ------------------------------- |
-| `core`      | Platform | `core`               | Identity, Tenants, RBAC         |
-| `workflows` | Platform | `workflows`          | State Machine, Engine           |
-| `ledger`    | Business | `finance/ledger`     | Chart of Accounts, G/L          |
-| `bank`      | Business | `finance/bank`       | Cash Management, Reconciliation |
-| `ap`        | Business | `finance/ap`         | Accounts Payable, Payments      |
-| `reporting` | Platform | `platform/reporting` | Cross-domain analytics          |
+| Module      | Sub-Path         | Description                     |
+| ----------- | ---------------- | ------------------------------- |
+| `core`      | `core`           | Identity, Tenants, RBAC         |
+| `workflows` | `workflows`      | State Machine, Engine           |
+| `ledger`    | `finance/ledger` | Chart of Accounts, G/L          |
+| `bank`      | `finance/bank`   | Cash Management, Reconciliation |
+| `ap`        | `finance/ap`     | Accounts Payable, Payments      |
+| `reporting` | `reporting`      | Cross-domain analytics          |
 
 ---
 
@@ -32,12 +32,13 @@ To maintain a scalable and clean workspace, modules are partitioned into two arc
 
 **Rule:** Every backend module (Bounded Context) maps to exactly **one** frontend module.
 
-To prevent "Sub-Module Fatigue," do **NOT** create deep layer nesting for related features. For example, `Payment Requests` and `Vendor Bills` are both features of the `AP` (Accounts Payable) module and MUST live within the same 4-layer taxonomy:
+To prevent "Sub-Module Fatigue," do **NOT** create deep layer nesting for related features. For example, `Payment Requests` and `Vendor Bills` are both features of the `AP` (Accounts Payable) module and MUST live within the same decoupled 4-layer taxonomy:
 
-- ❌ `finance/ap/infrastructure/`
+- ❌ `finance/ap/payment-requests/infrastructure/`
 - ✅ `finance/ap/infrastructure/` (Shared adapter for all AP context)
 
-**UI Organization:** Within the `ui/` layer, use feature-organized folders to keep components manageable (e.g., `ui/payment-requests/` and `ui/vendor-bills/`).
+**UI Organization:** Within the `ui/` layer of complex modules, you **MUST** slice the presentation layer into **Aggregate Roots** to prevent component soup.
+For example, `ui/payment-requests/pages/` and `ui/vendor-bills/pages/`.
 
 ---
 
@@ -46,13 +47,13 @@ To prevent "Sub-Module Fatigue," do **NOT** create deep layer nesting for relate
 Every module **MUST** adhere to the **4-Layer Taxonomy** to ensure horizontal scalability and prevent business logic leakage into the presentation layer.
 
 ```text
-src/modules/{category}/{module}/
+src/modules/{module}/
 ├── domain/                  # [Pure] Business rules & Types
 │   ├── {entity}.types.ts    # Frontend domain models
 │   └── {vo}.ts              # Value Objects (logic-rich types like Money)
 │
 ├── infrastructure/          # [Firewall] Anti-Corruption Layer (ACL)
-│   ├── {module}.mapper.ts   # [MANDATORY] Mapper-as-Factory (DTO ↔ UI Model)
+│   ├── mappers.ts           # [MANDATORY] Mapper-as-Factory (DTO ↔ UI Model)
 │   ├── {module}_adapter.ts  # [I/O] Typed API Communication
 │   └── api.types.ts         # Backend DTO interfaces (Source: Backend OpenAPI)
 │
@@ -62,12 +63,13 @@ src/modules/{category}/{module}/
 │       └── use{Action}.ts   # Command Facade (Mutations & Side-effects)
 │
 ├── ui/                      # [Presentation] View-only layer
-│   ├── components/          # Stateless molecules & module-specific atoms
-│   ├── pages/               # Route-level stateful orchestrators
-│   ├── grids/               # TanStack Table column configurations
-│   └── utils/               # Display formatters
+│   └── {aggregate_root}/    # Slice by feature for complex modules (e.g. `ui/accounts/`)
+│       ├── components/      # Stateless molecules & module-specific atoms
+│       ├── pages/           # Route-level stateful orchestrators
+│       ├── grids/           # TanStack Table column configurations
+│       └── utils/           # Display formatters
 │
-├── routes.ts                # Lazy-loaded route definitions
+├── routes.ts                # Synchronous RouteRecordRaw definitions
 └── index.ts                 # ModuleDefinition export
 ```
 
@@ -136,20 +138,32 @@ import { mapAccount } from '../infrastructure/ledger.mapper'
 import { usePaymentStore } from '@/modules/finance/ap/...'
 ```
 
-### 4.2 ESLint Rule Configuration
+### 4.2 ESLint Boundary Configuration
+
+We strictly enforce our 4 layers via `eslint-plugin-boundaries` in `eslint.config.mjs`:
 
 ```javascript
-// eslint.config.js
-{
-  'no-restricted-imports': ['error', {
-    patterns: [
-      {
-        group: ['@/modules/*/stores/*', '@/modules/*/api/*', '@/modules/*/composables/*'],
-        message: 'Cross-module imports are prohibited. Use the Event Bus or Core types.',
-      }
-    ]
-  }]
-}
+'boundaries/element-types': [
+  'error',
+  {
+    default: 'disallow',
+    rules: [
+      { from: 'domain', allow: ['shared', 'domain'] },
+      { from: 'application', allow: ['shared', 'domain', 'application'] },
+      { from: 'infrastructure', allow: ['shared', 'domain', 'infrastructure'] },
+      { from: 'ui', allow: ['shared', 'domain', 'application', 'ui'] },
+    ],
+  },
+]
+```
+
+We also strictly forbid cross-module imports natively using relative blockers:
+
+```javascript
+'no-restricted-imports': [
+  'error',
+  { patterns: [{ group: ['../*/**', '../../*/**', '../*/../*/**'] }] }
+]
 ```
 
 ### 4.3 Data Flow Between Modules
@@ -180,12 +194,13 @@ Each module exports a `ModuleDefinition` that includes its routes, permissions, 
 ```typescript
 // modules/finance/ledger/index.ts
 import type { ModuleDefinition } from '@/shared/types/module.types'
+import routes from './routes'
 
 export const ledgerModule: ModuleDefinition = {
   id: 'ledger',
   name: 'General Ledger',
   category: 'business',
-  routes: () => import('./routes').then((m) => m.default),
+  routes,
   permissions: ['ledger.view', 'ledger.edit'],
   menuItems: [{ label: 'Chart of Accounts', route: 'LedgerCoa', icon: 'book-open' }],
 }

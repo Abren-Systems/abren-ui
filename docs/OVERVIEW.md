@@ -55,29 +55,29 @@ The frontend mirrors the backend's bounded contexts as self-contained modules:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│               PLATFORM ENGINES (Infra)              │
+│               PLATFORM ENGINES (Shared)             │
 ├──────────────────┬──────────────────┬───────────────┤
-│  Core / ID       │  Workflows       │  Reporting    │
-│  (core) │ (platform/wf)    │ (platform/rep)│
+│      Core        │    Workflows     │   Reporting   │
+│     (core)       │   (workflows)    │  (reporting)  │
 └──────────────────┴──────────────────┴───────────────┘
                         │
           ┌─────────────┴─────────────┐
-          │     BUSINESS APPS (Value) │
+          │     BUSINESS APPS (Domain)│
           ├──────────────────┬────────┴───────┐
-          │      Finance     │      Sales     │
-          │ (finance)        │ (sales)        │
+          │      Finance     │      Bank      │
+          │ (finance/ledger) │ (finance/bank) │
           └──────────────────┴────────────────┘
 ```
 
-| Module      | Namespace            | Category | Description                         | Status         |
-| ----------- | -------------------- | -------- | ----------------------------------- | -------------- |
-| `core`      | `core`               | Engine   | Tenants, Identity, RBAC             | ✅ Implemented |
-| `workflows` | `workflows`          | Engine   | Universal State Machine             | ✅ Implemented |
-| `ledger`    | `finance/ledger`     | App      | G/L Account Management              | ✅ Implemented |
-| `bank`      | `finance/bank`       | App      | Cash & Bank Integration             | 📋 Planned     |
-| `ap`        | `finance/ap`         | App      | Accounts Payable (Payment Requests) | ✅ Implemented |
-| `reporting` | `platform/reporting` | Engine   | Cross-domain Dashboards             | 📋 Planned     |
-| `webhooks`  | `platform/webhooks`  | Engine   | System Integration Layer            | 📋 Planned     |
+| Module      | Namespace        | Description                         | Status         |
+| ----------- | ---------------- | ----------------------------------- | -------------- |
+| `core`      | `core`           | Tenants, Identity, RBAC             | ✅ Implemented |
+| `workflows` | `workflows`      | Universal State Machine             | ✅ Implemented |
+| `ledger`    | `finance/ledger` | G/L Account Management              | ✅ Implemented |
+| `bank`      | `finance/bank`   | Cash & Bank Integration             | 📋 Planned     |
+| `ap`        | `finance/ap`     | Accounts Payable (Payment Requests) | ✅ Implemented |
+| `reporting` | `reporting`      | Cross-domain Dashboards             | 📋 Planned     |
+| `webhooks`  | `webhooks`       | System Integration Layer            | 📋 Planned     |
 
 ---
 
