@@ -1,8 +1,7 @@
 import { coreModule } from './platform/core'
 import { ledgerModule } from './business/finance/ledger'
 import { bankModule } from './business/finance/bank'
-import { paymentRequestsModule } from './business/finance/ap/payment-requests'
-import { vendorBillsModule } from './business/finance/ap/vendor-bills'
+import { apModule } from './business/finance/ap'
 import { reportingModule } from './business/reporting'
 import { workflowsModule } from './platform/workflows'
 import type { BusinessDomain, PlatformEngine } from '@/core/types/module.types'
@@ -15,8 +14,7 @@ import type { BusinessDomain, PlatformEngine } from '@/core/types/module.types'
 export const businessModules: BusinessDomain[] = [
   ledgerModule,
   bankModule,
-  paymentRequestsModule,
-  vendorBillsModule,
+  apModule,
   reportingModule,
 ] as unknown as BusinessDomain[]
 
