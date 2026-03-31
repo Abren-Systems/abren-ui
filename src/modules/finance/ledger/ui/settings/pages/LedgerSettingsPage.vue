@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useLedgerSettings } from '../../application/composables/useLedgerSettings'
-import { useLedgerAccounts } from '../../application/composables/useLedgerAccounts'
+import { useLedgerSettings } from '../../../application/composables/useLedgerSettings'
+import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 import { Button } from '@/shared/components/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/card'
 import {

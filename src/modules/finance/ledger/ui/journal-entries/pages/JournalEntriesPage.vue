@@ -2,7 +2,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { useJournalEntries } from '../../application/composables/useJournalEntries'
+import { useJournalEntries } from '../../../application/composables/useJournalEntries'
 import { Badge } from '@/shared/components/badge'
 import { Button } from '@/shared/components/button'
 import type { components } from '@/shared/api/generated.types'

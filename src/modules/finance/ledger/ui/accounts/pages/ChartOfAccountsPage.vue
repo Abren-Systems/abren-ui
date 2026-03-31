@@ -2,7 +2,7 @@
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import { Button } from '@/shared/components/button'
 import { Plus } from 'lucide-vue-next'
-import { useLedgerAccounts } from '../../application/composables/useLedgerAccounts'
+import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 import { accountColumns } from '../grids/account.grid'
 
 // ── Grid state (sorting, selection, global filter) ─────────────

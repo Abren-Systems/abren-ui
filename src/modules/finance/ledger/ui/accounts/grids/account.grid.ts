@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { type ColumnDef } from '@tanstack/vue-table'
 import { DataGridColumnHeader } from '@/shared/components/data-grid'
 import * as formatter from '../utils/account-formatter'
-import type { Account } from '../../domain/account.types'
+import type { Account } from '../../../domain/account.types'
 
 /**
  * Ledger Account Grid Column Definitions

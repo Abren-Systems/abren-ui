@@ -1,4 +1,4 @@
-import type { Account } from '../../domain/account.types'
+import type { Account } from '../../../domain/account.types'
 
 /**
  * Returns a color-coded representation for the UI based on account type

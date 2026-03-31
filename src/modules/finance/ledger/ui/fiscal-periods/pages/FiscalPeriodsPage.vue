@@ -2,7 +2,7 @@
 import { h, ref } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { useFiscalPeriods } from '../../application/composables/useFiscalPeriods'
+import { useFiscalPeriods } from '../../../application/composables/useFiscalPeriods'
 import { Badge } from '@/shared/components/badge'
 import { Button } from '@/shared/components/button'
 import {
