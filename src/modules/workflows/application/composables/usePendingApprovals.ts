@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/vue-query'
 import { workflowsAdapter } from '../../infrastructure/workflows_adapter'
-import { mapToPendingApproval } from '../../domain/mappers/workflow.mapper'
+import { WorkflowMapper } from '../../infrastructure/workflow.mapper'
 
 export function usePendingApprovals() {
   const {
@@ -16,7 +16,7 @@ export function usePendingApprovals() {
         console.warn('Expected array for pending tasks, got:', dtos)
         return []
       }
-      return dtos.filter((d) => !!d).map(mapToPendingApproval)
+      return dtos.filter((d) => !!d).map((dto) => WorkflowMapper.toPendingApproval(dto))
     },
     // ERP data can stay stale for a bit, but we want freshness for task lists
     staleTime: 1000 * 30,

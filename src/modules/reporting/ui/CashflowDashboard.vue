@@ -1,52 +1,40 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { reportingAdapter, type DailyCashflowDTO } from '../infrastructure/reporting_adapter'
+import { computed } from 'vue'
+import { useCashflow } from '../application/composables/useCashflow'
 import ReportingChart from './ReportingChart.vue'
 import { TrendingUp, TrendingDown, Clock, Wallet, LayoutDashboard } from 'lucide-vue-next'
-
-const cashflowData = ref<DailyCashflowDTO[]>([])
-const loading = ref(true)
 
 // Date Range (Last 30 days)
 const endDate = new Date().toISOString().split('T')[0]!
 const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!
 
-onMounted(async () => {
-  try {
-    const data = await reportingAdapter.getDailyCashflow({ startDate, endDate })
-    cashflowData.value = data
-  } catch (error) {
-    console.error('Failed to load cashflow data:', error)
-  } finally {
-    loading.value = false
-  }
-})
+const { entries, stats: cashflowStats, isLoading } = useCashflow({ startDate, endDate })
 
-const stats = ref([
+const displayStats = computed(() => [
   {
     name: 'Total Actual Inflow',
-    value: '42.5M',
+    value: cashflowStats.value?.totalActualInflow.format() ?? '...',
     icon: TrendingUp,
     color: 'text-emerald-600',
     bg: 'bg-emerald-50',
   },
   {
     name: 'Total Actual Outflow',
-    value: '18.2M',
+    value: cashflowStats.value?.totalActualOutflow.format() ?? '...',
     icon: TrendingDown,
     color: 'text-rose-600',
     bg: 'bg-rose-50',
   },
   {
     name: 'Projected Exposure',
-    value: '12.4M',
+    value: cashflowStats.value?.projectedExposure.format() ?? '...',
     icon: Clock,
     color: 'text-amber-600',
     bg: 'bg-amber-50',
   },
   {
     name: 'Net Cash Position',
-    value: '24.3M',
+    value: cashflowStats.value?.netCashPosition.format() ?? '...',
     icon: Wallet,
     color: 'text-blue-600',
     bg: 'bg-blue-50',
@@ -94,7 +82,7 @@ const stats = ref([
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
-        v-for="stat in stats"
+        v-for="stat in displayStats"
         :key="stat.name"
         class="group relative p-6 rounded-2xl bg-white border border-slate-200 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden"
       >
@@ -128,20 +116,20 @@ const stats = ref([
       <ReportingChart
         title="Cash Inflow: Actual vs Committed"
         :data="
-          cashflowData.map((d) => ({
-            date: d.date,
-            actual: d.total_inflow,
-            projected: d.projected_inflow,
+          (entries ?? []).map((d) => ({
+            date: d.date.toISOString().split('T')[0] || '',
+            actual: d.actualInflow.amount,
+            projected: d.projectedInflow.amount,
           }))
         "
       />
       <ReportingChart
         title="Cash Outflow: Actual vs Committed"
         :data="
-          cashflowData.map((d) => ({
-            date: d.date,
-            actual: d.total_outflow,
-            projected: d.projected_outflow,
+          (entries ?? []).map((d) => ({
+            date: d.date.toISOString().split('T')[0] || '',
+            actual: d.actualOutflow.amount,
+            projected: d.projectedOutflow.amount,
           }))
         "
       />
@@ -174,25 +162,27 @@ const stats = ref([
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr
-              v-for="row in cashflowData"
-              :key="row.date"
+              v-for="row in entries ?? []"
+              :key="row.date.toISOString()"
               class="hover:bg-blue-50/30 transition-colors"
             >
-              <td class="px-8 py-5 text-sm font-medium text-slate-700">{{ row.date }}</td>
+              <td class="px-8 py-5 text-sm font-medium text-slate-700">
+                {{ row.date.toISOString().split('T')[0] }}
+              </td>
               <td class="px-8 py-5 text-sm font-semibold text-emerald-600">
-                + {{ row.total_inflow }}
+                + {{ row.actualInflow.format() }}
               </td>
               <td class="px-8 py-5 text-sm font-semibold text-rose-600">
-                - {{ row.total_outflow }}
+                - {{ row.actualOutflow.format() }}
               </td>
               <td class="px-8 py-5 text-sm font-semibold text-amber-500">
-                {{ row.projected_outflow }}
+                {{ row.projectedOutflow.format() }}
               </td>
               <td class="px-8 py-5 text-sm font-black text-slate-900 text-right">
-                {{ row.net_cashflow }} {{ row.currency_code }}
+                {{ row.netCashflow.format() }}
               </td>
             </tr>
-            <tr v-if="cashflowData.length === 0" class="text-center py-20 text-slate-400">
+            <tr v-if="!entries || entries.length === 0" class="text-center py-20 text-slate-400">
               <td colspan="5" class="py-20 italic">
                 No transactional data available for the selected period.
               </td>
