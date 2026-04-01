@@ -11,6 +11,12 @@ import { computed } from 'vue'
  *
  * Orchestrates fetching daily cashflow data and mapping it to
  * UI-ready ViewModels and aggregated statistics.
+ *
+ * @example
+ * const { entries, stats, isLoading } = useCashflow({
+ *   startDate: '2026-01-01',
+ *   endDate: '2026-01-31'
+ * })
  */
 export function useCashflow(query: CashflowQuery) {
   const {

@@ -1,4 +1,12 @@
 <script setup lang="ts">
+/**
+ * Design System Badge component.
+ *
+ * Used for status indicators and small metadata tags.
+ *
+ * @example
+ * <Badge variant="success">Paid</Badge>
+ */
 import { badgeVariants, type BadgeVariants } from './index'
 import { cn } from '@/shared/utils/cn'
 

@@ -2,6 +2,14 @@ import { useQuery } from '@tanstack/vue-query'
 import { workflowsAdapter } from '../../infrastructure/workflows_adapter'
 import { WorkflowMapper } from '../../infrastructure/workflow.mapper'
 
+/**
+ * Use Case: View Pending Workflow Approvals.
+ *
+ * Fetches and maps pending approval tasks assigned to the current user.
+ *
+ * @example
+ * const { tasks, isLoading, refresh } = usePendingApprovals()
+ */
 export function usePendingApprovals() {
   const {
     data: tasks,
