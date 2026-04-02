@@ -5,6 +5,8 @@ import { apAdapter } from '../../infrastructure/ap_adapter'
 import type { VendorBillCreateDTO } from '../../infrastructure/api.types'
 import { useForm } from '@tanstack/vue-form'
 import { z } from 'zod'
+import { apKeys } from '../keys'
+import type { ApiError } from '@/shared/api/http-client'
 
 /**
  * Validation Schema for Vendor Bill Creation.
@@ -48,7 +50,7 @@ export function useCreateVendorBill() {
     mutateAsync: createBill,
     isPending: isSubmitting,
     error,
-  } = useApiMutation(
+  } = useApiMutation<{ id: string }, ApiError, VendorBillFormValues>(
     async (values: VendorBillFormValues) => {
       const dto: VendorBillCreateDTO = {
         vendor_id: values.vendorId,
@@ -68,7 +70,7 @@ export function useCreateVendorBill() {
     },
     {
       onSuccess: (result: { id: string }) => {
-        void queryClient.invalidateQueries({ queryKey: ['vendor-bills'] })
+        void queryClient.invalidateQueries({ queryKey: apKeys.vendorBills() })
         void router.push({ name: 'VendorBillDetail', params: { id: result.id } })
       },
     },

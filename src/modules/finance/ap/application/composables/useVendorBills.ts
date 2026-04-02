@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { APMapper } from '../../infrastructure/mappers'
+import { apKeys } from '../keys'
 
 /**
  * Use Case: View Vendor Bills List.
@@ -18,7 +19,7 @@ export function useVendorBills() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['vendor-bills'],
+    queryKey: apKeys.vendorBills(),
     queryFn: async () => {
       const dtos = await apAdapter.listBills()
       return dtos.map((dto) => APMapper.toVendorBill(dto))

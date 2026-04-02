@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { APMapper } from '../../infrastructure/mappers'
+import { apKeys } from '../keys'
 
 /**
  * Use Case: View Payment Requests List.
@@ -18,7 +19,7 @@ export function usePaymentRequests() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['payment-requests'],
+    queryKey: apKeys.paymentRequests(),
     queryFn: async () => {
       const dtos = await apAdapter.listRequests()
       return dtos.map((dto) => APMapper.toPaymentRequest(dto))

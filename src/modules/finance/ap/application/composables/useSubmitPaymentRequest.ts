@@ -1,6 +1,8 @@
 import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/ap_adapter'
+import { apKeys } from '../keys'
+import type { ApiError } from '@/shared/api/http-client'
 
 /**
  * Use Case: Submit a Payment Request for Approval.
@@ -20,14 +22,14 @@ export function useSubmitPaymentRequest(id: string) {
     mutateAsync: submit,
     isPending,
     error,
-  } = useApiMutation(
+  } = useApiMutation<void, ApiError, void>(
     async () => {
-      return await apAdapter.submitRequest(id)
+      await apAdapter.submitRequest(id)
     },
     {
       onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: ['payment-requests', id] })
-        void queryClient.invalidateQueries({ queryKey: ['payment-requests'] })
+        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequest(id) })
+        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequests() })
       },
     },
   )

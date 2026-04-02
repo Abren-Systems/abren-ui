@@ -1,30 +1,32 @@
-import { ref } from 'vue'
+import { useApiMutation } from '@/shared/composables/useApiMutation'
+import { useQueryClient } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/ap_adapter'
+import { apKeys } from '../keys'
+import type { ApiError } from '@/shared/api/http-client'
 
 /**
- * Use Case: Validate a Vendor Bill.
+ * Use Case: Validate (Audit) a Vendor Bill.
  *
- * Transitions a draft vendor bill to the validated/posted state.
- *
- * @param id - The unique identifier of the vendor bill to validate.
- * @returns Reactive validation state and trigger function.
- * @example
- * const { validate, isValidating } = useValidateVendorBill('bill_123')
+ * @param id - The bill ID.
  */
 export function useValidateVendorBill(id: string) {
-  const isValidating = ref(false)
+  const queryClient = useQueryClient()
 
-  async function validate() {
-    isValidating.value = true
-    try {
+  const {
+    mutateAsync: validate,
+    isPending,
+    error,
+  } = useApiMutation<void, ApiError, void>(
+    async () => {
       await apAdapter.validateBill(id)
-    } catch (err: unknown) {
-      console.error(err)
-      alert(err instanceof Error ? err.message : 'Failed to validate bill')
-    } finally {
-      isValidating.value = false
-    }
-  }
+    },
+    {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: apKeys.vendorBill(id) })
+        void queryClient.invalidateQueries({ queryKey: apKeys.vendorBills() })
+      },
+    },
+  )
 
-  return { validate, isValidating }
+  return { validate, isPending, error }
 }
