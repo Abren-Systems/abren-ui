@@ -1,8 +1,8 @@
-import type { ModuleDefinition } from '@/shared/types/module.types'
+import type { BusinessDomain } from '@/shared/types/module.types'
 import routes from './routes'
 import CashflowDashboard from './ui/CashflowDashboard.vue'
 
-export const reportingModule: ModuleDefinition = {
+export const reportingModule: BusinessDomain = {
   id: 'reporting',
   name: 'Reporting & Analytics',
   category: 'business',

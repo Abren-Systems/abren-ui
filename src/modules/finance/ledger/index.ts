@@ -1,7 +1,7 @@
-import type { ModuleDefinition } from '@/shared/types/module.types'
+import type { BusinessDomain } from '@/shared/types/module.types'
 import routes from './routes'
 
-export const ledgerModule: ModuleDefinition = {
+export const ledgerModule: BusinessDomain = {
   id: 'ledger',
   name: 'General Ledger',
   category: 'business',

@@ -16,7 +16,7 @@ export const businessModules: BusinessDomain[] = [
   bankModule,
   apModule,
   reportingModule,
-] as unknown as BusinessDomain[]
+]
 
 export const platformModules: PlatformEngine[] = [coreModule, workflowsModule]
 
