@@ -23,7 +23,6 @@ export function usePendingApprovals() {
     queryFn: async () => {
       const dtos = await workflowsAdapter.getPendingTasks()
       if (!Array.isArray(dtos)) {
-        console.warn('Expected array for pending tasks, got:', dtos)
         return []
       }
       return dtos.filter((d) => !!d).map((dto) => WorkflowMapper.toPendingApproval(dto))

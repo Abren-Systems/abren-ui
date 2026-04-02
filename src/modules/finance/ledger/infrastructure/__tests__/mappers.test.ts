@@ -23,7 +23,7 @@ describe('LedgerMapper', () => {
       expect(model.id).toBe('acc-1')
       expect(model.code).toBe('1010')
       expect(model.name).toBe('Cash in Bank')
-      expect(model.type).toBe('asset')
+      expect(model.type).toBe('ASSET')
       expect(model.currency).toBe(Currency.ETB)
       expect(model.isActive).toBe(true)
       expect(model.balance.amount).toBe(0)

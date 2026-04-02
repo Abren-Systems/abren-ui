@@ -19,8 +19,8 @@ export function useFormPersistence(form: any, storageKey: string) {
     (newValues) => {
       try {
         localStorage.setItem(storageKey, JSON.stringify(newValues))
-      } catch (e) {
-        console.error('[FormPersistence] Failed to save draft:', e)
+      } catch {
+        // Silent failure for quota or security issues — non-critical for drafts
       }
     },
     { deep: true },
@@ -36,9 +36,7 @@ export function useFormPersistence(form: any, storageKey: string) {
         const parsed = JSON.parse(saved)
         // We use setValues to rehydrate the form
         form.setValues(parsed)
-        console.info(`[FormPersistence] Restored draft for ${storageKey}`)
-      } catch (e) {
-        console.error('[FormPersistence] Failed to restore draft:', e)
+      } catch {
         localStorage.removeItem(storageKey)
       }
     }

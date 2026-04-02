@@ -1,11 +1,12 @@
 import type { components } from '@/shared/api/generated.types'
-import type { Account } from '../domain/account.types'
+import { type Account, AccountType } from '../domain/account.types'
 import {
   toId,
   type AccountId,
   type JournalEntryId,
   type FiscalPeriodId,
   type JournalLineId,
+  type UserId,
 } from '@/shared/types/brand.types'
 import { Currency, Money } from '@/shared/domain/money'
 import { BusinessDate } from '@/shared/domain/business-date'
@@ -39,7 +40,7 @@ export class LedgerMapper {
       id: toId<AccountId>(dto.id),
       code: String(dto.code), // Convert numeric code to string for UI
       name: dto.name,
-      type: dto.account_type.toLowerCase(),
+      type: dto.account_type.toUpperCase() as AccountType,
       currency: currency,
       isActive: dto.is_active,
       balance: Money.zero(currency),
@@ -77,7 +78,7 @@ export class LedgerMapper {
       status: dto.status as 'DRAFT' | 'POSTED' | 'VOIDED',
       entryDate: BusinessDate.fromIso(dto.date),
       description: dto.description,
-      createdBy: 'System', // Missing from DTO, defaulting
+      createdBy: toId<UserId>('system'), // Missing from DTO, defaulting
       lines: (dto.lines || []).map((ln) => this.mapJournalLine(ln)),
       createdAt: BusinessDate.today(), // Missing from DTO, defaulting
     }

@@ -11,6 +11,8 @@
  */
 
 import type { Money } from '../domain/money'
+import type { IsoDate } from '../domain/business-date'
+import { BusinessDate } from '../domain/business-date'
 import type {
   EventId,
   UserId,
@@ -27,7 +29,7 @@ import { toId } from '../types/brand.types'
  */
 export interface AppEventMetadata {
   readonly id: EventId
-  readonly timestamp: string // ISO UTC
+  readonly timestamp: IsoDate // ISO UTC
   readonly actorId: UserId | null
   readonly sourceModule: ModuleId
 }
@@ -78,7 +80,7 @@ class TypedEventBus {
       type: event,
       metadata: {
         id: toId<EventId>(crypto.randomUUID()),
-        timestamp: new Date().toISOString(),
+        timestamp: BusinessDate.today(),
         actorId: metadataOverrides?.actorId ?? null,
         sourceModule: metadataOverrides?.sourceModule ?? toId<ModuleId>('shared'),
       },

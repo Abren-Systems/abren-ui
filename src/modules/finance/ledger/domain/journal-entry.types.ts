@@ -1,4 +1,4 @@
-import type { AccountId, JournalEntryId, JournalLineId } from '@/shared/types/brand.types'
+import type { AccountId, JournalEntryId, JournalLineId, UserId } from '@/shared/types/brand.types'
 import type { Money } from '@/shared/domain/money'
 import type { IsoDate } from '@/shared/domain/business-date'
 
@@ -16,8 +16,8 @@ export interface JournalEntry {
   status: 'DRAFT' | 'POSTED' | 'VOIDED'
   entryDate: IsoDate
   description: string
-  createdBy: string
-  postedBy?: string
+  createdBy: UserId
+  postedBy?: UserId
   lines: JournalEntryLine[]
   createdAt: IsoDate
 }

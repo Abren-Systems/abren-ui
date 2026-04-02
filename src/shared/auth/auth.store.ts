@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { authAdapter } from './infrastructure/auth_adapter'
 import { AuthMapper } from './infrastructure/mappers'
+import type { UserId, TenantId } from '@/shared/types/brand.types'
 
 /**
  * Auth Store — Shared Cross-Cutting Concern
@@ -29,14 +30,14 @@ function readStoredJson<T>(key: string): T | null {
 
 // ── Types ─────────────────────────────────────────────
 export interface CurrentUser {
-  id: string
-  tenantId: string
+  id: UserId
+  tenantId: TenantId
   email: string
   isActive: boolean
 }
 
 export interface TenantInfo {
-  id: string
+  id: TenantId
   name: string
   features: Record<string, boolean>
 }
