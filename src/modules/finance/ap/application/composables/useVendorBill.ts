@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useApiQuery } from '@/shared/composables/useApiQuery'
+import type { VendorBillId } from '@/shared/types/brand.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
@@ -11,21 +12,21 @@ import { apKeys } from '../keys'
  * @param id - The unique identifier of the vendor bill.
  * @returns Reactive vendor bill state.
  * @example
- * const { bill, isLoading } = useVendorBill('bill_123')
+ * const { bill, isLoading } = useVendorBill(toId<VendorBillId>('bill_123'))
  */
-export function useVendorBill(id: string) {
+export function useVendorBill(id: VendorBillId) {
   const {
     data: bill,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: apKeys.vendorBill(id),
-    queryFn: async () => {
+  } = useApiQuery(
+    apKeys.vendorBill(id),
+    async () => {
       const dto = await apAdapter.getBill(id)
       return APMapper.toVendorBill(dto)
     },
-    staleTime: 1000 * 30, // 30 seconds
-  })
+    { staleTime: 1000 * 30 }, // 30 seconds
+  )
 
   return { bill, isLoading, error }
 }

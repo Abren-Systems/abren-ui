@@ -4,13 +4,17 @@ import { apAdapter } from '../../infrastructure/ap_adapter'
 import type { PaymentRequestRejectDTO } from '../../infrastructure/api.types'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
+import type { PaymentRequestId } from '@/shared/types/brand.types'
 
 /**
  * Use Case: Reject a Payment Request.
  *
  * @param id - The unique identifier of the payment request to reject.
+ * @returns Mutation state and reject function.
+ * @example
+ * const { reject, isPending } = useRejectPaymentRequest(toId<PaymentRequestId>('pr_123'))
  */
-export function useRejectPaymentRequest(id: string) {
+export function useRejectPaymentRequest(id: PaymentRequestId) {
   const queryClient = useQueryClient()
 
   const {

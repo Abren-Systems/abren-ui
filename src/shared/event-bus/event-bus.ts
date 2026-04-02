@@ -11,31 +11,76 @@
  */
 
 import type { Money } from '../domain/money'
+import type {
+  EventId,
+  UserId,
+  ModuleId,
+  PaymentRequestId,
+  JournalEntryId,
+} from '../types/brand.types'
+import { toId } from '../types/brand.types'
+
+/**
+ * Metadata for every cross-module event.
+ * Mirrors the backend's high-integrity event envelope.
+ */
+export interface AppEventMetadata {
+  readonly id: EventId
+  readonly timestamp: string // ISO UTC
+  readonly actorId: UserId | null
+  readonly sourceModule: ModuleId
+}
+
+/**
+ * Standardized Event Wrapper
+ */
+export interface AppEvent<T> {
+  readonly metadata: AppEventMetadata
+  readonly payload: T
+}
 
 // ── Event Map (Add new events here) ───────────────────
 export type EventMap = {
-  'payment-request:submitted': { id: string }
-  'payment-request:approved': { id: string }
-  'payment-request:rejected': { id: string; reason: string }
-  'payment-request:paid': { id: string; amount: Money }
-  'journal-entry:posted': { id: string; entryNumber: string }
-  'journal-entry:voided': { id: string }
+  'payment-request:submitted': { id: PaymentRequestId }
+  'payment-request:approved': { id: PaymentRequestId }
+  'payment-request:rejected': { id: PaymentRequestId; reason: string }
+  'payment-request:paid': { id: PaymentRequestId; amount: Money }
+  'journal-entry:posted': { id: JournalEntryId; entryNumber: string }
+  'journal-entry:voided': { id: JournalEntryId }
   'tenant:feature-toggled': { feature: string; enabled: boolean }
   'auth:logged-out': Record<string, never>
   'workflow:action-completed': Record<string, never>
 }
 
 // ── Implementation ────────────────────────────────────
-type Handler<T> = (payload: T) => void
+type Handler<T> = (event: AppEvent<T>) => void
 
 class TypedEventBus {
   private listeners = new Map<string, Set<Handler<unknown>>>()
 
-  emit<K extends keyof EventMap>(event: K, payload: EventMap[K]): void {
+  /**
+   * Emit a Fat Domain Event.
+   * Automatically generates stable metadata.
+   */
+  emit<K extends keyof EventMap>(
+    event: K,
+    payload: EventMap[K],
+    metadataOverrides?: Partial<AppEventMetadata>,
+  ): void {
     const handlers = this.listeners.get(event as string)
-    if (handlers) {
-      handlers.forEach((handler) => handler(payload))
+    if (!handlers) return
+
+    const appEvent: AppEvent<EventMap[K]> = {
+      metadata: {
+        id: toId<EventId>(crypto.randomUUID()),
+        timestamp: new Date().toISOString(),
+        actorId: metadataOverrides?.actorId ?? null, // In production, this would pull from Auth state
+        sourceModule: metadataOverrides?.sourceModule ?? toId<ModuleId>('shared'),
+      },
+      payload,
     }
+
+    handlers.forEach((handler) => handler(appEvent as AppEvent<unknown>))
   }
 
   on<K extends keyof EventMap>(event: K, handler: Handler<EventMap[K]>): () => void {
@@ -45,7 +90,6 @@ class TypedEventBus {
     }
     this.listeners.get(key)!.add(handler as Handler<unknown>)
 
-    // Return unsubscribe function (for onUnmounted cleanup)
     return () => this.off(event, handler)
   }
 
@@ -56,7 +100,6 @@ class TypedEventBus {
     }
   }
 
-  /** Remove all listeners — useful for testing */
   clear(): void {
     this.listeners.clear()
   }

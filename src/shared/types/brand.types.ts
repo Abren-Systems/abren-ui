@@ -11,6 +11,9 @@ export type Brand<K, T> = K & { readonly __brand: T }
 export type TenantId = Brand<string, 'TenantId'>
 export type UserId = Brand<string, 'UserId'>
 export type RoleId = Brand<string, 'RoleId'>
+export type EventId = Brand<string, 'EventId'>
+export type AuditLogId = Brand<string, 'AuditLogId'>
+export type ModuleId = Brand<string, 'ModuleId'>
 
 // ── Business Domain Identifiers ───────────────────────────
 

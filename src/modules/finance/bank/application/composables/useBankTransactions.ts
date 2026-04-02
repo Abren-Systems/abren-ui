@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useApiQuery } from '@/shared/composables/useApiQuery'
 import { bankAdapter } from '../../infrastructure/bank_adapter'
 import { BankMapper } from '../../infrastructure/mappers'
 import type { BankTransaction } from '../../domain/bank.types'
@@ -17,15 +17,17 @@ export function useBankTransactions(accountId: BankAccountId) {
     isPending,
     error,
     refetch,
-  } = useQuery<BankTransaction[]>({
-    queryKey: bankKeys.transactions(accountId),
-    queryFn: async () => {
+  } = useApiQuery<BankTransaction[]>(
+    bankKeys.transactions(accountId),
+    async () => {
       const dtos = await bankAdapter.getTransactions(accountId)
       return dtos.map((dto) => BankMapper.toTransaction(dto, accountId))
     },
-    enabled: computed(() => !!accountId),
-    staleTime: 1000 * 60 * 2, // 2 minutes
-  })
+    {
+      enabled: computed(() => !!accountId),
+      staleTime: 1000 * 60 * 2, // 2 minutes
+    },
+  )
 
   return {
     transactions,

@@ -147,4 +147,42 @@ export default tseslint.config(
       'vue/multi-word-component-names': 'off',
     },
   },
+  /**
+   * 4. STRICT APPLICATION LAYER GUARDRAILS
+   *
+   * Enforces "Branded ID" purity. Generic strings are banned for IDs
+   * to prevent logic errors and ensure nominal type safety.
+   */
+  {
+    files: ['src/modules/**/application/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.name=/^use(Api)?Query$/] Property[key.name='queryKey'] > ArrayExpression",
+          message:
+            'Architectural Violation: Hardcoded Query Key arrays are forbidden. You MUST use a Query Key Factory (e.g., apKeys.lists()).',
+        },
+        {
+          selector:
+            "CallExpression[callee.name=/^use(Api)?Mutation$/] Property[key.name='onSuccess'] CallExpression[callee.property.name='invalidateQueries'] Property[key.name='queryKey'] > ArrayExpression",
+          message:
+            'Architectural Violation: Hardcoded Query Key arrays in invalidation are forbidden. You MUST use a Query Key Factory (e.g., apKeys.lists()).',
+        },
+        {
+          selector:
+            'TSAsExpression[typeAnnotation.typeName.name="any"], TSAsExpression[typeAnnotation.typeName.name="Error"]',
+          message:
+            'Architectural Violation: Unsafe error casting is forbidden. All API queries and mutations use ApiError by default. Do not use "as any" or "as Error".',
+        },
+        {
+          selector:
+            "Identifier[name=/^id$|Id$/][typeAnnotation.typeAnnotation.type='TSStringKeyword']",
+          message:
+            'Architectural Violation: Generic "string" IDs are forbidden in the Application Layer. You MUST use a Branded ID (e.g., Brand<string, "EntityId">) for nominal type safety.',
+        },
+      ],
+    },
+  },
 )

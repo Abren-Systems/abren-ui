@@ -18,8 +18,19 @@ export class Money {
     return new Money(amount, curr)
   }
 
+  static fromDTO(dto: { amount: number; currency: string }): Money {
+    return new Money(dto.amount, dto.currency as Currency)
+  }
+
   static zero(currency: Currency = Currency.ETB): Money {
     return new Money(0, currency)
+  }
+
+  toDTO(): { amount: number; currency: string } {
+    return {
+      amount: this.amount,
+      currency: this.currency,
+    }
   }
 
   /**

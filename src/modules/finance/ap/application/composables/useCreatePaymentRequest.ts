@@ -10,6 +10,8 @@ import { useForm } from '@tanstack/vue-form'
 import { z } from 'zod'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
+import type { PaymentRequestId } from '@/shared/types/brand.types'
+import { toId } from '@/shared/types/brand.types'
 
 /**
  * Validation Schema for Payment Request Creation.
@@ -52,7 +54,7 @@ export function useCreatePaymentRequest() {
     mutateAsync: createRequest,
     isPending: isSubmitting,
     error,
-  } = useApiMutation<{ id: string }, ApiError, PaymentRequestFormValues>(
+  } = useApiMutation<{ id: PaymentRequestId }, ApiError, PaymentRequestFormValues>(
     async (values: PaymentRequestFormValues) => {
       const mappedLines: PaymentRequestLineCreateDTO[] = values.lines.map((l) => ({
         description: l.description,
@@ -70,10 +72,11 @@ export function useCreatePaymentRequest() {
         bank_account_id: values.bankAccountId || null,
       }
 
-      return await apAdapter.createRequest(dto)
+      const result = await apAdapter.createRequest(dto)
+      return { id: toId<PaymentRequestId>(result.id) }
     },
     {
-      onSuccess: (result: { id: string }) => {
+      onSuccess: (result: { id: PaymentRequestId }) => {
         void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequests() })
         void router.push({ name: 'PaymentRequestDetail', params: { id: result.id } })
       },

@@ -4,13 +4,14 @@ import { apAdapter } from '../../infrastructure/ap_adapter'
 import type { PaymentRequestPayDTO } from '../../infrastructure/api.types'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
+import type { PaymentRequestId } from '@/shared/types/brand.types'
 
 /**
  * Use Case: Pay a Payment Request.
  *
  * @param id - The unique identifier of the payment request to pay.
  */
-export function usePayPaymentRequest(id: string) {
+export function usePayPaymentRequest(id: PaymentRequestId) {
   const queryClient = useQueryClient()
 
   const {

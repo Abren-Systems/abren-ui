@@ -1,22 +1,25 @@
 import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
+import type { VendorBillId } from '@/shared/types/brand.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
-import type { ApiError } from '@/shared/api/http-client'
 
 /**
- * Use Case: Validate (Audit) a Vendor Bill.
+ * Use Case: Validate a Vendor Bill.
  *
- * @param id - The bill ID.
+ * Transitions a draft vendor bill to 'VALIDATED' status.
+ *
+ * @param id - The unique identifier of the vendor bill to validate.
+ * @returns Mutation state and validate function.
  */
-export function useValidateVendorBill(id: string) {
+export function useValidateVendorBill(id: VendorBillId) {
   const queryClient = useQueryClient()
 
   const {
     mutateAsync: validate,
     isPending,
     error,
-  } = useApiMutation<void, ApiError, void>(
+  } = useApiMutation<void>(
     async () => {
       await apAdapter.validateBill(id)
     },

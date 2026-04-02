@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useApiQuery } from '@/shared/composables/useApiQuery'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
@@ -18,14 +18,14 @@ export function usePaymentRequests() {
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: apKeys.paymentRequests(),
-    queryFn: async () => {
+  } = useApiQuery(
+    apKeys.paymentRequests(),
+    async () => {
       const dtos = await apAdapter.listRequests()
       return dtos.map((dto) => APMapper.toPaymentRequest(dto))
     },
-    staleTime: 1000 * 60, // 1 minute
-  })
+    { staleTime: 1000 * 60 }, // 1 minute
+  )
 
   return { requests, isLoading, error, refetch }
 }

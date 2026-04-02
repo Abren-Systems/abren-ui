@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useApiQuery } from '@/shared/composables/useApiQuery'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
@@ -18,14 +18,14 @@ export function useVendorBills() {
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: apKeys.vendorBills(),
-    queryFn: async () => {
+  } = useApiQuery(
+    apKeys.vendorBills(),
+    async () => {
       const dtos = await apAdapter.listBills()
       return dtos.map((dto) => APMapper.toVendorBill(dto))
     },
-    staleTime: 1000 * 60, // 1 minute
-  })
+    { staleTime: 1000 * 60 }, // 1 minute
+  )
 
   return { bills, isLoading, error, refetch }
 }
