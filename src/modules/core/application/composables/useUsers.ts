@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { coreAdapter } from '../../infrastructure/core_adapter'
 import { CoreMapper } from '../../infrastructure/mappers'
+import { coreKeys } from '../keys'
 
 /**
  * Use Case: View Tenant Users.
@@ -18,7 +19,7 @@ export function useUsers() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['core', 'users'],
+    queryKey: coreKeys.users(),
     queryFn: async () => {
       const dtos = await coreAdapter.listUsers()
       return dtos.map((dto) => CoreMapper.toUser(dto))
