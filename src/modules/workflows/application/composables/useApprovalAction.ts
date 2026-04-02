@@ -2,6 +2,7 @@ import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { workflowsAdapter } from '../../infrastructure/workflows_adapter'
 import { eventBus } from '@/shared/event-bus/event-bus'
 import { useQueryClient } from '@tanstack/vue-query'
+import { workflowKeys } from '../keys'
 
 /**
  * Use Case: Submit a Workflow Approval Decision.
@@ -32,7 +33,7 @@ export function useApprovalAction() {
     {
       onSuccess: () => {
         // Invalidate the task list
-        void queryClient.invalidateQueries({ queryKey: ['workflow-pending-tasks'] })
+        void queryClient.invalidateQueries({ queryKey: workflowKeys.pendingTasks() })
 
         // Emit global event for other modules
         eventBus.emit('workflow:action-completed', {})

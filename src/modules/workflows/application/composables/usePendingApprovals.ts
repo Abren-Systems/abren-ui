@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { workflowsAdapter } from '../../infrastructure/workflows_adapter'
 import { WorkflowMapper } from '../../infrastructure/mappers'
+import { workflowKeys } from '../keys'
 
 /**
  * Use Case: View Pending Workflow Approvals.
@@ -18,7 +19,7 @@ export function usePendingApprovals() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['workflow-pending-tasks'],
+    queryKey: workflowKeys.pendingTasks(),
     queryFn: async () => {
       const dtos = await workflowsAdapter.getPendingTasks()
       if (!Array.isArray(dtos)) {
