@@ -9,7 +9,7 @@ description: Comprehensive patterns, conventions, and code examples for developi
 
 1. **ALWAYS** use Vue 3 **Composition API** with `<script setup lang="ts">`. **NEVER** use Options API.
 2. **ALWAYS** use TypeScript strict mode. **NEVER** use `any`.
-3. **ALWAYS** use **TanStack Query** for all domain/server state via `useApiQuery`/`useApiMutation`. **NEVER** put domain data in Pinia.
+3. **ALWAYS** use **TanStack Query** for all domain/server state via `useApiQuery`/`useApiMutation`. **NEVER** put domain data in Pinia. Enforce `TError = ApiError`.
 4. **ALWAYS** adhere to the **4-Layer Architecture** (Domain, Application, Infrastructure, UI).
 5. **ALWAYS** use **props-in, events-out** for component communication.
 6. **ALWAYS** use **Reka UI / shadcn-vue** primitives from `@/shared/components/`.
@@ -272,7 +272,23 @@ export function useCreateVendorBill() {
 }
 ```
 
-````
+---
+
+## Pattern 7: Query Key Factories (TanStack Query)
+
+To avoid silent caching failures, **NEVER** use hardcoded string arrays for query invalidation. All query keys MUST be centralized in a `keys.ts` file within the Application layer.
+
+```typescript
+// modules/finance/ap/application/keys.ts
+export const apKeys = {
+  all: ['ap'] as const,
+  paymentRequests: () => [...apKeys.all, 'payment-requests'] as const,
+  paymentRequest: (id: string) => [...apKeys.paymentRequests(), id] as const,
+}
+
+// In composables:
+void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequests() })
+```
 
 ---
 
@@ -291,7 +307,7 @@ import { useLedgerUIStore } from '../ui/store/ledger-ui.store'
 
 // ❌ BANNED: Cross-module internal imports
 import { useLedgerStore } from '@/modules/ledger/ui/store/ledger-ui.store'
-````
+```
 
 ---
 

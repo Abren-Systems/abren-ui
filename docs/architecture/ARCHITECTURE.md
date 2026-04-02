@@ -382,6 +382,25 @@ export const ledgerAdapter = {
 
 All mutating requests (`POST`, `PUT`, `PATCH`) automatically attach an `Idempotency-Key` header via the core HTTP client interceptor.
 
+### 8.4 Strict API Error Typing
+
+Our shared wrappers `useApiQuery` and `useApiMutation` must enforce `TError = ApiError`. This maps directly to the backend's structured error envelope `{ success: false, detail: string, code: string }`, eliminating `any` casting and ensuring typo-free error handling in the UI.
+
+### 8.5 Query Key Factory Pattern (TanStack Query)
+
+To avoid silent failures during cache invalidation caused by hardcoded String arrays (e.g. `['payment-requests']`), every module MUST define a single source of truth for its query keys in the application layer.
+
+```typescript
+// src/modules/{module}/application/keys.ts
+export const moduleKeys = {
+  all: ['module'] as const,
+  lists: () => [...moduleKeys.all, 'lists'] as const,
+  detail: (id: string) => [...moduleKeys.all, id] as const,
+}
+```
+
+All Use Case Composables must consume this factory instead of hardcoded strings.
+
 ---
 
 ## 9. Hybrid Authorization Model (UI Perspective)
