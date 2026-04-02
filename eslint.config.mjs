@@ -39,7 +39,7 @@ export default tseslint.config(
       /**
        * 1. Modular Monolith Architectural Bounds
        */
-      'boundaries/element-types': [
+      'boundaries/dependencies': [
         'error',
         {
           default: 'disallow',
@@ -117,6 +117,29 @@ export default tseslint.config(
           key: 'style',
           message:
             'Design System Violation: Inline styles are strictly forbidden. You must use Tailwind utility classes mapping to the formal Design System tokens.',
+        },
+      ],
+
+      // 3. ENFORCE ARCHITECTURAL PATTERNS (DRY & PURE)
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.name=/^use(Api)?Query$/] Property[key.name='queryKey'] > ArrayExpression",
+          message:
+            'Architectural Violation: Hardcoded Query Key arrays are forbidden. You MUST use a Query Key Factory (e.g., apKeys.lists()).',
+        },
+        {
+          selector:
+            "CallExpression[callee.name=/^use(Api)?Mutation$/] Property[key.name='onSuccess'] CallExpression[callee.property.name='invalidateQueries'] Property[key.name='queryKey'] > ArrayExpression",
+          message:
+            'Architectural Violation: Hardcoded Query Key arrays in invalidation are forbidden. You MUST use a Query Key Factory (e.g., apKeys.lists()).',
+        },
+        {
+          selector:
+            'TSAsExpression[typeAnnotation.typeName.name="any"], TSAsExpression[typeAnnotation.typeName.name="Error"]',
+          message:
+            'Architectural Violation: Unsafe error casting is forbidden. All API queries and mutations use ApiError by default. Do not use "as any" or "as Error".',
         },
       ],
 
