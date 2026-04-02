@@ -7,7 +7,6 @@ import type {
   PaymentRequestLineCreateDTO,
 } from '../../infrastructure/api.types'
 import { useForm } from '@tanstack/vue-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 
 /**
@@ -86,15 +85,14 @@ export function useCreatePaymentRequest() {
       justification: '',
       bankAccountId: '',
       lines: [{ description: '', amount: 0, accountId: '', categoryId: '', taxAmount: 0 }],
-    },
-    validatorAdapter: zodValidator(),
+    } satisfies PaymentRequestFormValues,
     validators: {
       onChange: paymentRequestSchema,
     },
-    onSubmit: async ({ value }: { value: PaymentRequestFormValues }) => {
+    onSubmit: async ({ value }) => {
       await createRequest(value)
     },
-  } as unknown as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+  })
 
   return { form, isSubmitting, error }
 }

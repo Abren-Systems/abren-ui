@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { apAdapter } from '../../infrastructure/adapter'
 import type { VendorBillCreateDTO } from '../../infrastructure/api.types'
 import { useForm } from '@tanstack/vue-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 
 /**
@@ -85,14 +84,13 @@ export function useCreateVendorBill() {
       justification: '',
       lines: [{ description: '', amount: 0, accountId: '', categoryId: '' }],
     } satisfies VendorBillFormValues,
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: vendorBillSchema,
     },
-    onSubmit: async ({ value }: { value: VendorBillFormValues }) => {
+    onSubmit: async ({ value }) => {
       await createBill(value)
     },
-  } as unknown as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+  })
 
   return { form, isSubmitting, error }
 }
