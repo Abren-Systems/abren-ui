@@ -8,6 +8,7 @@ import type { Account } from '../../domain/account.types'
  *
  * Fetches and maps all General Ledger accounts.
  *
+ * @returns Reactive accounts state and refetch function.
  * @example
  * const { accounts, isLoading } = useLedgerAccounts()
  */

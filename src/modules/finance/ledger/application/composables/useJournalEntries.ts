@@ -13,6 +13,10 @@ type JournalEntryCreate = components['schemas']['JournalEntryCreate']
  *
  * Provides access to the list of journal entries and allows
  * creating and posting new entries.
+ *
+ * @returns Reactive journal entries state and management methods.
+ * @example
+ * const { entries, createEntry, postEntry, isLoading } = useJournalEntries()
  */
 export function useJournalEntries() {
   const queryClient = useQueryClient()

@@ -7,6 +7,7 @@ import { APMapper } from '../../infrastructure/mappers'
  *
  * Fetches and maps all supplier invoices (Vendor Bills).
  *
+ * @returns Reactive vendor bills collection and refetch function.
  * @example
  * const { bills, isLoading } = useVendorBills()
  */

@@ -15,11 +15,12 @@ type FiscalPeriodRead = components['schemas']['FiscalPeriodRead']
 /**
  * Ledger Mapper-as-Factory.
  *
- * Transforms raw API DTOs into Frontend Domain Models for the General Ledger.
+ * Provides high-integrity transformations from raw API DTOs into
+ * frontend Domain Models for the General Ledger module.
  */
 export class LedgerMapper {
   /**
-   * Transforms a raw API Account DTO into a Domain Type.
+   * Transforms a raw API Account DTO into a Domain Model.
    *
    * @param dto - The raw account data from the API.
    * @returns A clean Account domain model.
@@ -41,7 +42,10 @@ export class LedgerMapper {
   }
 
   /**
-   * Transforms a raw API Journal Entry Line DTO into a Domain Type.
+   * Transforms a raw API Journal Entry Line DTO into a Domain Model.
+   *
+   * @param dto - The raw journal entry line data from the API.
+   * @returns A validated JournalEntryLine domain model.
    */
   private static mapJournalLine(dto: JournalLineRead): JournalEntryLine {
     const currency = (dto.currency as Currency) || Currency.ETB
@@ -56,7 +60,10 @@ export class LedgerMapper {
   }
 
   /**
-   * Transforms a raw API Journal Entry DTO into a Domain Type.
+   * Transforms a raw API Journal Entry DTO into a Domain Model.
+   *
+   * @param dto - The raw journal entry data from the API.
+   * @returns A clean JournalEntry domain model.
    */
   static toJournalEntry(dto: JournalEntryRead): JournalEntry {
     return {
@@ -72,7 +79,10 @@ export class LedgerMapper {
   }
 
   /**
-   * Transforms a raw API Fiscal Period DTO into a Domain Type.
+   * Transforms a raw API Fiscal Period DTO into a Domain Model.
+   *
+   * @param dto - The raw fiscal period data from the API.
+   * @returns A clean FiscalPeriod domain model.
    */
   static toFiscalPeriod(dto: FiscalPeriodRead): FiscalPeriod {
     return {

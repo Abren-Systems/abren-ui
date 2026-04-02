@@ -13,6 +13,10 @@ type FiscalPeriodCreate = components['schemas']['FiscalPeriodCreate']
  *
  * Provides access to the list of financial periods and allows
  * creating new periods for ledger locking.
+ *
+ * @returns Reactive fiscal periods state and creation methods.
+ * @example
+ * const { periods, createPeriod, isLoading } = useFiscalPeriods()
  */
 export function useFiscalPeriods() {
   const queryClient = useQueryClient()

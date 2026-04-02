@@ -35,6 +35,11 @@ type VendorBillFormValues = z.infer<typeof vendorBillSchema>
  * Use Case: Create a new Vendor Bill.
  *
  * Handles the multi-line form state and submission for vendor-provided invoices.
+ * Uses TanStack Form for validation and Zod for schema enforcement.
+ *
+ * @returns TanStack Form instance and submission state.
+ * @example
+ * const { form, isSubmitting } = useCreateVendorBill()
  */
 export function useCreateVendorBill() {
   const router = useRouter()

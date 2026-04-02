@@ -1,7 +1,17 @@
 import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/adapter'
-
+/**
+ * Use Case: Approve a Payment Request.
+ *
+ * Initiates the approval transition for a pending payment request.
+ * Invalidates relevant query keys on success.
+ *
+ * @param id - The unique identifier of the payment request to approve.
+ * @returns Reactive approval state and mutate function.
+ * @example
+ * const { approve, isPending } = useApprovePaymentRequest('pr_123')
+ */
 export function useApprovePaymentRequest(id: string) {
   const queryClient = useQueryClient()
 

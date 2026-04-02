@@ -2,6 +2,16 @@ import { useQuery } from '@tanstack/vue-query'
 import { apAdapter } from '../../infrastructure/adapter'
 import { APMapper } from '../../infrastructure/mappers'
 
+/**
+ * Use Case: View a Single Vendor Bill.
+ *
+ * Fetches and maps a specific vendor bill by ID.
+ *
+ * @param id - The unique identifier of the vendor bill.
+ * @returns Reactive vendor bill state.
+ * @example
+ * const { bill, isLoading } = useVendorBill('bill_123')
+ */
 export function useVendorBill(id: string) {
   const {
     data: bill,

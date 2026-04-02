@@ -7,6 +7,7 @@ import { APMapper } from '../../infrastructure/mappers'
  *
  * Fetches and maps all standalone payment requests.
  *
+ * @returns Reactive payment requests collection and refetch function.
  * @example
  * const { requests, isLoading } = usePaymentRequests()
  */

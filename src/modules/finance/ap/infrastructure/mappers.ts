@@ -19,13 +19,18 @@ import { toId } from '@/shared/types/brand.types'
 /**
  * Accounts Payable Mapper-as-Factory.
  *
- * Handles transformations for Payment Requests and Vendor Bills.
+ * Provides high-integrity transformations from raw API DTOs into
+ * frontend Domain Models for the Accounts Payable module.
  */
 export class APMapper {
   // --- Payment Request Mappers ---
 
   /**
    * Transforms a raw Payment Request Line DTO into a Domain Model.
+   *
+   * @param lineDto - The raw line data from the API.
+   * @param parentCurrency - Currency from the parent Payment Request.
+   * @returns A validated PaymentRequestLine domain model.
    */
   private static mapPRLine(
     lineDto: PaymentRequestLineDTO,
@@ -47,6 +52,9 @@ export class APMapper {
 
   /**
    * Transforms a raw Payment Request DTO into a Domain Model.
+   *
+   * @param dto - The raw payment request data from the API.
+   * @returns A clean PaymentRequest domain model.
    */
   static toPaymentRequest(dto: PaymentRequestDTO): PaymentRequest {
     return {
@@ -73,6 +81,10 @@ export class APMapper {
 
   /**
    * Transforms a raw Vendor Bill Line DTO into a Domain Model.
+   *
+   * @param dto - The raw vendor bill line data from the API.
+   * @param parentCurrencyStr - Currency string from the parent Vendor Bill.
+   * @returns A validated VendorBillLine domain model.
    */
   private static mapVendorBillLine(
     dto: VendorBillLineDTO,
@@ -94,6 +106,9 @@ export class APMapper {
 
   /**
    * Transforms a raw Vendor Bill DTO into a Domain Model.
+   *
+   * @param dto - The raw vendor bill data from the API.
+   * @returns A clean VendorBill domain model.
    */
   static toVendorBill(dto: VendorBillDTO): VendorBill {
     const lines = dto.lines.map((ln) => this.mapVendorBillLine(ln, dto.currency))

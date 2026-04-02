@@ -37,7 +37,11 @@ type PaymentRequestFormValues = z.infer<typeof paymentRequestSchema>
  * Use Case: Create a new Payment Request.
  *
  * Manages the multi-line form state and submission logic for standalone
- * payment requests.
+ * payment requests. Uses TanStack Form for validation.
+ *
+ * @returns TanStack Form instance and submission state.
+ * @example
+ * const { form, isSubmitting } = useCreatePaymentRequest()
  */
 export function useCreatePaymentRequest() {
   const queryClient = useQueryClient()
