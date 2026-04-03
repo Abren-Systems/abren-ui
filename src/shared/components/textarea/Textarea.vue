@@ -10,7 +10,7 @@
  */
 import type { HTMLAttributes } from 'vue'
 import { useVModel } from '@vueuse/core'
-import { cn } from '@/shared/utils/cn'
+import { cn } from '@/shared/utils'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']

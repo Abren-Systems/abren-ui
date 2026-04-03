@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge } from '@/shared/components/badge'
-import { cn } from '@/shared/utils/cn'
+import { cn } from '@/shared/utils'
 
 interface BadgeCellProps {
   status: string

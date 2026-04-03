@@ -6,7 +6,7 @@ import {
   DropdownMenuPortal,
   useForwardPropsEmits,
 } from 'radix-vue'
-import { cn } from '@/shared/utils/cn'
+import { cn } from '@/shared/utils'
 
 const props = withDefaults(
   defineProps<

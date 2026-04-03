@@ -50,7 +50,7 @@ shadcn-vue is a tremendously popular pattern (originally popular in React as `sh
 - **Pros:**
   - **Zero Vendor Lock-in:** You physically own the `.vue` file. There is no `node_modules/shadcn-vue` to update and break your app. If you need a custom ERP feature in a dropdown, you just edit your local `shared/components/Dropdown.vue`.
   - **Massive Time-Saver:** You get an enterprise-grade, beautifully styled component immediately, saving weeks of writing focus-states in Tailwind.
-  - **Ecosystem Synergy:** Integrates natively with `@tanstack/zod-form-adapter`, Reka UI, and Tailwind CSS.
+  - **Ecosystem Synergy:** Integrates natively with Reka UI, TanStack Form (via Standard Schema), and Tailwind CSS.
 - **Cons:**
   - You inherit their initial design opinions (which are excellent, but you will need to map them slightly to our new `@theme` tokens in `main.css`).
   - Creates slightly more boilerplate in your `shared/components` folder, but this is intentional (ownership over abstraction).
