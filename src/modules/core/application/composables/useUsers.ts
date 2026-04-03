@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useResourceQuery } from '@/shared/composables/useResourceQuery'
 import { coreAdapter } from '../../infrastructure/core_adapter'
 import { CoreMapper } from '../../infrastructure/mappers'
 import { coreKeys } from '../keys'
@@ -18,14 +18,12 @@ export function useUsers() {
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: coreKeys.users(),
-    queryFn: async () => {
-      const dtos = await coreAdapter.listUsers()
-      return dtos.map((dto) => CoreMapper.toUser(dto))
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  })
+  } = useResourceQuery(
+    coreKeys.users(),
+    () => coreAdapter.listUsers(),
+    (dtos) => dtos.map((dto) => CoreMapper.toUser(dto)),
+    { staleTime: 1000 * 60 * 5 }, // 5 minutes
+  )
 
   return {
     users,

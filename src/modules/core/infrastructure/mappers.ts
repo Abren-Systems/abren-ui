@@ -1,5 +1,5 @@
-import { toId, type UserId, type TenantId } from '@/shared/types/brand.types'
-import { BusinessDate } from '@/shared/domain/business-date'
+import { CommonMapper } from '@/shared/infrastructure/mappers'
+import { type UserId, type TenantId } from '@/shared/types/brand.types'
 import type { User, UserStatus } from '../domain/user.types'
 import type { UserDTO } from './api.types'
 
@@ -14,12 +14,12 @@ export class CoreMapper {
    */
   static toUser(dto: UserDTO): User {
     return {
-      id: toId<UserId>(dto.id),
+      id: CommonMapper.toBrandedId<UserId>(dto.id),
       email: dto.email,
       role: dto.role || 'User',
       status: (dto.status as UserStatus) || 'Active',
-      tenantId: toId<TenantId>(dto.tenant_id),
-      lastLoginAt: dto.last_login_at ? BusinessDate.fromIso(dto.last_login_at) : null,
+      tenantId: CommonMapper.toBrandedId<TenantId>(dto.tenant_id),
+      lastLoginAt: CommonMapper.toDate(dto.last_login_at),
     }
   }
 }
