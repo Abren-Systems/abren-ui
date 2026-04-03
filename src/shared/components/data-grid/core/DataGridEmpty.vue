@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Inbox } from 'lucide-vue-next'
+
 defineProps<{
   message?: string
   colspan: number
@@ -6,30 +8,11 @@ defineProps<{
 </script>
 
 <template>
-  <tr>
-    <td
-      :colspan="colspan"
-      class="h-40 text-center"
-      style="color: var(--color-grid-text-muted); font-size: 13px"
-    >
-      <div class="flex flex-col items-center justify-center gap-3">
-        <!-- Empty grid icon -->
-        <svg
-          width="40"
-          height="40"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          style="opacity: 0.35"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <path d="M3 9h18M9 21V9" />
-        </svg>
-        <span>{{ message ?? 'No records found' }}</span>
-        <!-- Optional create action slot -->
+  <tr class="hover:bg-transparent">
+    <td :colspan="colspan" class="h-64 py-12">
+      <div class="flex flex-col items-center justify-center gap-3 text-neutral-400">
+        <Inbox :size="48" stroke-width="1.2" class="opacity-40" />
+        <span class="text-sm font-medium">{{ message ?? 'No records found' }}</span>
         <slot name="action" />
       </div>
     </td>

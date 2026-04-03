@@ -13,6 +13,8 @@ export { default as DataGridToolbar } from './plugins/DataGridToolbar.vue'
 export { default as MoneyCell } from './cells/MoneyCell.vue'
 export { default as DateCell } from './cells/DateCell.vue'
 export { default as BadgeCell } from './cells/BadgeCell.vue'
+export { default as ActionCell } from './cells/ActionCell.vue'
+export * from './types'
 
 // ── Helper ───────────────────────────────────────────────
 export { useDataGrid } from '../../composables/useDataGrid'
