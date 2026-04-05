@@ -32,7 +32,9 @@ const vendorBillSchema = z.object({
     .min(1, 'At least one line item is required'),
 })
 
-type VendorBillFormValues = z.infer<typeof vendorBillSchema>
+export type VendorBillFormValues = z.infer<typeof vendorBillSchema>
+
+export type VendorBillFormLineValues = VendorBillFormValues['lines'][number]
 
 /**
  * Use Case: Create a new Vendor Bill.

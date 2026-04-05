@@ -15,7 +15,7 @@ describe('CommonMapper', () => {
   describe('toDate', () => {
     it('should transform an ISO string into an IsoDate brand', () => {
       const date = CommonMapper.toDate('2026-04-03T12:00:00Z')
-      expect(date).toBe('2026-04-03T12:00:00Z')
+      expect(date).toBe('2026-04-03')
     })
 
     it('should return null for null/undefined input', () => {

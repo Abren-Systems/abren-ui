@@ -16,8 +16,7 @@ import { useCreateVendorBill } from '../../../application/composables/useCreateV
 import { Trash2, Plus } from 'lucide-vue-next'
 
 const router = useRouter()
-const { form: _form, isSubmitting } = useCreateVendorBill()
-const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-any
+const { form } = useCreateVendorBill()
 </script>
 
 <template>
@@ -58,7 +57,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                     :id="field.name"
                     :model-value="field.state.value"
                     placeholder="UUID of the supplier"
-                    @update:model-value="field.handleChange"
+                    @update:model-value="(val) => field.handleChange(val as string)"
                   />
                   <p v-if="state.meta.errors.length" class="text-xs text-rose-500">
                     {{ state.meta.errors.join(', ') }}
@@ -75,7 +74,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                     :id="field.name"
                     :model-value="field.state.value"
                     placeholder="e.g. INV-2023-001"
-                    @update:model-value="field.handleChange"
+                    @update:model-value="(val) => field.handleChange(val as string)"
                   />
                   <p v-if="state.meta.errors.length" class="text-xs text-rose-500">
                     {{ state.meta.errors.join(', ') }}
@@ -94,7 +93,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                     :id="field.name"
                     type="date"
                     :model-value="field.state.value"
-                    @update:model-value="field.handleChange"
+                    @update:model-value="(val) => field.handleChange(val as string)"
                   />
                 </div>
               </template>
@@ -108,7 +107,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                     :id="field.name"
                     type="date"
                     :model-value="field.state.value"
-                    @update:model-value="field.handleChange"
+                    @update:model-value="(val) => field.handleChange(val as string)"
                   />
                 </div>
               </template>
@@ -118,7 +117,10 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
               <template #default="{ field }">
                 <div class="flex-none w-32 grid gap-1.5">
                   <Label :for="field.name">Currency</Label>
-                  <Select :model-value="field.state.value" @update:model-value="field.handleChange">
+                  <Select
+                    :model-value="field.state.value"
+                    @update:model-value="(val) => field.handleChange(val as string)"
+                  >
                     <SelectTrigger :id="field.name">
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
@@ -141,7 +143,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                   :model-value="field.state.value"
                   rows="2"
                   placeholder="Description of the purchase…"
-                  @update:model-value="field.handleChange"
+                  @update:model-value="(val) => field.handleChange(val as string)"
                 />
                 <p v-if="state.meta.errors.length" class="text-xs text-rose-500">
                   {{ state.meta.errors.join(', ') }}
@@ -212,7 +214,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                           size="sm"
                           :model-value="lineField.state.value"
                           placeholder="e.g. Server Hosting"
-                          @update:model-value="lineField.handleChange"
+                          @update:model-value="(val) => lineField.handleChange(val as string)"
                         />
                       </div>
                     </template>
@@ -227,7 +229,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                           type="number"
                           step="0.01"
                           :model-value="lineField.state.value"
-                          @update:model-value="lineField.handleChange"
+                          @update:model-value="(val) => lineField.handleChange(Number(val))"
                         />
                       </div>
                     </template>
@@ -241,7 +243,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                           size="sm"
                           :model-value="lineField.state.value"
                           placeholder="GL Account UUID"
-                          @update:model-value="lineField.handleChange"
+                          @update:model-value="(val) => lineField.handleChange(val as string)"
                         />
                       </div>
                     </template>
@@ -255,7 +257,7 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
                           size="sm"
                           :model-value="lineField.state.value"
                           placeholder="Procurement UUID"
-                          @update:model-value="lineField.handleChange"
+                          @update:model-value="(val) => lineField.handleChange(val as string)"
                         />
                       </div>
                     </template>
@@ -295,12 +297,14 @@ const form = _form as any // eslint-disable-line @typescript-eslint/no-explicit-
         <Button variant="outline" type="button" @click="router.push({ name: 'VendorBillsList' })"
           >Cancel</Button
         >
-        <form.Subscribe :selector="(s: any) => [s.canSubmit, s.isSubmitting]">
-          <template #default="{ value: [canSubmit, isSubmitting] }">
-            <Button variant="default" type="submit" :disabled="!canSubmit || isSubmitting">
-              {{ isSubmitting ? 'Registering…' : 'Register Bill' }}
-            </Button>
-          </template>
+        <form.Subscribe v-slot="state">
+          <Button
+            variant="default"
+            type="submit"
+            :disabled="!state.canSubmit || state.isSubmitting"
+          >
+            {{ state.isSubmitting ? 'Registering…' : 'Register Bill' }}
+          </Button>
         </form.Subscribe>
       </div>
     </form>

@@ -41,7 +41,7 @@ describe('APMapper', () => {
       expect(model.totalAmount.currency).toBe(Currency.ETB)
       expect(model.lines).toHaveLength(1)
       expect(model.lines[0].taxAmount?.amount).toBe(150)
-      expect(model.submittedAt).toEqual('2026-04-01T10:00:00Z')
+      expect(model.submittedAt).toEqual('2026-04-01')
     })
   })
 

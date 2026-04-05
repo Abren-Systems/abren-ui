@@ -35,7 +35,9 @@ const paymentRequestSchema = z.object({
     .min(1, 'At least one line item is required'),
 })
 
-type PaymentRequestFormValues = z.infer<typeof paymentRequestSchema>
+export type PaymentRequestFormValues = z.infer<typeof paymentRequestSchema>
+
+export type PaymentRequestFormLineValues = PaymentRequestFormValues['lines'][number]
 
 /**
  * Use Case: Create a new Payment Request.
