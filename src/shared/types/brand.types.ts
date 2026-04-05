@@ -10,6 +10,7 @@ export type Brand<K, T> = K & { readonly __brand: T }
 
 export type TenantId = Brand<string, 'TenantId'>
 export type UserId = Brand<string, 'UserId'>
+export type TaxRuleId = Brand<string, 'TaxRuleId'>
 export type RoleId = Brand<string, 'RoleId'>
 export type EventId = Brand<string, 'EventId'>
 export type AuditLogId = Brand<string, 'AuditLogId'>
