@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/inventory/warehouses',
+    path: 'warehouses',
     name: 'inventory.warehouses',
     component: () => import('./ui/pages/WarehousesListPage.vue'),
     meta: {
@@ -13,7 +13,7 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/inventory/stock',
+    path: 'stock',
     name: 'inventory.stock',
     component: () => import('./ui/pages/StockItemsListPage.vue'),
     meta: {
@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/inventory/adjustments/new',
+    path: 'adjustments/new',
     name: 'inventory.adjustment-create',
     component: () => import('./ui/pages/AdjustmentCreatePage.vue'),
     meta: {
