@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from '@/shared/api/http-client'
-import { PendingApprovalSchema } from './schemas'
+import { PendingApprovalSchema } from './api.schemas'
 import type { PendingApprovalDTO, ApprovalActionDTO, ApprovalPolicyCreateDTO } from './api.types'
 
 const BASE = '/workflows'

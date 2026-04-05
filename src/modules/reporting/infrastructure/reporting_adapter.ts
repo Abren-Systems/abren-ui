@@ -1,6 +1,6 @@
 import { apiGet } from '@/shared/api/http-client'
 import type { DailyCashflowDTO, CashflowQuery } from './api.types'
-import { DailyCashflowSchema } from './schemas'
+import { DailyCashflowSchema } from './api.schemas'
 
 /**
  * Reporting API Adapter.

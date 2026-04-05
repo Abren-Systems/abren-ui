@@ -15,7 +15,7 @@ import {
   BatchSchema,
   SerialNumberSchema,
   AdjustmentSchema,
-} from './schemas'
+} from './api.schemas'
 
 /**
  * Inventory API Adapter

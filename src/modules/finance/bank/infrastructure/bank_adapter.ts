@@ -5,7 +5,7 @@ import type {
   ScheduledPaymentDTO,
   CreateScheduledPaymentRequest,
 } from './api.types'
-import { BankAccountSchema, BankTransactionSchema, ScheduledPaymentSchema } from './schemas'
+import { BankAccountSchema, BankTransactionSchema, ScheduledPaymentSchema } from './api.schemas'
 
 /**
  * Bank API Adapter

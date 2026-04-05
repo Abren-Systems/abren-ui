@@ -13,7 +13,7 @@ import {
   JournalEntrySchema,
   FiscalPeriodSchema,
   LedgerSettingsSchema,
-} from './schemas'
+} from './api.schemas'
 
 /**
  * Ledger API Adapter.
