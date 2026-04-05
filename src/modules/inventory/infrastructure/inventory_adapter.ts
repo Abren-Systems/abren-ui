@@ -2,7 +2,7 @@ import { apiGet, apiPost } from '@/shared/api/http-client'
 import type {
   WarehouseDTO,
   ItemDTO,
-  StockItemDTO,
+  StockLevelDTO,
   BatchDTO,
   SerialNumberDTO,
   AdjustmentCreateDTO,
@@ -22,8 +22,8 @@ export const inventoryAdapter = {
     return apiGet<ItemDTO[]>('/inventory/items')
   },
 
-  async getStockByWarehouse(warehouseId: string): Promise<StockItemDTO[]> {
-    return apiGet<StockItemDTO[]>(`/inventory/warehouses/${warehouseId}/stock`)
+  async getStockByWarehouse(warehouseId: string): Promise<StockLevelDTO[]> {
+    return apiGet<StockLevelDTO[]>(`/inventory/warehouses/${warehouseId}/stock`)
   },
 
   async getBatches(itemId: string): Promise<BatchDTO[]> {

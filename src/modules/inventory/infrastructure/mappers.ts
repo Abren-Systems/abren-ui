@@ -7,7 +7,14 @@ import type {
   BatchId,
   SerialNumberId,
 } from '@/shared/types/brand.types'
-import type { WarehouseDTO, ItemDTO, StockItemDTO, BatchDTO, SerialNumberDTO } from './api.types'
+import type {
+  WarehouseDTO,
+  ItemDTO,
+  StockLevelDTO,
+  BatchDTO,
+  SerialNumberDTO,
+  TrackingMode,
+} from './api.types'
 import type { Warehouse, Item, StockItem, Batch, SerialNumber } from '../domain/types'
 
 /**
@@ -31,19 +38,19 @@ export class InventoryMapper {
       productId: toId<ProductId>(dto.product_id),
       sku: dto.sku,
       name: dto.name,
-      trackingMode: dto.tracking_mode,
+      trackingMode: dto.tracking_mode as TrackingMode,
     }
   }
 
-  static toStockItem(dto: StockItemDTO): StockItem {
+  static toStockItem(dto: StockLevelDTO): StockItem {
     return {
-      id: toId<StockItemId>(dto.id),
+      id: toId<StockItemId>(dto.stock_item_id),
       warehouseId: toId<WarehouseId>(dto.warehouse_id),
       itemId: toId<ItemId>(dto.item_id),
       quantity: dto.quantity,
       totalValue: dto.total_value,
-      batchId: dto.batch_id ? toId<BatchId>(dto.batch_id) : null,
-      serialId: dto.serial_id ? toId<SerialNumberId>(dto.serial_id) : null,
+      batchId: null, // Extended fields to be populated if needed in future
+      serialId: null,
     }
   }
 
@@ -62,9 +69,7 @@ export class InventoryMapper {
       id: toId<SerialNumberId>(dto.id),
       itemId: toId<ItemId>(dto.item_id),
       serialNumber: dto.serial_number,
-      currentStockItemId: dto.current_stock_item_id
-        ? toId<StockItemId>(dto.current_stock_item_id)
-        : null,
+      currentStockItemId: null, // TBD or populated by join
       isAvailable: dto.is_available,
     }
   }

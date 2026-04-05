@@ -1,6 +1,6 @@
 /**
  * Inventory Module API DTOs
- * Manually defined as the OpenAPI sync is pending.
+ * Synchronized with backend abren_api.modules.inventory.application.dtos
  */
 
 export interface WarehouseDTO {
@@ -20,25 +20,24 @@ export interface ItemDTO {
   product_id: string
   sku: string
   name: string
-  tracking_mode: TrackingMode
+  tracking_mode: string // String enum from backend
 }
 
-export interface StockItemDTO {
-  id: string
+export interface StockLevelDTO {
+  stock_item_id: string
   tenant_id: string
-  warehouse_id: string
   item_id: string
+  warehouse_id: string
   quantity: number
+  weighted_average_cost: number
   total_value: number
-  batch_id?: string | null
-  serial_id?: string | null
 }
 
 export interface BatchDTO {
   id: string
   tenant_id: string
-  item_id: string
   batch_number: string
+  item_id: string
   production_date?: string | null
   expiry_date?: string | null
 }
@@ -46,9 +45,8 @@ export interface BatchDTO {
 export interface SerialNumberDTO {
   id: string
   tenant_id: string
-  item_id: string
   serial_number: string
-  current_stock_item_id?: string | null
+  item_id: string
   is_available: boolean
 }
 
@@ -60,6 +58,9 @@ export interface AdjustmentLineDTO {
   batch_number?: string | null
   production_date?: string | null
   expiry_date?: string | null
+  serial_ids?: string[] | null
+  override_fefo?: boolean
+  is_disposal?: boolean
 }
 
 export interface AdjustmentCreateDTO {
