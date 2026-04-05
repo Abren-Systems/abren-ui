@@ -20,7 +20,8 @@ const paymentRequestSchema = z.object({
   beneficiaryId: z.string().min(1, 'Beneficiary ID is required'),
   currency: z.string().length(3, 'Invalid currency code'),
   justification: z.string().min(10, 'Justification must be at least 10 characters'),
-  bankAccountId: z.string(),
+  bankAccountId: z.string().nullable(),
+  targetLiabilityAccountId: z.string().nullable(),
   lines: z
     .array(
       z.object({
@@ -58,10 +59,10 @@ export function useCreatePaymentRequest() {
     async (values: PaymentRequestFormValues) => {
       const mappedLines: PaymentRequestLineCreateDTO[] = values.lines.map((l) => ({
         description: l.description,
-        amount: l.amount,
+        amount: String(l.amount),
         account_id: l.accountId || null,
         category_id: l.categoryId || null,
-        tax_amount: l.taxAmount ?? null,
+        tax_amount: l.taxAmount != null ? String(l.taxAmount) : null,
       }))
 
       const dto: PaymentRequestCreateDTO = {
@@ -70,6 +71,7 @@ export function useCreatePaymentRequest() {
         justification: values.justification,
         lines: mappedLines,
         bank_account_id: values.bankAccountId || null,
+        target_liability_account_id: values.targetLiabilityAccountId || null,
       }
 
       const result = await apAdapter.createRequest(dto)
@@ -88,9 +90,10 @@ export function useCreatePaymentRequest() {
       beneficiaryId: '',
       currency: 'ETB',
       justification: '',
-      bankAccountId: '',
+      bankAccountId: null,
+      targetLiabilityAccountId: null,
       lines: [{ description: '', amount: 0, accountId: '', categoryId: '', taxAmount: 0 }],
-    } satisfies PaymentRequestFormValues,
+    } as PaymentRequestFormValues,
     validators: {
       onChange: paymentRequestSchema,
     },

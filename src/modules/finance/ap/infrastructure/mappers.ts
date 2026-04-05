@@ -12,6 +12,7 @@ import type {
   PaymentRequestStatus,
   VendorBill,
   VendorBillLine,
+  VendorBillStatus,
 } from '../domain/ap.types'
 import type {
   PaymentRequestId,
@@ -73,7 +74,7 @@ export class APMapper {
       currency: currency,
       justification: dto.justification,
       status: dto.status as PaymentRequestStatus,
-      lines: dto.lines.map((ln) => this.mapPRLine(ln, currency)),
+      lines: dto.lines.map((ln: PaymentRequestLineDTO) => this.mapPRLine(ln, currency)),
       bankAccountId: dto.bank_account_id
         ? CommonMapper.toBrandedId<BankAccountId>(dto.bank_account_id)
         : null,
@@ -86,8 +87,8 @@ export class APMapper {
       assignedApproverId: dto.assigned_approver_id
         ? CommonMapper.toBrandedId<UserId>(dto.assigned_approver_id)
         : null,
-      sourceModule: dto.source_module,
-      sourceId: dto.source_id,
+      sourceModule: null,
+      sourceId: null,
     }
   }
 
@@ -117,7 +118,7 @@ export class APMapper {
    */
   static toVendorBill(dto: VendorBillDTO): VendorBill {
     const currency = dto.currency as Currency
-    const lines = dto.lines.map((ln) => this.mapVendorBillLine(ln, currency))
+    const lines = dto.lines.map((ln: VendorBillLineDTO) => this.mapVendorBillLine(ln, currency))
 
     return {
       id: CommonMapper.toBrandedId<VendorBillId>(dto.id),
@@ -126,8 +127,8 @@ export class APMapper {
       issueDate: CommonMapper.toDate(dto.issue_date)!,
       dueDate: CommonMapper.toDate(dto.due_date)!,
       currency: currency,
-      justification: dto.justification,
-      status: dto.status,
+      justification: dto.justification ?? '',
+      status: dto.status as VendorBillStatus,
       totalAmount: CommonMapper.toMoney(dto.total_amount, currency),
       lines,
     }

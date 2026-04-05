@@ -47,11 +47,7 @@ export interface PaymentRequest {
 
 // --- Vendor Bill Types ---
 
-export enum VendorBillStatus {
-  DRAFT = 'DRAFT',
-  VALIDATED = 'VALIDATED',
-  PAID = 'PAID',
-}
+export type VendorBillStatus = 'DRAFT' | 'VALIDATED' | 'PAID'
 
 export interface VendorBillLine {
   id?: VendorBillLineId

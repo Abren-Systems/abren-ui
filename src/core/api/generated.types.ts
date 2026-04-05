@@ -660,6 +660,43 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/workflows/templates': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List Workflow Templates
+     * @description Returns all workflow templates defined in the system.
+     */
+    get: operations['list_templates_api_v1_workflows_templates_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/workflows/policies': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Approval Policy (Schema Export Only) */
+    post: operations['create_policy_schema_export_api_v1_workflows_policies_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/workflows/state/health': {
     parameters: {
       query?: never
@@ -813,6 +850,48 @@ export interface paths {
      *     **Required permission:** `payments:process` (Finance Officer).
      */
     post: operations['pay_payment_request_api_v1_finance_ap_payment_requests__pr_id__pay_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/finance/ap/payment-requests/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve payment request statistics
+     * @description Returns aggregated metrics for payment requests within the tenant.
+     */
+    get: operations['get_payment_request_stats_api_v1_finance_ap_payment_requests_stats_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/finance/ap/payment-requests/{pr_id}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Reject a submitted payment request
+     * @description Rejects a payment request. A reason must be provided.  The request status transitions to **REJECTED**.
+     *
+     *     **Required permission:** `payments:approve` (Approver).
+     */
+    post: operations['reject_payment_request_api_v1_finance_ap_payment_requests__pr_id__reject_post']
     delete?: never
     options?: never
     head?: never
@@ -2018,10 +2097,83 @@ export interface components {
       disbursement_reference: string
     }
     /**
+     * PaymentRequestRejectDTO
+     * @description Request body for rejecting a payment request (requires reason).
+     */
+    PaymentRequestRejectDTO: {
+      /**
+       * Reason
+       * @description Reason for rejecting the request (reviewed by requester).
+       * @example Budget allocation exceeded for Q1
+       */
+      reason: string
+    }
+    /**
+     * PaymentRequestStatsDTO
+     * @description Aggregated stats for the payment request dashboard.
+     */
+    PaymentRequestStatsDTO: {
+      /**
+       * Total Count
+       * @description Total number of payment requests.
+       */
+      total_count: number
+      /**
+       * Draft Count
+       * @description Number of requests in DRAFT state.
+       */
+      draft_count: number
+      /**
+       * Submitted Count
+       * @description Number of requests in SUBMITTED state.
+       */
+      submitted_count: number
+      /**
+       * Approved Count
+       * @description Number of requests in APPROVED state.
+       */
+      approved_count: number
+      /**
+       * Rejected Count
+       * @description Number of requests in REJECTED state.
+       */
+      rejected_count: number
+      /**
+       * Paid Count
+       * @description Number of requests in PAID state.
+       */
+      paid_count: number
+      /**
+       * Total Amount
+       * @description Sum of all payment request amounts.
+       */
+      total_amount: string
+    }
+    /**
      * PaymentRequestStatus
      * @enum {string}
      */
     PaymentRequestStatus: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PAID'
+    /**
+     * PendingApprovalResponse
+     * @description Read-only view of a pending approval action.
+     */
+    PendingApprovalResponse: {
+      /** Instance Id */
+      instance_id: string
+      /** Entity Type */
+      entity_type: string
+      /** Entity Id */
+      entity_id: string
+      /** Current State */
+      current_state: string
+      /** Target State */
+      target_state: string | null
+      /** Required Role */
+      required_role: string | null
+      /** Submitted At */
+      submitted_at: string | null
+    }
     /**
      * PolicyConditionType
      * @enum {string}
@@ -2522,6 +2674,20 @@ export interface components {
       is_active: boolean
       /** Description */
       description: string | null
+    }
+    /** WorkflowTemplateRead */
+    WorkflowTemplateRead: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Code */
+      code: string
+      /** Name */
+      name: string
+      /** Entity Type */
+      entity_type: string
     }
   }
   responses: never
@@ -3678,7 +3844,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          'application/json': components['schemas']['PendingApprovalResponse'][]
         }
       }
     }
@@ -3704,7 +3870,62 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': unknown
+          'application/json': {
+            [key: string]: string
+          }
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_templates_api_v1_workflows_templates_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkflowTemplateRead'][]
+        }
+      }
+    }
+  }
+  create_policy_schema_export_api_v1_workflows_policies_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ApprovalPolicyCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ApprovalPolicyCreate']
         }
       }
       /** @description Validation Error */
@@ -3979,6 +4200,97 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': components['schemas']['PaymentRequestPayDTO']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PaymentRequestDTO']
+        }
+      }
+      /** @description **Bad request.** The request could not be processed due to a domain-level business rule violation. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Insufficient permissions.** The authenticated user does not hold the required RBAC permission for this operation. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description **Validation error.** One or more request fields failed schema or business-rule validation. */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ValidationErrorResponse']
+        }
+      }
+    }
+  }
+  get_payment_request_stats_api_v1_finance_ap_payment_requests_stats_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PaymentRequestStatsDTO']
+        }
+      }
+      /** @description **Authentication required.** The request lacks a valid Bearer token or the token has expired. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  reject_payment_request_api_v1_finance_ap_payment_requests__pr_id__reject_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        pr_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PaymentRequestRejectDTO']
       }
     }
     responses: {

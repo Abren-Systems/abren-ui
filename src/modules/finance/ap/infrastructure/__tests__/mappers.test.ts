@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { APMapper } from '../mappers'
 import type { PaymentRequestDTO, VendorBillDTO } from '../api.types'
 import { Currency } from '../../../../../shared/domain/money'
-import { VendorBillStatus } from '../../domain/ap.types'
 
 describe('APMapper', () => {
   describe('toPaymentRequest', () => {
@@ -11,7 +10,7 @@ describe('APMapper', () => {
         id: 'pr-1',
         requester_id: 'user-1',
         beneficiary_id: 'ben-1',
-        total_amount: 1500,
+        total_amount: '1500.00',
         currency: 'ETB',
         justification: 'Test justification',
         status: 'SUBMITTED',
@@ -19,10 +18,10 @@ describe('APMapper', () => {
           {
             id: 'line-1',
             description: 'Line 1',
-            amount: 1500,
+            amount: '1500.00',
             account_id: 'acc-1',
             category_id: 'cat-1',
-            tax_amount: 150,
+            tax_amount: '150.00',
           },
         ],
         bank_account_id: 'bank-1',
@@ -56,16 +55,20 @@ describe('APMapper', () => {
         due_date: '2026-04-15',
         currency: 'USD',
         justification: 'Hosting',
-        status: VendorBillStatus.VALIDATED,
-        total_amount: 200,
+        status: 'VALIDATED',
+        net_amount: '200.00',
+        tax_total: '0.00',
+        total_amount: '200.00',
         lines: [
           {
             id: 'line-1',
             description: 'Cloud Server',
-            amount: 200,
+            amount: '200.00',
             account_id: 'acc-1',
             category_id: 'cat-1',
             journal_line_id: null,
+            tax_rule_id: null,
+            tax_amount: '0.00',
           },
         ],
       }

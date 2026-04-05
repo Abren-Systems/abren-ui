@@ -9,8 +9,9 @@ import { toId, type Brand } from '@/shared/types/brand.types'
  */
 export const CommonMapper = {
   /** Transforms a raw amount and currency into a Money value object. */
-  toMoney: (amount: number, currency: string | Currency): Money => {
-    return Money.from(amount, currency)
+  toMoney: (amount: number | string, currency: string | Currency): Money => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+    return Money.from(numAmount, currency)
   },
 
   /** Safely transforms an ISO date string into an IsoDate brand. */
@@ -19,8 +20,8 @@ export const CommonMapper = {
   },
 
   /** Maps a raw ID to a branded ID type. */
-  toBrandedId: <T extends Brand<string, string>>(id: string): T => {
-    return toId<T>(id)
+  toBrandedId: <T extends Brand<string, string>>(id: string | null | undefined): T => {
+    return id ? (toId<T>(id) as T) : (null as unknown as T)
   },
 
   /** Helper to map a collection of DTOs using a mapper function. */

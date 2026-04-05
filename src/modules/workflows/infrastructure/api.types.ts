@@ -1,23 +1,16 @@
-export interface PendingApprovalDTO {
-  instance_id: string
-  entity_type: string
-  entity_id: string
-  current_state: string
-  target_state: string | null
-  required_role: string
-  submitted_at: string | null
-}
+import type { components } from '@/shared/api/generated.types'
 
-export interface ApprovalActionDTO {
-  action: 'APPROVE' | 'REJECT'
-  comments: string
-}
+/** Consolidated Workflows Domain DTOs (Strictly aligned to backend Pydantic models) */
 
-export interface WorkflowPolicyDTO {
-  id: string
-  tenant_id: string
-  transition_id: string
-  condition_type: string
-  condition_value: string | null
-  is_active: boolean
-}
+export type Schemas = components['schemas']
+
+// --- Approval DTOs ---
+
+export type PendingApprovalDTO = Schemas['PendingApprovalResponse']
+export type ApprovalActionDTO = Schemas['ApprovalActionCreate']
+export type ApprovalStepCreateDTO = Schemas['ApprovalStepCreate']
+export type ApprovalPolicyCreateDTO = Schemas['ApprovalPolicyCreate']
+
+// --- Template DTOs ---
+
+export type WorkflowTemplateReadDTO = Schemas['WorkflowTemplateRead']
