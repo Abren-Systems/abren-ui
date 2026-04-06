@@ -156,7 +156,13 @@ export default tseslint.config(
    * to ensure nominal type safety and prevent timezone leakage.
    */
   {
-    files: ['src/modules/**/application/**/*.ts', 'src/modules/**/domain/**/*.ts'],
+    files: [
+      'src/modules/**/application/**/*.ts',
+      'src/modules/**/domain/**/*.ts',
+      'src/modules/**/infrastructure/**/*.ts',
+      'src/modules/**/ui/**/*.ts',
+      'src/modules/**/ui/**/*.vue',
+    ],
     rules: {
       'no-restricted-syntax': [
         'error',

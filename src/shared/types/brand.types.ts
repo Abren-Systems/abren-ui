@@ -40,6 +40,18 @@ export type SerialNumberId = Brand<string, 'SerialNumberId'>
 export type AdjustmentId = Brand<string, 'AdjustmentId'>
 export type StockMovementId = Brand<string, 'StockMovementId'>
 
+// ── Temporal Domain Brands ───────────────────────────────
+
+/** Base IsoDate Brand - Always YYYY-MM-DD */
+export type IsoDate = Brand<string, 'IsoDate'>
+
+/** Business Semantic Dates */
+export type TransactionDate = Brand<IsoDate, 'TransactionDate'>
+export type PostingDate = Brand<IsoDate, 'PostingDate'>
+export type ValueDate = Brand<IsoDate, 'ValueDate'>
+export type DueDate = Brand<IsoDate, 'DueDate'>
+export type FiscalDate = Brand<IsoDate, 'FiscalDate'>
+
 /**
  * Utility function to safely cast a raw string DTO ID into a Domain Branded ID.
  * Should exclusively be used inside \`infrastructure/mappers\`.
