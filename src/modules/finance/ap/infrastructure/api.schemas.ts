@@ -40,6 +40,7 @@ export const PaymentRequestSchema = z.object({
 })
 
 export const PaymentRequestStatsSchema = z.object({
+  tenant_id: z.string().uuid(),
   total_count: z.number().int(),
   draft_count: z.number().int(),
   submitted_count: z.number().int(),

@@ -6,6 +6,8 @@ import {
   type FiscalPeriodId,
   type JournalLineId,
   type UserId,
+  type ValueDate,
+  type CurrencyCode,
 } from '@/shared/types/brand.types'
 import { Currency, Money } from '@/shared/domain/money'
 import { CommonMapper } from '@/shared/infrastructure/mappers'
@@ -65,6 +67,14 @@ export class LedgerMapper {
       credit: !dto.is_debit
         ? CommonMapper.toMoney(parseFloat(dto.amount), currency)
         : Money.zero(currency),
+
+      // FX Awareness & Traceability (Enriched in hardening session)
+      originalAmount: dto.original_amount
+        ? CommonMapper.toMoney(dto.original_amount, dto.original_currency || currency)
+        : undefined,
+      originalCurrency: (dto.original_currency as CurrencyCode) || undefined,
+      baseAmount: dto.base_amount ? CommonMapper.toMoney(dto.base_amount, currency) : undefined,
+      exchangeRate: dto.exchange_rate ? parseFloat(dto.exchange_rate) : undefined,
     }
   }
 
@@ -79,11 +89,11 @@ export class LedgerMapper {
       id: CommonMapper.toBrandedId<JournalEntryId>(dto.id),
       entryNumber: dto.entry_number,
       status: dto.status as 'DRAFT' | 'POSTED' | 'VOIDED',
-      entryDate: CommonMapper.toDate(dto.date)!,
+      entryDate: CommonMapper.toDate(dto.date) as unknown as ValueDate,
       description: dto.description,
-      createdBy: CommonMapper.toBrandedId<UserId>('system'), // Missing from DTO, defaulting
+      createdBy: CommonMapper.toBrandedId<UserId>('system'),
       lines: (dto.lines || []).map((ln) => this.mapJournalLine(ln)),
-      createdAt: CommonMapper.toDate(new Date().toISOString())!, // Missing from DTO, defaulting
+      createdAt: dto.created_at || new Date().toISOString(),
     }
   }
 
@@ -97,11 +107,11 @@ export class LedgerMapper {
     return {
       id: CommonMapper.toBrandedId<FiscalPeriodId>(dto.id),
       name: dto.name,
-      startDate: CommonMapper.toDate(dto.start_date)!,
-      endDate: CommonMapper.toDate(dto.end_date)!,
+      startDate: CommonMapper.toDate(dto.start_date) as unknown as ValueDate,
+      endDate: CommonMapper.toDate(dto.end_date) as unknown as ValueDate,
       status: dto.status as FiscalPeriodStatus,
-      isAdjustmentPeriod: false, // Missing from DTO
-      createdAt: CommonMapper.toDate(new Date().toISOString())!, // Missing from DTO
+      isAdjustmentPeriod: false,
+      createdAt: dto.created_at || new Date().toISOString(),
     }
   }
 }

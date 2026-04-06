@@ -294,6 +294,22 @@ To prevent malformed or unexpected backend data from contaminating the reactive 
 - **Implementation**: The `adapter.ts` is responsible for calling `Schema.parse(rawData)`.
 - **Why**: This ensures that structural mismatches between the Backend DTO and the Domain's expectations are caught immediately at the network boundary with a clear stack trace, rather than as cryptic "cannot read property of undefined" errors in deep UI components.
 
+### 6.6 The DTO Type Preservation Protocol [FULL-STACK]
+
+To maintain endpoint stability and avoid serializing complex objects over the wire, we preserve standard primitives at the API boundary:
+
+- **The Contract**: Every `date` field in a backend DTO is serialized as a standard ISO-8601 string (`YYYY-MM-DD`).
+- **Frontend Boundary**: The `Adapter` and `api.types.ts` use the `IsoDate` branded string.
+- **The Mapper Rule**: The **Infrastructure Mapper** (§6) is responsible for converting these `IsoDate` strings into semantically specific **Branded Types** (like `ValueDate`, `TransactionDate`) upon entry into the Module Domain. No business logic should ever touch a raw, unbranded string.
+
+### 6.7 Nominal (Branded) Temporal Types [MANDATORY]
+
+Within the Shared Kernel (`shared/types/brand.types.ts`) and Module Domains, we use **Nominal Typing** to prevent "Domestic/Foreign" temporal slips.
+
+- **`IsoDate`**: The base brand for any validated `YYYY-MM-DD` string.
+- **`ValueDate`**: A brand representing a semantically significant financial date (valuation, posting, effective).
+- **Rule**: You cannot pass a `PostingDate` where a `ValueDate` is required without explicit casting. This prevents logic errors in multi-currency Revaluation and Interest Calculation routines.
+
 ---
 
 ## 7. Cross-Module Communication

@@ -1,4 +1,5 @@
 import type { IsoDate } from '../types/brand.types'
+export type { IsoDate }
 
 /**
  * BusinessDate — A Presentation-only utility for localized date formatting and parsing.

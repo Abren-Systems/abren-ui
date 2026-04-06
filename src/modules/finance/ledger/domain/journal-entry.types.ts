@@ -1,6 +1,12 @@
-import type { AccountId, JournalEntryId, JournalLineId, UserId } from '@/shared/types/brand.types'
+import type {
+  AccountId,
+  JournalEntryId,
+  JournalLineId,
+  UserId,
+  ValueDate,
+  CurrencyCode,
+} from '@/shared/types/brand.types'
 import type { Money } from '@/shared/domain/money'
-import type { IsoDate } from '@/shared/domain/business-date'
 
 export interface JournalEntryLine {
   id: JournalLineId
@@ -8,16 +14,21 @@ export interface JournalEntryLine {
   description: string
   debit: Money
   credit: Money
+  // FX Awareness & Traceability
+  originalAmount?: Money
+  originalCurrency?: CurrencyCode
+  baseAmount?: Money
+  exchangeRate?: number
 }
 
 export interface JournalEntry {
   id: JournalEntryId
   entryNumber: string
   status: 'DRAFT' | 'POSTED' | 'VOIDED'
-  entryDate: IsoDate
+  entryDate: ValueDate
   description: string
   createdBy: UserId
   postedBy?: UserId
   lines: JournalEntryLine[]
-  createdAt: IsoDate
+  createdAt: string
 }

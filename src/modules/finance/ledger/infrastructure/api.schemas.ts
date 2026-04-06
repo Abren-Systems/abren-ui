@@ -10,6 +10,10 @@ export const JournalLineSchema = z.object({
   amount: z.string(),
   currency: z.string(),
   amount_in_base: z.string(),
+  // FX Audit Trail (Hardened)
+  original_amount: z.string(),
+  original_currency: z.string(),
+  base_amount: z.string(),
   exchange_rate: z.string(),
   is_debit: z.boolean(),
 })
@@ -25,6 +29,7 @@ export const JournalEntrySchema = z.object({
   base_currency: z.string(),
   status: z.string(),
   lines: z.array(JournalLineSchema),
+  created_at: z.string().optional(),
 })
 
 /**

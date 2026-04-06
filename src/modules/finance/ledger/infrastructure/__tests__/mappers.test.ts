@@ -49,6 +49,9 @@ describe('LedgerMapper', () => {
             is_debit: true,
             currency: 'ETB',
             description: 'Salaries',
+            original_amount: '1000.00',
+            original_currency: 'ETB',
+            base_amount: '1000.00',
           },
           {
             id: 'line-2',
@@ -59,8 +62,12 @@ describe('LedgerMapper', () => {
             is_debit: false,
             currency: 'ETB',
             description: 'Cash',
+            original_amount: '1000.00',
+            original_currency: 'ETB',
+            base_amount: '1000.00',
           },
         ],
+        created_at: '2026-04-01T08:00:00Z',
       }
 
       const model = LedgerMapper.toJournalEntry(dto)
@@ -98,6 +105,7 @@ describe('LedgerMapper', () => {
         start_date: '2026-04-01',
         end_date: '2026-04-30',
         status: 'OPEN',
+        created_at: '2026-03-31T20:00:00Z',
       }
 
       const model = LedgerMapper.toFiscalPeriod(dto)
