@@ -1,6 +1,5 @@
 import { useApiQuery } from '@/shared/composables/useApiQuery'
 import { bankAdapter } from '../../infrastructure/bank_adapter'
-import { BankMapper } from '../../infrastructure/mappers'
 import type { BankTransaction } from '../../domain/bank.types'
 import type { BankAccountId } from '@/shared/types/brand.types'
 import { computed } from 'vue'
@@ -19,10 +18,7 @@ export function useBankTransactions(accountId: BankAccountId) {
     refetch,
   } = useApiQuery<BankTransaction[]>(
     bankKeys.transactions(accountId),
-    async () => {
-      const dtos = await bankAdapter.getTransactions(accountId)
-      return dtos.map((dto) => BankMapper.toTransaction(dto, accountId))
-    },
+    async () => bankAdapter.getTransactions(accountId),
     {
       enabled: computed(() => !!accountId),
       staleTime: 1000 * 60 * 2, // 2 minutes

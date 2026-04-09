@@ -30,6 +30,7 @@ export type VendorId = Brand<string, 'VendorId'>
 export type CategoryId = Brand<string, 'CategoryId'>
 export type BankAccountId = Brand<string, 'BankAccountId'>
 export type BankTransactionId = Brand<string, 'BankTransactionId'>
+export type ScheduledPaymentId = Brand<string, 'ScheduledPaymentId'>
 export type WorkflowInstanceId = Brand<string, 'WorkflowInstanceId'>
 export type WarehouseId = Brand<string, 'WarehouseId'>
 export type ItemId = Brand<string, 'ItemId'>

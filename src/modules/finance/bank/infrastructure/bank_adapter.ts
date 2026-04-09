@@ -1,11 +1,21 @@
 import { apiGet, apiPost } from '@/shared/api/http-client'
+import { CommonMapper } from '@/shared/infrastructure/mappers'
+import type { BankAccountId } from '@/shared/types/brand.types'
 import type {
-  BankAccountDTO,
-  BankTransactionDTO,
-  ScheduledPaymentDTO,
+  BankAccount,
+  BankTransaction,
+  ScheduledPayment,
+} from '../domain/bank.types'
+import type {
   CreateScheduledPaymentRequest,
+  ScheduledPaymentDTO,
 } from './api.types'
-import { BankAccountSchema, BankTransactionSchema, ScheduledPaymentSchema } from './api.schemas'
+import {
+  BankAccountSchema,
+  BankTransactionSchema,
+  ScheduledPaymentSchema,
+} from './api.schemas'
+import { BankMapper } from './mappers'
 
 /**
  * Bank API Adapter
@@ -17,59 +27,64 @@ export const bankAdapter = {
   /**
    * Fetches all banking accounts for the current tenant.
    *
-   * @returns List of validated BankAccountDTOs.
+   * @returns List of validated and mapped BankAccounts.
    */
-  async getBankAccounts(): Promise<BankAccountDTO[]> {
-    const raw = (await apiGet<BankAccountDTO[]>('/finance/bank/accounts')) as unknown[]
-    return raw.map((item) => BankAccountSchema.parse(item))
+  async getBankAccounts(): Promise<BankAccount[]> {
+    const raw = (await apiGet<unknown[]>('/finance/bank/accounts')) || []
+    const dtos = raw.map((item) => BankAccountSchema.parse(item))
+    return CommonMapper.mapCollection(dtos, (dto) => BankMapper.toBankAccount(dto))
   },
 
   /**
    * Fetches the transaction history for a specific bank account.
    *
    * @param accountId - The unique identifier of the bank account.
-   * @returns List of validated BankTransactionDTOs.
+   * @returns List of validated and mapped BankTransactions.
    */
-  async getTransactions(accountId: string): Promise<BankTransactionDTO[]> {
-    const raw = (await apiGet<BankTransactionDTO[]>(
+  async getTransactions(accountId: BankAccountId): Promise<BankTransaction[]> {
+    const raw = (await apiGet<unknown[]>(
       `/finance/bank/accounts/${accountId}/transactions`,
-    )) as unknown[]
-    return raw.map((item) => BankTransactionSchema.parse(item))
+    )) || []
+    const dtos = raw.map((item) => BankTransactionSchema.parse(item))
+    return dtos.map((dto) => BankMapper.toTransaction(dto, accountId))
   },
 
   /**
    * Fetches all scheduled payments for the current tenant.
    *
-   * @returns List of validated ScheduledPaymentDTOs.
+   * @returns List of validated and mapped ScheduledPayments.
    */
-  async getScheduledPayments(): Promise<ScheduledPaymentDTO[]> {
-    const raw = (await apiGet<ScheduledPaymentDTO[]>(
+  async getScheduledPayments(): Promise<ScheduledPayment[]> {
+    const raw = (await apiGet<unknown[]>(
       '/finance/bank/scheduled-payments',
-    )) as unknown[]
-    return raw.map((item) => ScheduledPaymentSchema.parse(item))
+    )) || []
+    const dtos = raw.map((item) => ScheduledPaymentSchema.parse(item))
+    return CommonMapper.mapCollection(dtos, (dto) => BankMapper.toScheduledPayment(dto))
   },
 
   /**
    * Creates a new scheduled payment.
    *
    * @param data - The scheduled payment request payload.
-   * @returns The created and validated ScheduledPaymentDTO.
+   * @returns The created and validated ScheduledPayment domain model.
    */
-  async createScheduledPayment(data: CreateScheduledPaymentRequest): Promise<ScheduledPaymentDTO> {
+  async createScheduledPayment(data: CreateScheduledPaymentRequest): Promise<ScheduledPayment> {
     const raw = await apiPost<ScheduledPaymentDTO>('/finance/bank/scheduled-payments', data)
-    return ScheduledPaymentSchema.parse(raw)
+    const dto = ScheduledPaymentSchema.parse(raw)
+    return BankMapper.toScheduledPayment(dto)
   },
 
   /**
    * Releases a scheduled payment for processing.
    *
    * @param paymentId - The unique identifier of the payment.
-   * @returns The updated and validated ScheduledPaymentDTO.
+   * @returns The updated and validated ScheduledPayment domain model.
    */
-  async releaseScheduledPayment(paymentId: string): Promise<ScheduledPaymentDTO> {
+  async releaseScheduledPayment(paymentId: string): Promise<ScheduledPayment> {
     const raw = await apiPost<ScheduledPaymentDTO>(
       `/finance/bank/scheduled-payments/${paymentId}/release`,
     )
-    return ScheduledPaymentSchema.parse(raw)
+    const dto = ScheduledPaymentSchema.parse(raw)
+    return BankMapper.toScheduledPayment(dto)
   },
 }

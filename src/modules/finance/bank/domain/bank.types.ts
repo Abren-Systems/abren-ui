@@ -1,4 +1,9 @@
-import type { BankAccountId, BankTransactionId } from '@/shared/types/brand.types'
+import type {
+  BankAccountId,
+  BankTransactionId,
+  ScheduledPaymentId,
+  UserId,
+} from '@/shared/types/brand.types'
 import { Currency } from '@/shared/domain/money'
 import { Money } from '@/shared/domain/money'
 import type { IsoDate } from '@/shared/domain/business-date'
@@ -31,4 +36,27 @@ export interface BankTransaction {
   reference: string
   description: string
   type: 'DEBIT' | 'CREDIT'
+}
+
+/**
+ * Financial Obligation Category.
+ * Defines the type of scheduled payment (vendor, tax, payroll, etc).
+ */
+export type FinancialObligationCategory = 'VENDOR' | 'TAX' | 'PAYROLL' | 'TRANSFER' | 'OTHER'
+
+/**
+ * Scheduled Payment Entity.
+ * Represents a future-dated cash outflow requirement.
+ */
+export interface ScheduledPayment {
+  id: ScheduledPaymentId
+  bankAccountId: BankAccountId
+  category: FinancialObligationCategory
+  amount: Money
+  dueDate: IsoDate
+  description: string
+  status: 'PLANNED' | 'RELEASED' | 'SETTLED' | 'CANCELLED'
+  sourceModule: string | null
+  sourceId: string | null
+  createdBy: UserId
 }

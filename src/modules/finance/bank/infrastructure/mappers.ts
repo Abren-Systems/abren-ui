@@ -1,8 +1,22 @@
 import { type Currency } from '@/shared/domain/money'
 import { CommonMapper } from '@/shared/infrastructure/mappers'
-import type { BankAccountId, BankTransactionId } from '@/shared/types/brand.types'
-import type { BankAccount, BankTransaction } from '../domain/bank.types'
-import type { BankAccountDTO, BankTransactionDTO } from './api.types'
+import type {
+  BankAccountId,
+  BankTransactionId,
+  ScheduledPaymentId,
+  UserId,
+} from '@/shared/types/brand.types'
+import type {
+  BankAccount,
+  BankTransaction,
+  FinancialObligationCategory,
+  ScheduledPayment,
+} from '../domain/bank.types'
+import type {
+  BankAccountDTO,
+  BankTransactionDTO,
+  ScheduledPaymentDTO,
+} from './api.types'
 
 /**
  * Bank Mapper-as-Factory.
@@ -46,6 +60,27 @@ export class BankMapper {
       reference: dto.reference ?? '',
       description: dto.description,
       type: dto.transaction_type as 'DEBIT' | 'CREDIT',
+    }
+  }
+
+  /**
+   * Transforms a raw API Scheduled Payment DTO into a Domain Type.
+   *
+   * @param dto - The raw scheduled payment data from the API.
+   * @returns A clean ScheduledPayment domain model.
+   */
+  static toScheduledPayment(dto: ScheduledPaymentDTO): ScheduledPayment {
+    return {
+      id: CommonMapper.toBrandedId<ScheduledPaymentId>(dto.id),
+      bankAccountId: CommonMapper.toBrandedId<BankAccountId>(dto.bank_account_id),
+      category: dto.category as FinancialObligationCategory,
+      amount: CommonMapper.toMoney(dto.amount, dto.currency_code),
+      dueDate: CommonMapper.toDate(dto.due_date)!,
+      description: dto.description,
+      status: dto.status as ScheduledPayment['status'], // Explicit cast to handle DTO status
+      sourceModule: dto.source_module ?? null,
+      sourceId: dto.source_id ?? null,
+      createdBy: CommonMapper.toBrandedId<UserId>(dto.tenant_id), // Simplified for now
     }
   }
 }
