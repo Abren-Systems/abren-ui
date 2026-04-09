@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
-import { Plus } from 'lucide-vue-next'
-import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
-import { accountColumns } from '../grids/account.grid'
+import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
+import { Button } from "@/shared/components/button";
+import { Plus } from "lucide-vue-next";
+import { useLedgerAccounts } from "../../../application/composables/useLedgerAccounts";
+import { accountColumns } from "../grids/account.grid";
 
 // ── Grid state (sorting, selection, global filter) ─────────────
-const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
+const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid();
 
 // ── Application Layer Orchestration ────────────────────────────
-const { accounts: data, isPending } = useLedgerAccounts()
+const { accounts: data, isPending } = useLedgerAccounts();
 </script>
 
 <template>
@@ -17,7 +17,9 @@ const { accounts: data, isPending } = useLedgerAccounts()
     <!-- Page Header -->
     <div class="flex shrink-0 items-start justify-between">
       <div>
-        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">Chart of Accounts</h1>
+        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">
+          Chart of Accounts
+        </h1>
         <p class="mt-1 text-body-sm text-[var(--color-grid-text-muted)]">
           Manage your ledger accounts and financial structure.
         </p>

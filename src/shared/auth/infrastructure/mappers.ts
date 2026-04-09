@@ -1,6 +1,6 @@
-import type { TenantInfoDTO, UserProfileDTO } from './api.types'
-import type { CurrentUser, TenantInfo } from '../auth.store'
-import { toId, type UserId, type TenantId } from '@/shared/types/brand.types'
+import type { TenantInfoDTO, UserProfileDTO } from "./api.types";
+import type { CurrentUser, TenantInfo } from "../auth.store";
+import { toId, type UserId, type TenantId } from "@/shared/types/brand.types";
 
 /**
  * Mapper-as-Factory for Shared Auth.
@@ -22,7 +22,7 @@ export class AuthMapper {
       tenantId: toId<TenantId>(dto.tenant_id),
       email: dto.email,
       isActive: dto.is_active,
-    }
+    };
   }
 
   /**
@@ -36,6 +36,6 @@ export class AuthMapper {
       id: toId<TenantId>(dto.id),
       name: dto.name,
       features: { ...dto.features },
-    }
+    };
   }
 }

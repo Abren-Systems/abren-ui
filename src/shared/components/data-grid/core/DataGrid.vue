@@ -9,83 +9,89 @@ import {
   type SortingState,
   type RowSelectionState,
   type VisibilityState,
-} from '@tanstack/vue-table'
-import { computed } from 'vue'
-import DataGridToolbar from '../plugins/DataGridToolbar.vue'
-import DataGridSkeleton from './DataGridSkeleton.vue'
-import DataGridEmpty from './DataGridEmpty.vue'
+} from "@tanstack/vue-table";
+import { computed } from "vue";
+import DataGridToolbar from "../plugins/DataGridToolbar.vue";
+import DataGridSkeleton from "./DataGridSkeleton.vue";
+import DataGridEmpty from "./DataGridEmpty.vue";
 
 // ─── Props & Models ──────────────────────────────────────────────────────────
 
 const props = withDefaults(
   defineProps<{
-    columns: ColumnDef<TData, TValue>[]
-    data: TData[]
-    loading?: boolean
-    skeletonRows?: number
-    placeholder?: string
-    showToolbar?: boolean
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    loading?: boolean;
+    skeletonRows?: number;
+    placeholder?: string;
+    showToolbar?: boolean;
   }>(),
   {
     skeletonRows: 8,
     showToolbar: true,
     loading: false,
   },
-)
+);
 
 // Two-way bindings via defineModel (Vue 3.3+)
-const sorting = defineModel<SortingState>('sorting', { default: () => [] })
-const rowSelection = defineModel<RowSelectionState>('rowSelection', { default: () => ({}) })
-const columnVisibility = defineModel<VisibilityState>('columnVisibility', { default: () => ({}) })
-const globalFilter = defineModel<string>('globalFilter', { default: '' })
+const sorting = defineModel<SortingState>("sorting", { default: () => [] });
+const rowSelection = defineModel<RowSelectionState>("rowSelection", {
+  default: () => ({}),
+});
+const columnVisibility = defineModel<VisibilityState>("columnVisibility", {
+  default: () => ({}),
+});
+const globalFilter = defineModel<string>("globalFilter", { default: "" });
 
 // ─── TanStack Table ──────────────────────────────────────────────────────────
 
 const table = useVueTable({
   get data() {
-    return props.data
+    return props.data;
   },
   get columns() {
-    return props.columns
+    return props.columns;
   },
   getCoreRowModel: getCoreRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
   enableRowSelection: true,
-  globalFilterFn: 'includesString',
+  globalFilterFn: "includesString",
 
   state: {
     get sorting() {
-      return sorting.value
+      return sorting.value;
     },
     get rowSelection() {
-      return rowSelection.value
+      return rowSelection.value;
     },
     get columnVisibility() {
-      return columnVisibility.value
+      return columnVisibility.value;
     },
     get globalFilter() {
-      return globalFilter.value
+      return globalFilter.value;
     },
   },
 
   onSortingChange: (updater) => {
-    sorting.value = typeof updater === 'function' ? updater(sorting.value) : updater
+    sorting.value =
+      typeof updater === "function" ? updater(sorting.value) : updater;
   },
   onRowSelectionChange: (updater) => {
-    rowSelection.value = typeof updater === 'function' ? updater(rowSelection.value) : updater
+    rowSelection.value =
+      typeof updater === "function" ? updater(rowSelection.value) : updater;
   },
   onColumnVisibilityChange: (updater) => {
     columnVisibility.value =
-      typeof updater === 'function' ? updater(columnVisibility.value) : updater
+      typeof updater === "function" ? updater(columnVisibility.value) : updater;
   },
   onGlobalFilterChange: (val) => {
-    globalFilter.value = val
+    globalFilter.value = val;
   },
-})
+});
 
-const colCount = computed(() => props.columns.length)
-const selectedCount = computed(() => Object.keys(rowSelection.value).length)
+const colCount = computed(() => props.columns.length);
+const selectedCount = computed(() => Object.keys(rowSelection.value).length);
 </script>
 
 <template>
@@ -114,7 +120,12 @@ const selectedCount = computed(() => Object.keys(rowSelection.value).length)
               v-for="header in headerGroup.headers"
               :key="header.id"
               class="grid-th"
-              :style="{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined }"
+              :style="{
+                width:
+                  header.getSize() !== 150
+                    ? `${header.getSize()}px`
+                    : undefined,
+              }"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -128,7 +139,11 @@ const selectedCount = computed(() => Object.keys(rowSelection.value).length)
         <!-- Body -->
         <tbody class="grid-tbody">
           <!-- Loading skeleton -->
-          <DataGridSkeleton v-if="loading" :rows="skeletonRows" :colspan="colCount" />
+          <DataGridSkeleton
+            v-if="loading"
+            :rows="skeletonRows"
+            :colspan="colCount"
+          />
 
           <!-- Data rows -->
           <template v-else-if="table.getRowModel().rows.length">
@@ -139,8 +154,15 @@ const selectedCount = computed(() => Object.keys(rowSelection.value).length)
               :class="{ 'grid-row--selected': row.getIsSelected() }"
               @click="row.toggleSelected()"
             >
-              <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="grid-td">
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              <td
+                v-for="cell in row.getVisibleCells()"
+                :key="cell.id"
+                class="grid-td"
+              >
+                <FlexRender
+                  :render="cell.column.columnDef.cell"
+                  :props="cell.getContext()"
+                />
               </td>
             </tr>
           </template>

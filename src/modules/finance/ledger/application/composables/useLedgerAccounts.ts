@@ -1,7 +1,7 @@
-import { useResourceQuery } from '@/shared/composables/useResourceQuery'
-import { ledgerAdapter } from '../../infrastructure/ledger_adapter'
-import { LedgerMapper } from '../../infrastructure/mappers'
-import { ledgerKeys } from '../keys'
+import { useResourceQuery } from "@/shared/composables/useResourceQuery";
+import { ledgerAdapter } from "../../infrastructure/ledger_adapter";
+import { LedgerMapper } from "../../infrastructure/mappers";
+import { ledgerKeys } from "../keys";
 
 /**
  * Use Case: View Chart of Accounts.
@@ -23,12 +23,12 @@ export function useLedgerAccounts() {
     () => ledgerAdapter.getAccounts(),
     (dtos) => dtos.map((dto) => LedgerMapper.toAccount(dto)),
     { staleTime: 1000 * 60 * 5 },
-  )
+  );
 
   return {
     accounts,
     isPending,
     error,
     refetch,
-  }
+  };
 }

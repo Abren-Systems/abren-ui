@@ -1,7 +1,6 @@
-import { useResourceQuery } from '@/shared/composables/useResourceQuery'
-import { workflowsAdapter } from '../../infrastructure/workflows_adapter'
-import { WorkflowMapper } from '../../infrastructure/mappers'
-import { workflowKeys } from '../keys'
+import { useApiQuery } from "@/shared/composables/useApiQuery";
+import { workflowsAdapter } from "../../infrastructure/workflows_adapter";
+import { workflowKeys } from "../keys";
 
 /**
  * Use Case: View Pending Workflow Approvals.
@@ -9,8 +8,6 @@ import { workflowKeys } from '../keys'
  * Fetches and maps pending approval tasks assigned to the current user.
  *
  * @returns Reactive tasks state and refresh capability.
- * @example
- * const { tasks, isLoading, refresh } = usePendingApprovals()
  */
 export function usePendingApprovals() {
   const {
@@ -18,18 +15,14 @@ export function usePendingApprovals() {
     isLoading,
     error,
     refetch,
-  } = useResourceQuery(
+  } = useApiQuery(
     workflowKeys.pendingTasks(),
     () => workflowsAdapter.getPendingTasks(),
-    (dtos) => {
-      if (!Array.isArray(dtos)) {
-        return []
-      }
-      return dtos.filter((d) => !!d).map((dto) => WorkflowMapper.toPendingApproval(dto))
+    {
+      // ERP data can stay stale for a bit, but we want freshness for task lists
+      staleTime: 1000 * 30,
     },
-    // ERP data can stay stale for a bit, but we want freshness for task lists
-    { staleTime: 1000 * 30 },
-  )
+  );
 
-  return { tasks, isLoading, error, refresh: refetch }
+  return { tasks, isLoading, error, refresh: refetch };
 }

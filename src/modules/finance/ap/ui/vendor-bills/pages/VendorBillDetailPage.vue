@@ -1,35 +1,43 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { Button } from '@/shared/components/button'
-import { Badge } from '@/shared/components/badge'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/card'
-import { useVendorBill } from '../../../application/composables/useVendorBill'
-import { useValidateVendorBill } from '../../../application/composables/useValidateVendorBill'
+import { useRouter } from "vue-router";
+import { Button } from "@/shared/components/button";
+import { Badge } from "@/shared/components/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/card";
+import { useVendorBill } from "../../../application/composables/useVendorBill";
+import { useValidateVendorBill } from "../../../application/composables/useValidateVendorBill";
 
-const props = defineProps<{ id: string }>()
-const router = useRouter()
+const props = defineProps<{ id: string }>();
+const router = useRouter();
 
-const { bill, isLoading } = useVendorBill(props.id)
-const { validate, isValidating: isActionPending } = useValidateVendorBill(props.id)
+const { bill, isLoading } = useVendorBill(props.id);
+const { validate, isValidating: isActionPending } = useValidateVendorBill(
+  props.id,
+);
 
-const STATUS_VARIANT: Record<string, 'default' | 'secondary'> = {
-  DRAFT: 'secondary',
-  VALIDATED: 'default',
-  PAID: 'default',
-}
+const STATUS_VARIANT: Record<string, "default" | "secondary"> = {
+  DRAFT: "secondary",
+  VALIDATED: "default",
+  PAID: "default",
+};
 
 async function handleValidate() {
   if (
     confirm(
-      'Validate this vendor bill? This will automatically post an accrual entry to the general ledger.',
+      "Validate this vendor bill? This will automatically post an accrual entry to the general ledger.",
     )
   ) {
-    await validate()
+    await validate();
   }
 }
 
 function handleCreatePR() {
-  void router.push({ name: 'PaymentRequestCreate' })
+  void router.push({ name: "PaymentRequestCreate" });
 }
 </script>
 
@@ -53,7 +61,9 @@ function handleCreatePR() {
     </div>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="text-neutral-500 text-sm py-12 text-center">Loading…</div>
+    <div v-if="isLoading" class="text-neutral-500 text-sm py-12 text-center">
+      Loading…
+    </div>
 
     <template v-else-if="bill">
       <!-- Metadata -->
@@ -65,7 +75,9 @@ function handleCreatePR() {
           <dl class="grid grid-cols-2 gap-4 text-sm">
             <div>
               <dt class="text-neutral-500">Vendor ID</dt>
-              <dd class="font-medium font-mono text-xs mt-1">{{ bill.vendorId }}</dd>
+              <dd class="font-medium font-mono text-xs mt-1">
+                {{ bill.vendorId }}
+              </dd>
             </div>
             <div>
               <dt class="text-neutral-500">Total Amount</dt>
@@ -75,7 +87,9 @@ function handleCreatePR() {
             </div>
             <div>
               <dt class="text-neutral-500">Bill Number</dt>
-              <dd class="mt-1 font-mono text-neutral-900">{{ bill.billNumber }}</dd>
+              <dd class="mt-1 font-mono text-neutral-900">
+                {{ bill.billNumber }}
+              </dd>
             </div>
             <div>
               <dt class="text-neutral-500">Currency</dt>
@@ -101,16 +115,26 @@ function handleCreatePR() {
       <Card>
         <CardHeader>
           <CardTitle>Expense Lines</CardTitle>
-          <CardDescription>{{ bill.lines.length }} item(s) to accrue.</CardDescription>
+          <CardDescription
+            >{{ bill.lines.length }} item(s) to accrue.</CardDescription
+          >
         </CardHeader>
         <CardContent>
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-neutral-200">
-                <th class="text-left py-2 text-neutral-500 font-medium">Description</th>
-                <th class="text-right py-2 text-neutral-500 font-medium">Amount</th>
-                <th class="text-left py-2 text-neutral-500 font-medium pl-4">GL Account</th>
-                <th class="text-left py-2 text-neutral-500 font-medium pl-4">Category</th>
+                <th class="text-left py-2 text-neutral-500 font-medium">
+                  Description
+                </th>
+                <th class="text-right py-2 text-neutral-500 font-medium">
+                  Amount
+                </th>
+                <th class="text-left py-2 text-neutral-500 font-medium pl-4">
+                  GL Account
+                </th>
+                <th class="text-left py-2 text-neutral-500 font-medium pl-4">
+                  Category
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -124,15 +148,19 @@ function handleCreatePR() {
                   {{ line.amount.format() }}
                 </td>
                 <td class="py-2 pl-4">
-                  <code v-if="line.accountId" class="text-xs text-neutral-400">{{
-                    line.accountId.slice(0, 8)
-                  }}</code>
+                  <code
+                    v-if="line.accountId"
+                    class="text-xs text-neutral-400"
+                    >{{ line.accountId.slice(0, 8) }}</code
+                  >
                   <span v-else class="text-neutral-300 text-xs">—</span>
                 </td>
                 <td class="py-2 pl-4">
-                  <code v-if="line.categoryId" class="text-xs text-neutral-400">{{
-                    line.categoryId.slice(0, 8)
-                  }}</code>
+                  <code
+                    v-if="line.categoryId"
+                    class="text-xs text-neutral-400"
+                    >{{ line.categoryId.slice(0, 8) }}</code
+                  >
                   <span v-else class="text-neutral-300 text-xs">—</span>
                 </td>
               </tr>
@@ -163,12 +191,14 @@ function handleCreatePR() {
             :disabled="isActionPending"
             @click="handleValidate"
           >
-            {{ isActionPending ? 'Validating...' : 'Validate & Accrue' }}
+            {{ isActionPending ? "Validating..." : "Validate & Accrue" }}
           </Button>
 
           <!-- VALIDATED → Create PR -->
           <template v-if="bill.status === 'VALIDATED'">
-            <Button variant="default" @click="handleCreatePR"> Create Payment Request </Button>
+            <Button variant="default" @click="handleCreatePR">
+              Create Payment Request
+            </Button>
           </template>
         </CardContent>
       </Card>

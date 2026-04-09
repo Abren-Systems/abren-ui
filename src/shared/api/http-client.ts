@@ -1,5 +1,5 @@
-import axios from 'axios'
-import type { AxiosRequestConfig } from 'axios'
+import axios from "axios";
+import type { AxiosRequestConfig } from "axios";
 
 /**
  * Abren ERP — Shared HTTP Client
@@ -14,87 +14,87 @@ import type { AxiosRequestConfig } from 'axios'
 
 // ── Types ─────────────────────────────────────────────
 export interface ApiResponse<T> {
-  success: boolean
-  data: T
-  meta?: Record<string, unknown>
+  success: boolean;
+  data: T;
+  meta?: Record<string, unknown>;
 }
 
 export class ApiError extends Error {
-  success: false
-  detail: string
-  code: string
+  success: false;
+  detail: string;
+  code: string;
 
-  constructor(detail: string, code: string = 'UNKNOWN_ERROR') {
-    super(detail)
-    this.name = 'ApiError'
-    this.success = false
-    this.detail = detail
-    this.code = code
+  constructor(detail: string, code: string = "UNKNOWN_ERROR") {
+    super(detail);
+    this.name = "ApiError";
+    this.success = false;
+    this.detail = detail;
+    this.code = code;
   }
 }
 
 export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
-const USER_KEY = 'abren_current_user'
-const TENANT_KEY = 'abren_current_tenant'
+const USER_KEY = "abren_current_user";
+const TENANT_KEY = "abren_current_tenant";
 
 function clearStoredAuth() {
-  sessionStorage.removeItem(USER_KEY)
-  sessionStorage.removeItem(TENANT_KEY)
+  sessionStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(TENANT_KEY);
 }
 
 // ── Client Instance ───────────────────────────────────
 const httpClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: "/api/v1",
   timeout: 30_000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-})
+});
 
 // ── Request Interceptor: Auth + Tenant + Idempotency ──
 httpClient.interceptors.request.use((config) => {
   // Authentication is now managed transparently by the browser via HttpOnly cookies
 
   // Idempotency key for mutating requests
-  const method = config.method?.toUpperCase()
-  if (method && ['POST', 'PUT', 'PATCH'].includes(method)) {
-    config.headers['Idempotency-Key'] = crypto.randomUUID()
+  const method = config.method?.toUpperCase();
+  if (method && ["POST", "PUT", "PATCH"].includes(method)) {
+    config.headers["Idempotency-Key"] = crypto.randomUUID();
   }
 
-  return config
-})
+  return config;
+});
 
 // ── Response Interceptor: Envelope Unwrap ─────────────
 httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response) {
-      const { status, data } = error.response
+      const { status, data } = error.response;
 
       if (status === 401) {
-        clearStoredAuth()
-        if (window.location.pathname !== '/login') {
-          window.location.assign('/login')
+        clearStoredAuth();
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
         }
       }
 
       // Structured error from backend
       if (data?.detail) {
-        return Promise.reject(new ApiError(data.detail, data.code))
+        return Promise.reject(new ApiError(data.detail, data.code));
       }
     }
 
-    return Promise.reject(error)
+    return Promise.reject(error);
   },
-)
+);
 
 /**
  * Performs an authenticated GET request and unwraps the { success, data } envelope.
@@ -104,9 +104,12 @@ httpClient.interceptors.response.use(
  * @param {AxiosRequestConfig} [config] - Optional Axios configuration.
  * @returns {Promise<T>} - The unwrapped 'data' payload.
  */
-export async function apiGet<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-  const response = await httpClient.get<ApiResponse<T>>(url, config)
-  return response.data.data
+export async function apiGet<T>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  const response = await httpClient.get<ApiResponse<T>>(url, config);
+  return response.data.data;
 }
 
 /**
@@ -123,8 +126,8 @@ export async function apiPost<T>(
   body?: unknown,
   config?: AxiosRequestConfig,
 ): Promise<T> {
-  const response = await httpClient.post<ApiResponse<T>>(url, body, config)
-  return response.data.data
+  const response = await httpClient.post<ApiResponse<T>>(url, body, config);
+  return response.data.data;
 }
 
 /**
@@ -141,8 +144,8 @@ export async function apiPut<T>(
   body?: unknown,
   config?: AxiosRequestConfig,
 ): Promise<T> {
-  const response = await httpClient.put<ApiResponse<T>>(url, body, config)
-  return response.data.data
+  const response = await httpClient.put<ApiResponse<T>>(url, body, config);
+  return response.data.data;
 }
 
 /**
@@ -159,8 +162,8 @@ export async function apiPatch<T>(
   body?: unknown,
   config?: AxiosRequestConfig,
 ): Promise<T> {
-  const response = await httpClient.patch<ApiResponse<T>>(url, body, config)
-  return response.data.data
+  const response = await httpClient.patch<ApiResponse<T>>(url, body, config);
+  return response.data.data;
 }
 
 /**
@@ -171,9 +174,12 @@ export async function apiPatch<T>(
  * @param {AxiosRequestConfig} [config] - Optional Axios configuration.
  * @returns {Promise<T>} - The unwrapped 'data' payload.
  */
-export async function apiDelete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-  const response = await httpClient.delete<ApiResponse<T>>(url, config)
-  return response.data.data
+export async function apiDelete<T>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  const response = await httpClient.delete<ApiResponse<T>>(url, config);
+  return response.data.data;
 }
 
-export { httpClient }
+export { httpClient };

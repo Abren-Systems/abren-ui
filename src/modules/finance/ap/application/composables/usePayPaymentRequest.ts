@@ -1,10 +1,10 @@
-import { useApiMutation } from '@/shared/composables/useApiMutation'
-import { useQueryClient } from '@tanstack/vue-query'
-import { apAdapter } from '../../infrastructure/ap_adapter'
-import type { PaymentRequestPayDTO } from '../../infrastructure/api.types'
-import { apKeys } from '../keys'
-import type { ApiError } from '@/shared/api/http-client'
-import type { PaymentRequestId } from '@/shared/types/brand.types'
+import { useApiMutation } from "@/shared/composables/useApiMutation";
+import { useQueryClient } from "@tanstack/vue-query";
+import { apAdapter } from "../../infrastructure/ap_adapter";
+import type { PaymentRequestPayDTO } from "../../infrastructure/api.types";
+import { apKeys } from "../keys";
+import type { ApiError } from "@/shared/api/http-client";
+import type { PaymentRequestId } from "@/shared/types/brand.types";
 
 /**
  * Use Case: Pay a Payment Request.
@@ -12,7 +12,7 @@ import type { PaymentRequestId } from '@/shared/types/brand.types'
  * @param id - The unique identifier of the payment request to pay.
  */
 export function usePayPaymentRequest(id: PaymentRequestId) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const {
     mutateAsync: pay,
@@ -20,15 +20,19 @@ export function usePayPaymentRequest(id: PaymentRequestId) {
     error,
   } = useApiMutation<void, ApiError, PaymentRequestPayDTO>(
     async (dto: PaymentRequestPayDTO) => {
-      await apAdapter.payRequest(id, dto)
+      await apAdapter.payRequest(id, dto);
     },
     {
       onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequest(id) })
-        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequests() })
+        void queryClient.invalidateQueries({
+          queryKey: apKeys.paymentRequest(id),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: apKeys.paymentRequests(),
+        });
       },
     },
-  )
+  );
 
-  return { pay, isPending, error }
+  return { pay, isPending, error };
 }

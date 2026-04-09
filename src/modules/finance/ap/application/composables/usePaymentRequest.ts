@@ -1,8 +1,8 @@
-import { useApiQuery } from '@/shared/composables/useApiQuery'
-import type { PaymentRequestId } from '@/shared/types/brand.types'
-import { apAdapter } from '../../infrastructure/ap_adapter'
-import { APMapper } from '../../infrastructure/mappers'
-import { apKeys } from '../keys'
+import { useApiQuery } from "@/shared/composables/useApiQuery";
+import type { PaymentRequestId } from "@/shared/types/brand.types";
+import { apAdapter } from "../../infrastructure/ap_adapter";
+import { APMapper } from "../../infrastructure/mappers";
+import { apKeys } from "../keys";
 
 /**
  * Use Case: View a Single Payment Request.
@@ -22,11 +22,11 @@ export function usePaymentRequest(id: PaymentRequestId) {
   } = useApiQuery(
     apKeys.paymentRequest(id),
     async () => {
-      const dto = await apAdapter.getRequest(id)
-      return APMapper.toPaymentRequest(dto)
+      const dto = await apAdapter.getRequest(id);
+      return APMapper.toPaymentRequest(dto);
     },
     { staleTime: 1000 * 30 }, // 30 seconds
-  )
+  );
 
-  return { request, isLoading, error }
+  return { request, isLoading, error };
 }

@@ -1,13 +1,13 @@
-import { apiGet, apiPost } from '@/shared/api/http-client'
-import { UserSchema, RoleSchema, PermissionSchema } from './api.schemas'
+import { apiGet, apiPost } from "@/shared/api/http-client";
+import { UserSchema, RoleSchema, PermissionSchema } from "./api.schemas";
 import type {
   UserDTO,
   RoleDTO,
   PermissionDTO,
   RoleCreateDTO,
   UserRoleAssignmentDTO,
-} from './api.types'
-import { z } from 'zod'
+} from "./api.types";
+import { z } from "zod";
 
 /**
  * Core Services API Adapter
@@ -16,33 +16,35 @@ import { z } from 'zod'
 export const coreAdapter = {
   // Existing Stub
   async getMe(): Promise<UserDTO> {
-    const data = await apiGet<unknown>('/core/auth/me')
-    return UserSchema.parse(data) as UserDTO
+    const data = await apiGet<unknown>("/core/auth/me");
+    return UserSchema.parse(data) as UserDTO;
   },
 
   // RBAC endpoints
   async getUsers(): Promise<UserDTO[]> {
-    const data = await apiGet<unknown>('/core/users')
-    return z.array(UserSchema).parse(data) as UserDTO[]
+    const data = await apiGet<unknown>("/core/users");
+    return z.array(UserSchema).parse(data) as UserDTO[];
   },
 
   async getRoles(): Promise<RoleDTO[]> {
-    const data = await apiGet<unknown>('/core/roles')
-    return z.array(RoleSchema).parse(data) as RoleDTO[]
+    const data = await apiGet<unknown>("/core/roles");
+    return z.array(RoleSchema).parse(data) as RoleDTO[];
   },
 
   async getPermissions(): Promise<PermissionDTO[]> {
-    const data = await apiGet<unknown>('/core/permissions')
-    return z.array(PermissionSchema).parse(data) as PermissionDTO[]
+    const data = await apiGet<unknown>("/core/permissions");
+    return z.array(PermissionSchema).parse(data) as PermissionDTO[];
   },
 
   async createRole(dto: RoleCreateDTO): Promise<RoleDTO> {
-    const data = await apiPost<unknown>('/core/roles', dto)
-    return RoleSchema.parse(data) as RoleDTO
+    const data = await apiPost<unknown>("/core/roles", dto);
+    return RoleSchema.parse(data) as RoleDTO;
   },
 
   async assignRole(dto: UserRoleAssignmentDTO): Promise<void> {
     // Note: apiPost for void typically doesn't need parse check if status is 204
-    return apiPost<void>(`/core/users/${dto.user_id}/roles`, { role_id: dto.role_id })
+    return apiPost<void>(`/core/users/${dto.user_id}/roles`, {
+      role_id: dto.role_id,
+    });
   },
-}
+};

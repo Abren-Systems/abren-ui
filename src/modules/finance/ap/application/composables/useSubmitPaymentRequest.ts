@@ -1,8 +1,8 @@
-import { useApiMutation } from '@/shared/composables/useApiMutation'
-import { useQueryClient } from '@tanstack/vue-query'
-import { apAdapter } from '../../infrastructure/ap_adapter'
-import { apKeys } from '../keys'
-import type { PaymentRequestId } from '@/shared/types/brand.types'
+import { useApiMutation } from "@/shared/composables/useApiMutation";
+import { useQueryClient } from "@tanstack/vue-query";
+import { apAdapter } from "../../infrastructure/ap_adapter";
+import { apKeys } from "../keys";
+import type { PaymentRequestId } from "@/shared/types/brand.types";
 
 /**
  * Use Case: Submit a Payment Request for Approval.
@@ -16,7 +16,7 @@ import type { PaymentRequestId } from '@/shared/types/brand.types'
  * const { submit, isPending } = useSubmitPaymentRequest(toId<PaymentRequestId>('pr_123'))
  */
 export function useSubmitPaymentRequest(id: PaymentRequestId) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const {
     mutateAsync: submit,
@@ -24,15 +24,19 @@ export function useSubmitPaymentRequest(id: PaymentRequestId) {
     error,
   } = useApiMutation<void>(
     async () => {
-      await apAdapter.submitRequest(id)
+      await apAdapter.submitRequest(id);
     },
     {
       onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequest(id) })
-        void queryClient.invalidateQueries({ queryKey: apKeys.paymentRequests() })
+        void queryClient.invalidateQueries({
+          queryKey: apKeys.paymentRequest(id),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: apKeys.paymentRequests(),
+        });
       },
     },
-  )
+  );
 
-  return { submit, isPending, error }
+  return { submit, isPending, error };
 }

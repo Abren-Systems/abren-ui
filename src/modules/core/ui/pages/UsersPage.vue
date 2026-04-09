@@ -1,63 +1,74 @@
 <script setup lang="ts">
-import { h } from 'vue'
-import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
-import { Badge } from '@/shared/components/badge'
-import { useUsers } from '../../application/composables/useUsers'
-import type { User } from '../../domain/user.types'
+import { h } from "vue";
+import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
+import { Button } from "@/shared/components/button";
+import { Badge } from "@/shared/components/badge";
+import { useUsers } from "../../application/composables/useUsers";
+import type { User } from "../../domain/user.types";
 
-const { users, isPending } = useUsers()
-const gridState = useDataGrid()
+const { users, isPending } = useUsers();
+const gridState = useDataGrid();
 
 const userColumns = [
   {
-    accessorKey: 'email',
-    header: 'Identity (Email)',
+    accessorKey: "email",
+    header: "Identity (Email)",
     cell: ({ row }: { row: { original: User } }) => {
-      return h('div', { class: 'font-medium' }, row.original.email)
+      return h("div", { class: "font-medium" }, row.original.email);
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Account Status',
+    accessorKey: "status",
+    header: "Account Status",
     cell: ({ row }: { row: { original: User } }) => {
-      const status = row.original.status
+      const status = row.original.status;
       const variant =
-        status === 'ACTIVE' ? 'default' : status === 'PENDING' ? 'outline' : 'secondary'
-      return h(Badge, { variant }, () => status)
+        status === "ACTIVE"
+          ? "default"
+          : status === "PENDING"
+            ? "outline"
+            : "secondary";
+      return h(Badge, { variant }, () => status);
     },
   },
   {
-    accessorKey: 'roles',
-    header: 'Assigned Boundaries',
+    accessorKey: "roles",
+    header: "Assigned Boundaries",
     cell: ({ row }: { row: { original: User } }) => {
-      const roles = row.original.roles || []
+      const roles = row.original.roles || [];
 
       if (roles.length === 0)
-        return h('span', { class: 'text-muted-foreground italic' }, 'No Access')
+        return h(
+          "span",
+          { class: "text-muted-foreground italic" },
+          "No Access",
+        );
 
       return h(
-        'div',
-        { class: 'flex gap-1 flex-wrap' },
-        roles.map((r) => h(Badge, { variant: 'secondary', class: 'text-xs' }, () => r.name)),
-      )
+        "div",
+        { class: "flex gap-1 flex-wrap" },
+        roles.map((r) =>
+          h(Badge, { variant: "secondary", class: "text-xs" }, () => r.name),
+        ),
+      );
     },
   },
   {
-    accessorKey: 'lastLoginAt',
-    header: 'Last Authorized',
+    accessorKey: "lastLoginAt",
+    header: "Last Authorized",
     cell: ({ row }: { row: { original: User } }) => {
-      const date = row.original.lastLoginAt
-      if (!date) return 'Never'
-      return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(
-        date,
-      )
+      const date = row.original.lastLoginAt;
+      if (!date) return "Never";
+      return new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(date);
     },
   },
-]
+];
 
 function handleRowClick(user: User) {
-  console.log('Open User RBAC Assignment Sidebar for:', user.id)
+  console.log("Open User RBAC Assignment Sidebar for:", user.id);
 }
 </script>
 

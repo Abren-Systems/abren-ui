@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useAuditStore } from '@/shared/infrastructure/audit.store'
-import { storeToRefs } from 'pinia'
-import GlobalActivityFeed from '../components/GlobalActivityFeed.vue'
-import { Activity, DollarSign, TrendingUp, Users } from 'lucide-vue-next'
+import { useAuditStore } from "@/shared/infrastructure/audit.store";
+import { storeToRefs } from "pinia";
+import GlobalActivityFeed from "../components/GlobalActivityFeed.vue";
+import { Activity, DollarSign, TrendingUp, Users } from "lucide-vue-next";
 
-const auditStore = useAuditStore()
-const { totalLogs } = storeToRefs(auditStore)
+const auditStore = useAuditStore();
+const { totalLogs } = storeToRefs(auditStore);
 </script>
 
 <template>
@@ -13,14 +13,19 @@ const { totalLogs } = storeToRefs(auditStore)
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-neutral-900 tracking-tight">Dashboard</h1>
-        <p class="text-neutral-500 mt-1">Real-time financial visibility & system monitoring.</p>
+        <h1 class="text-3xl font-bold text-neutral-900 tracking-tight">
+          Dashboard
+        </h1>
+        <p class="text-neutral-500 mt-1">
+          Real-time financial visibility & system monitoring.
+        </p>
       </div>
       <div
         class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-neutral-200 shadow-sm"
       >
         <div class="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
-        <span class="text-xs font-semibold text-neutral-600 uppercase tracking-wider"
+        <span
+          class="text-xs font-semibold text-neutral-600 uppercase tracking-wider"
           >System Live</span
         >
       </div>
@@ -36,7 +41,9 @@ const { totalLogs } = storeToRefs(auditStore)
           <Activity class="w-4 h-4 text-indigo-500" />
         </div>
         <p class="text-3xl font-bold text-neutral-900">{{ totalLogs }}</p>
-        <p class="mt-1 text-xs text-indigo-500 font-semibold tracking-wide uppercase">
+        <p
+          class="mt-1 text-xs text-indigo-500 font-semibold tracking-wide uppercase"
+        >
           Hardened Events
         </p>
       </div>
@@ -49,7 +56,9 @@ const { totalLogs } = storeToRefs(auditStore)
           <DollarSign class="w-4 h-4 text-success-500" />
         </div>
         <p class="text-3xl font-bold text-neutral-900">$45,231</p>
-        <p class="mt-1 text-xs text-success-500 font-semibold tracking-wide uppercase">
+        <p
+          class="mt-1 text-xs text-success-500 font-semibold tracking-wide uppercase"
+        >
           +20.1% growth
         </p>
       </div>
@@ -62,7 +71,9 @@ const { totalLogs } = storeToRefs(auditStore)
           <Users class="w-4 h-4 text-blue-500" />
         </div>
         <p class="text-3xl font-bold text-neutral-900">12</p>
-        <p class="mt-1 text-xs text-blue-500 font-semibold tracking-wide uppercase">
+        <p
+          class="mt-1 text-xs text-blue-500 font-semibold tracking-wide uppercase"
+        >
           Across 4 modules
         </p>
       </div>
@@ -75,7 +86,9 @@ const { totalLogs } = storeToRefs(auditStore)
           <TrendingUp class="w-4 h-4 text-emerald-500" />
         </div>
         <p class="text-3xl font-bold text-neutral-900">140ms</p>
-        <p class="mt-1 text-xs text-emerald-500 font-semibold tracking-wide uppercase">
+        <p
+          class="mt-1 text-xs text-emerald-500 font-semibold tracking-wide uppercase"
+        >
           Avg latency
         </p>
       </div>
@@ -84,13 +97,19 @@ const { totalLogs } = storeToRefs(auditStore)
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
       <!-- Activity Feed -->
-      <div class="p-6 bg-white rounded-xl border border-neutral-200 shadow-sm h-[500px]">
+      <div
+        class="p-6 bg-white rounded-xl border border-neutral-200 shadow-sm h-[500px]"
+      >
         <GlobalActivityFeed />
       </div>
 
       <!-- Secondary Metrics -->
-      <div class="p-6 bg-white rounded-xl border border-neutral-200 shadow-sm h-[500px]">
-        <h3 class="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+      <div
+        class="p-6 bg-white rounded-xl border border-neutral-200 shadow-sm h-[500px]"
+      >
+        <h3
+          class="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2"
+        >
           <TrendingUp class="w-5 h-5 text-neutral-400" />
           Cashflow Analysis
         </h3>

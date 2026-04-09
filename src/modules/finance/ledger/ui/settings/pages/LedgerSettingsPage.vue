@@ -1,34 +1,40 @@
 <script setup lang="ts">
-import { useLedgerSettings } from '../../../application/composables/useLedgerSettings'
-import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
-import { Button } from '@/shared/components/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/card'
+import { useLedgerSettings } from "../../../application/composables/useLedgerSettings";
+import { useLedgerAccounts } from "../../../application/composables/useLedgerAccounts";
+import { Button } from "@/shared/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/select'
-import { Label } from '@/shared/components/label'
-import { watch } from 'vue'
-import { useForm } from '@tanstack/vue-form'
-import { z } from 'zod'
+} from "@/shared/components/select";
+import { Label } from "@/shared/components/label";
+import { watch } from "vue";
+import { useForm } from "@tanstack/vue-form";
+import { z } from "zod";
 
-const { settings, isLoading, updateSettings } = useLedgerSettings()
-const { accounts } = useLedgerAccounts()
+const { settings, isLoading, updateSettings } = useLedgerSettings();
+const { accounts } = useLedgerAccounts();
 
 const ledgerSettingsSchema = z.object({
   default_bridge_account_id: z.string(),
   pr_payable_account_id: z.string(),
-})
+});
 
-type LedgerSettingsFormValues = z.infer<typeof ledgerSettingsSchema>
+type LedgerSettingsFormValues = z.infer<typeof ledgerSettingsSchema>;
 
 const form = useForm({
   defaultValues: {
-    default_bridge_account_id: '',
-    pr_payable_account_id: '',
+    default_bridge_account_id: "",
+    pr_payable_account_id: "",
   } as LedgerSettingsFormValues,
   validators: {
     onChange: ledgerSettingsSchema,
@@ -37,21 +43,27 @@ const form = useForm({
     await updateSettings({
       default_bridge_account_id: value.default_bridge_account_id || null,
       pr_payable_account_id: value.pr_payable_account_id || null,
-    })
+    });
   },
-})
+});
 
 // Sync server state to form state
 watch(
   settings,
   (newVal) => {
     if (newVal) {
-      form.setFieldValue('default_bridge_account_id', newVal.default_bridge_account_id || '')
-      form.setFieldValue('pr_payable_account_id', newVal.pr_payable_account_id || '')
+      form.setFieldValue(
+        "default_bridge_account_id",
+        newVal.default_bridge_account_id || "",
+      );
+      form.setFieldValue(
+        "pr_payable_account_id",
+        newVal.pr_payable_account_id || "",
+      );
     }
   },
   { immediate: true },
-)
+);
 </script>
 
 <template>
@@ -59,14 +71,17 @@ watch(
     <Card>
       <CardHeader>
         <CardTitle>Ledger Settings</CardTitle>
-        <CardDescription>Configure global reconciliation and subledger accounts.</CardDescription>
+        <CardDescription
+          >Configure global reconciliation and subledger
+          accounts.</CardDescription
+        >
       </CardHeader>
       <CardContent class="grid gap-6">
         <form
           @submit.prevent="
             (e) => {
-              e.stopPropagation()
-              form.handleSubmit()
+              e.stopPropagation();
+              form.handleSubmit();
             }
           "
         >
@@ -84,13 +99,18 @@ watch(
                       <SelectValue placeholder="Select bridge account" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem v-for="acc in accounts" :key="acc.id" :value="acc.id">
+                      <SelectItem
+                        v-for="acc in accounts"
+                        :key="acc.id"
+                        :value="acc.id"
+                      >
                         {{ acc.code }} - {{ acc.name }}
                       </SelectItem>
                     </SelectContent>
                   </Select>
                   <p class="text-sm text-neutral-500">
-                    Used for temporary holding during multi-step reconciliations.
+                    Used for temporary holding during multi-step
+                    reconciliations.
                   </p>
                 </div>
               </template>
@@ -109,7 +129,11 @@ watch(
                       <SelectValue placeholder="Select payable account" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem v-for="acc in accounts" :key="acc.id" :value="acc.id">
+                      <SelectItem
+                        v-for="acc in accounts"
+                        :key="acc.id"
+                        :value="acc.id"
+                      >
                         {{ acc.code }} - {{ acc.name }}
                       </SelectItem>
                     </SelectContent>
