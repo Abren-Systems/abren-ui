@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { h } from "vue";
+import { h, ref } from "vue";
 import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
 import { Button } from "@/shared/components/button";
 import { Badge } from "@/shared/components/badge";
 import { useUsers } from "../../application/composables/useUsers";
 import type { User } from "../../domain/user.types";
+import UserRoleAssignmentDialog from "../components/UserRoleAssignmentDialog.vue";
 
 const { users, isPending } = useUsers();
 const gridState = useDataGrid();
+
+const isAssignmentOpen = ref(false);
+const selectedUser = ref<User | null>(null);
 
 const userColumns = [
   {
@@ -68,7 +72,8 @@ const userColumns = [
 ];
 
 function handleRowClick(user: User) {
-  console.log("Open User RBAC Assignment Sidebar for:", user.id);
+  selectedUser.value = user;
+  isAssignmentOpen.value = true;
 }
 </script>
 
@@ -90,6 +95,11 @@ function handleRowClick(user: User) {
       :loading="isPending"
       :state="gridState"
       @row-click="handleRowClick"
+    />
+
+    <UserRoleAssignmentDialog
+      v-model:open="isAssignmentOpen"
+      :user="selectedUser"
     />
   </div>
 </template>

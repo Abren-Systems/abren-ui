@@ -7,6 +7,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("./ui/accounts/pages/ChartOfAccountsListPage.vue"),
   },
   {
+    path: "coa/new",
+    name: "LedgerCoaCreate",
+    component: () => import("./ui/accounts/pages/ChartOfAccountsCreatePage.vue"),
+  },
+  {
     path: "journals",
     name: "LedgerJournals",
     component: () =>

@@ -6,9 +6,9 @@ import { z } from "zod";
  */
 
 export const PermissionSchema = z.object({
+  code: z.string(),
   resource: z.string(),
   action: z.string(),
-  code: z.string(),
 });
 
 export const RoleSchema = z.object({
@@ -29,9 +29,8 @@ export const UserSchema = z.object({
   id: z.string().uuid(),
   tenant_id: z.string().uuid(),
   email: z.string().email(),
-  status: z.enum(["ACTIVE", "INACTIVE", "PENDING"]),
+  status: z.string(), // Backend sends "ACTIVE" or "INACTIVE"
   roles: z.array(UserRoleSchema),
-  last_login_at: z.string().nullable().optional(),
 });
 
 export const RoleCreateSchema = z.object({

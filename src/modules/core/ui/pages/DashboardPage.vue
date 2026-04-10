@@ -3,9 +3,14 @@ import { useAuditStore } from "@/shared/infrastructure/audit.store";
 import { storeToRefs } from "pinia";
 import GlobalActivityFeed from "../components/GlobalActivityFeed.vue";
 import { Activity, DollarSign, TrendingUp, Users } from "lucide-vue-next";
+import { useUsers } from "../../application/composables/useUsers";
+import { computed } from "vue";
 
 const auditStore = useAuditStore();
 const { totalLogs } = storeToRefs(auditStore);
+
+const { users, isPending: isLoadingUsers } = useUsers();
+const activeUsersCount = computed(() => users.value?.length ?? 0);
 </script>
 
 <template>
@@ -70,11 +75,12 @@ const { totalLogs } = storeToRefs(auditStore);
           <p class="text-sm font-medium text-neutral-500">Active Users</p>
           <Users class="w-4 h-4 text-blue-500" />
         </div>
-        <p class="text-3xl font-bold text-neutral-900">12</p>
+        <div v-if="isLoadingUsers" class="h-9 w-12 bg-neutral-100 animate-pulse rounded"></div>
+        <p v-else class="text-3xl font-bold text-neutral-900">{{ activeUsersCount }}</p>
         <p
           class="mt-1 text-xs text-blue-500 font-semibold tracking-wide uppercase"
         >
-          Across 4 modules
+          Across Current Tenant
         </p>
       </div>
 

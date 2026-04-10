@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { h } from "vue";
+import { h, ref } from "vue";
 import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
 import { Button } from "@/shared/components/button";
 import { Badge } from "@/shared/components/badge";
 import { useRoles } from "../../application/composables/useRoles";
 import type { Role } from "../../domain/user.types";
+import CreateRoleDialog from "../components/CreateRoleDialog.vue";
 
 const { roles, isRolesPending } = useRoles();
 const gridState = useDataGrid();
+
+const isCreateOpen = ref(false);
 
 const roleColumns = [
   {
@@ -84,7 +87,7 @@ function handleRowClick(role: Role) {
           Manage system boundaries and custom multi-tenant permission matrices.
         </p>
       </div>
-      <Button @click="console.log('Open Create Role Sidebar')">
+      <Button @click="isCreateOpen = true">
         Define Boundary
       </Button>
     </header>
@@ -96,5 +99,7 @@ function handleRowClick(role: Role) {
       :state="gridState"
       @row-click="handleRowClick"
     />
+
+    <CreateRoleDialog v-model:open="isCreateOpen" />
   </div>
 </template>

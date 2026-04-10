@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
 import { Button } from "@/shared/components/button";
 import { Plus } from "lucide-vue-next";
+import CreateAccountDrawer from "../components/CreateAccountDrawer.vue";
 import { useLedgerAccounts } from "../../../application/composables/useLedgerAccounts";
 import { accountColumns } from "../grids/account.grid";
 
@@ -10,6 +12,8 @@ const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid();
 
 // ── Application Layer Orchestration ────────────────────────────
 const { accounts: data, isPending } = useLedgerAccounts();
+
+const isDrawerOpen = ref(false);
 </script>
 
 <template>
@@ -40,12 +44,15 @@ const { accounts: data, isPending } = useLedgerAccounts();
       >
         <!-- Toolbar actions -->
         <template #toolbar>
-          <Button size="sm" class="h-[26px] px-2.5 text-xs">
+          <Button size="sm" class="h-[26px] px-2.5 text-xs" @click="isDrawerOpen = true">
             <Plus :size="13" class="mr-1" />
             New Account
           </Button>
         </template>
       </DataGrid>
     </div>
+
+    <!-- Creation Context -->
+    <CreateAccountDrawer v-model:open="isDrawerOpen" />
   </div>
 </template>

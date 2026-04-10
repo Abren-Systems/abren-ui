@@ -35,6 +35,17 @@ export const ledgerAdapter = {
   },
 
   /**
+   * Creates a new GL account.
+   *
+   * @param data - The account creation data.
+   * @returns A promise resolving to the validated AccountDTO.
+   */
+  async createAccount(data: Record<string, unknown>): Promise<AccountDTO> {
+    const raw = await apiPost<AccountDTO>("/finance/ledger/accounts", data);
+    return AccountSchema.parse(raw);
+  },
+
+  /**
    * Fetches all recorded journal entries.
    *
    * @returns A promise resolving to an array of validated JournalEntryDTOs.

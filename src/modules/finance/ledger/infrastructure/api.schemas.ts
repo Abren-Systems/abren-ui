@@ -41,6 +41,8 @@ export const AccountSchema = z.object({
   name: z.string(),
   account_type: z.string(),
   parent_id: z.string().nullable().optional(),
+  currency_code: z.string().nullable().optional(),
+  requires_revaluation: z.boolean().default(false),
   is_active: z.boolean(),
 });
 

@@ -9,6 +9,7 @@ import {
   type SortingState,
   type RowSelectionState,
   type VisibilityState,
+  type Row,
 } from "@tanstack/vue-table";
 import { computed } from "vue";
 import DataGridToolbar from "../plugins/DataGridToolbar.vue";
@@ -92,6 +93,15 @@ const table = useVueTable({
 
 const colCount = computed(() => props.columns.length);
 const selectedCount = computed(() => Object.keys(rowSelection.value).length);
+
+const emit = defineEmits<{
+  (e: "row-click", data: TData): void;
+}>();
+
+const handleRowClick = (row: Row<TData>) => {
+  row.toggleSelected();
+  emit("row-click", row.original);
+};
 </script>
 
 <template>
@@ -152,7 +162,7 @@ const selectedCount = computed(() => Object.keys(rowSelection.value).length);
               :key="row.id"
               class="grid-row"
               :class="{ 'grid-row--selected': row.getIsSelected() }"
-              @click="row.toggleSelected()"
+              @click="handleRowClick(row)"
             >
               <td
                 v-for="cell in row.getVisibleCells()"
