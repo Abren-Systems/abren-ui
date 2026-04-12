@@ -48,7 +48,7 @@ export function useJournalEntry(entryId: string) {
       return LedgerMapper.toJournalEntry(dto)
     },
     {
-      onSuccess: (updated) => {
+      onSuccess: (updated: JournalEntry) => {
         // Update the single-entry cache immediately for instant UI feedback
         queryClient.setQueryData(ledgerKeys.journalEntry(entryId), updated)
         // Invalidate the list so the queue reflects the state change
@@ -73,7 +73,7 @@ export function useJournalEntry(entryId: string) {
       return LedgerMapper.toJournalEntry(dto)
     },
     {
-      onSuccess: (updated) => {
+      onSuccess: (updated: JournalEntry) => {
         queryClient.setQueryData(ledgerKeys.journalEntry(entryId), updated)
         void queryClient.invalidateQueries({
           queryKey: ledgerKeys.journalEntries(),

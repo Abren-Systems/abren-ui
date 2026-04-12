@@ -73,7 +73,8 @@ export function useCreatePaymentRequest() {
         justification: values.justification,
         amount: String(values.lines[0]?.amount || 0), // Use total or first line if flattened
         bank_account_id: values.bankAccountId || null,
-      } as any // Temporary cast to avoid cascading structural fixes in this commit
+        lines: mappedLines,
+      } as PaymentRequestCreateDTO
 
       const result = await apAdapter.createRequest(dto)
       return { id: toId<PaymentRequestId>(result.id) }
