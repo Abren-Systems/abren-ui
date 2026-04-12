@@ -21,11 +21,7 @@ export default [
     name: 'VendorBillsList',
     component: () => import('./ui/vendor-bills/pages/VendorBillsListPage.vue'),
   },
-  {
-    path: 'vendor-bills/create',
-    name: 'VendorBillCreate',
-    component: () => import('./ui/vendor-bills/pages/VendorBillCreatePage.vue'),
-  },
+
   {
     path: 'vendor-bills/:id',
     name: 'VendorBillDetail',
