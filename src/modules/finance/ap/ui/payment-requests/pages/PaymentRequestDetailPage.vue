@@ -123,7 +123,7 @@ function goBack() {
 
         <!-- Primary: Submit (DRAFT → SUBMITTED) -->
         <Button
-          v-if="request.status === 'DRAFT' && hasPermission('ap:submit_request')"
+          v-if="request.status === 'DRAFT' && hasPermission('ap:create')"
           size="sm"
           :disabled="isActionPending"
           @click="handleSubmit"
@@ -134,7 +134,7 @@ function goBack() {
 
         <!-- Primary: Approve (SUBMITTED → APPROVED) -->
         <Button
-          v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve_request')"
+          v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
           size="sm"
           :disabled="isActionPending"
           @click="handleApprove"
@@ -145,7 +145,7 @@ function goBack() {
 
         <!-- Primary: Pay (APPROVED → PAID) -->
         <Button
-          v-if="request.status === 'APPROVED' && hasPermission('ap:pay_request')"
+          v-if="request.status === 'APPROVED' && hasPermission('ap:post')"
           size="sm"
           :disabled="isActionPending"
           @click="isPayModalOpen = true"
@@ -154,7 +154,7 @@ function goBack() {
         </Button>
 
         <!-- Tertiary: Overflow for destructive/secondary actions -->
-        <DropdownMenu v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve_request')">
+        <DropdownMenu v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')">
           <DropdownMenuTrigger as-child>
             <Button variant="ghost" size="icon" class="h-8 w-8">
               <MoreHorizontal class="h-4 w-4" />

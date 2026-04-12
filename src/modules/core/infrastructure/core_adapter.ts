@@ -6,6 +6,7 @@ import type {
   PermissionDTO,
   RoleCreateDTO,
   UserRoleAssignmentDTO,
+  TenantSettingDTO,
 } from "./api.types";
 import { z } from "zod";
 
@@ -46,5 +47,14 @@ export const coreAdapter = {
     return apiPost<void>(`/core/users/${dto.user_id}/roles`, {
       role_id: dto.role_id,
     });
+  },
+
+  async getSettings(): Promise<TenantSettingDTO[]> {
+    const data = await apiGet<unknown>("/core/settings");
+    return z.array(z.object({ key: z.string(), value: z.string().nullable() })).parse(data) as TenantSettingDTO[];
+  },
+
+  async updateSetting(key: string, value: string | null): Promise<void> {
+    return apiPost<void>(`/core/settings/${key}`, { value });
   },
 };

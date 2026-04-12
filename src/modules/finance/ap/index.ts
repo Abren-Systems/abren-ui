@@ -6,7 +6,7 @@ export const apModule: BusinessDomain = {
   name: 'Accounts Payable',
   category: 'business',
   routes,
-  permissions: ['ap.view'], // Consolidates ap.view
+  permissions: ['ap:view'], // Consolidates ap:view
   menuItems: [
     {
       label: 'Payment Requests',

@@ -1,57 +1,57 @@
-import type { BusinessDomain } from "@/shared/types/module.types";
-import type { RouteRecordRaw } from "vue-router";
+import type { BusinessDomain } from '@/shared/types/module.types'
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: "warehouses",
-    name: "inventory.warehouses",
-    component: () => import("./ui/pages/WarehousesListPage.vue"),
+    path: 'warehouses',
+    name: 'inventory.warehouses',
+    component: () => import('./ui/pages/WarehousesListPage.vue'),
     meta: {
-      title: "Warehouses",
+      title: 'Warehouses',
       requiresAuth: true,
-      permissions: ["inventory:read"],
+      permissions: ['inventory:view'],
     },
   },
   {
-    path: "stock",
-    name: "inventory.stock",
-    component: () => import("./ui/pages/StockItemsListPage.vue"),
+    path: 'stock',
+    name: 'inventory.stock',
+    component: () => import('./ui/pages/StockItemsListPage.vue'),
     meta: {
-      title: "Stock Positions",
+      title: 'Stock Positions',
       requiresAuth: true,
-      permissions: ["inventory:read"],
+      permissions: ['inventory:view'],
     },
   },
   {
-    path: "adjustments/new",
-    name: "inventory.adjustment-create",
-    component: () => import("./ui/pages/AdjustmentCreatePage.vue"),
+    path: 'adjustments/new',
+    name: 'inventory.adjustment-create',
+    component: () => import('./ui/pages/AdjustmentCreatePage.vue'),
     meta: {
-      title: "Post Adjustment",
+      title: 'Post Adjustment',
       requiresAuth: true,
-      permissions: ["inventory:write"],
+      permissions: ['inventory:write'],
     },
   },
-];
+]
 
 export const inventoryModule: BusinessDomain = {
-  id: "inventory",
-  name: "Inventory",
-  category: "business",
-  permissions: ["inventory:read", "inventory:write"],
+  id: 'inventory',
+  name: 'Inventory',
+  category: 'business',
+  permissions: ['inventory:view', 'inventory:write'],
   routes,
   menuItems: [
     {
-      label: "Warehouses",
-      route: "inventory.warehouses",
-      icon: "warehouse",
-      permissions: ["inventory:read"],
+      label: 'Warehouses',
+      route: 'inventory.warehouses',
+      icon: 'warehouse',
+      permissions: ['inventory:view'],
     },
     {
-      label: "Stock Positions",
-      route: "inventory.stock",
-      icon: "boxes",
-      permissions: ["inventory:read"],
+      label: 'Stock Positions',
+      route: 'inventory.stock',
+      icon: 'boxes',
+      permissions: ['inventory:view'],
     },
   ],
-};
+}

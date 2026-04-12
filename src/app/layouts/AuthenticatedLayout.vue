@@ -15,30 +15,19 @@
  * The header displays the current route name and a static user avatar
  * placeholder (to be replaced with a real profile dropdown).
  */
-import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
-import { businessModules, platformModules } from "@/modules";
-import type {
-  BusinessDomain,
-  PlatformEngine,
-  MenuItem,
-} from "@/shared/types/module.types";
-import { useAuthStore } from "@/shared/auth/auth.store";
-import { Button } from "@/shared/components/button";
-import {
-  LayoutDashboard,
-  LogOut,
-  ChevronRight,
-  Library,
-  Cpu,
-  Settings,
-} from "lucide-vue-next";
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { businessModules, platformModules } from '@/modules'
+import type { BusinessDomain, PlatformEngine, MenuItem } from '@/shared/types/module.types'
+import { useAuthStore } from '@/shared/auth/auth.store'
+import { Button } from '@/shared/components/button'
+import { LayoutDashboard, LogOut, ChevronRight, Library, Cpu, Settings } from 'lucide-vue-next'
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 // Primary Navigation (Dashboard + Business Domains)
-const coreItems = [{ label: "Dashboard", icon: LayoutDashboard, href: "/app" }];
+const coreItems = [{ label: 'Dashboard', icon: LayoutDashboard, href: '/app' }]
 
 /**
  * Flatten all business module menu items into a single nav list.
@@ -48,43 +37,37 @@ const coreItems = [{ label: "Dashboard", icon: LayoutDashboard, href: "/app" }];
 const businessItems = businessModules.flatMap((m: BusinessDomain) =>
   m.menuItems.map((item: MenuItem) => ({
     ...item,
-    href:
-      item.href ||
-      `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, "-")}`,
+    to: item.route
+      ? { name: item.route }
+      : { path: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` },
   })),
-);
+)
 
-// Platform/Infrastructure Navigation — same flattening logic as businessItems
+// Platform/Infrastructure Navigation — same logic
 const platformItems = platformModules.flatMap((m: PlatformEngine) =>
   m.menuItems.map((item: MenuItem) => ({
     ...item,
-    href:
-      item.href ||
-      `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, "-")}`,
+    to: item.route
+      ? { name: item.route }
+      : { path: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` },
   })),
-);
+)
 
 async function handleLogout() {
-  authStore.logout();
-  await router.push("/login");
+  authStore.logout()
+  await router.push('/login')
 }
 </script>
 
 <template>
   <div class="flex h-screen bg-neutral-50 overflow-hidden">
     <!-- Sidebar -->
-    <aside
-      class="w-64 border-r border-neutral-200 bg-white flex flex-col shelf-shadow z-20"
-    >
+    <aside class="w-64 border-r border-neutral-200 bg-white flex flex-col shelf-shadow z-20">
       <div class="p-6">
-        <h1 class="text-xl font-bold text-primary-600 tracking-tight">
-          Abren ERP
-        </h1>
+        <h1 class="text-xl font-bold text-primary-600 tracking-tight">Abren ERP</h1>
       </div>
 
-      <nav
-        class="flex-1 px-4 space-y-8 overflow-y-auto pt-2 scrollbar-none pb-8"
-      >
+      <nav class="flex-1 px-4 space-y-8 overflow-y-auto pt-2 scrollbar-none pb-8">
         <!-- Business Section -->
         <div>
           <h3
@@ -97,10 +80,11 @@ async function handleLogout() {
             <RouterLink
               v-for="item in [...coreItems, ...businessItems]"
               :key="item.label"
-              :to="item.href"
+              :to="item.href || item.to"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
-                route.path === item.href
+                (item.href && route.path === item.href) ||
+                (item.to?.name && route.name === item.to.name)
                   ? 'bg-primary-50 text-primary-900 ring-1 ring-primary-100 shadow-sm'
                   : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
               ]"
@@ -135,10 +119,11 @@ async function handleLogout() {
             <RouterLink
               v-for="item in platformItems"
               :key="item.label"
-              :to="item.href"
+              :to="item.href || item.to"
               :class="[
                 'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
-                route.path === item.href
+                (item.href && route.path === item.href) ||
+                (item.to?.name && route.name === item.to.name)
                   ? 'bg-neutral-100 text-neutral-900 ring-1 ring-neutral-200 shadow-sm'
                   : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
               ]"
@@ -148,7 +133,8 @@ async function handleLogout() {
                 v-if="item.icon"
                 :class="[
                   'mr-3 h-5 w-5 transition-colors',
-                  route.path === item.href
+                  (item.href && route.path === item.href) ||
+                  (item.to?.name && route.name === item.to.name)
                     ? 'text-neutral-900'
                     : 'text-neutral-400 group-hover:text-neutral-600',
                 ]"
@@ -180,14 +166,10 @@ async function handleLogout() {
         class="h-16 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10 shrink-0"
       >
         <h2 class="text-lg font-bold text-neutral-900 tracking-tight">
-          {{ route.name || "Dashboard" }}
+          {{ route.name || 'Dashboard' }}
         </h2>
         <div class="flex items-center space-x-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            class="rounded-full hover:bg-neutral-100 h-9 w-9"
-          >
+          <Button variant="ghost" size="icon" class="rounded-full hover:bg-neutral-100 h-9 w-9">
             <Settings class="h-5 w-5 text-neutral-500" />
           </Button>
           <div

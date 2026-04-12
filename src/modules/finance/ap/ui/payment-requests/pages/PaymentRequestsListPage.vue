@@ -64,7 +64,7 @@ function handleCreate() {
       >
         <template #toolbar>
           <Button
-            v-if="hasPermission('ap:create_request')"
+            v-if="hasPermission('ap:create')"
             size="sm"
             class="h-[26px] px-2.5 text-xs"
             @click="handleCreate"

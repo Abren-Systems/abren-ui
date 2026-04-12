@@ -1,20 +1,20 @@
-import type { BusinessDomain } from "@/shared/types/module.types";
-import routes from "./routes";
-import CashflowDashboard from "./ui/CashflowDashboard.vue";
+import type { BusinessDomain } from '@/shared/types/module.types'
+import routes from './routes'
+import CashflowDashboard from './ui/CashflowDashboard.vue'
 
 export const reportingModule: BusinessDomain = {
-  id: "reporting",
-  name: "Reporting & Analytics",
-  category: "business",
+  id: 'reporting',
+  name: 'Reporting & Analytics',
+  category: 'business',
   routes,
-  permissions: ["reporting.view"],
+  permissions: ['reporting:view'],
   menuItems: [
     {
-      label: "Cashflow Insights",
-      route: "reporting.dashboard",
-      icon: "bar-chart-3",
+      label: 'Cashflow Insights',
+      route: 'reporting.dashboard',
+      icon: 'bar-chart-3',
     },
   ],
-};
+}
 
-export { CashflowDashboard };
+export { CashflowDashboard }

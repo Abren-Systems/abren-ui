@@ -41,7 +41,7 @@ const router = useRouter()
 const { hasPermission } = usePermissions()
 
 const { bill, isLoading } = useVendorBill(props.id)
-const { validate, isValidating: isValidating } = useValidateVendorBill(props.id)
+const { validate, isValidating } = useValidateVendorBill(props.id)
 const { reject, isPending: isRejecting } = useRejectVendorBill(props.id)
 
 // Overlay state
@@ -110,7 +110,7 @@ function goBack() {
 
         <!-- Primary: Validate (DRAFT → VALIDATED) -->
         <Button
-          v-if="bill.status === 'DRAFT' && hasPermission('ap:validate_bill')"
+          v-if="bill.status === 'DRAFT' && hasPermission('ap:post')"
           size="sm"
           :disabled="isActionPending"
           @click="handleValidate"
@@ -121,7 +121,7 @@ function goBack() {
 
         <!-- Primary: Create PR (VALIDATED → PR Flow) -->
         <Button
-          v-if="bill.status === 'VALIDATED' && hasPermission('ap:create_request')"
+          v-if="bill.status === 'VALIDATED' && hasPermission('ap:create')"
           size="sm"
           :disabled="isActionPending"
           @click="handleCreatePR"
@@ -131,7 +131,7 @@ function goBack() {
         </Button>
 
         <!-- Tertiary: Overflow for destructive actions -->
-        <DropdownMenu v-if="bill.status === 'DRAFT' && hasPermission('ap:validate_bill')">
+        <DropdownMenu v-if="bill.status === 'DRAFT' && hasPermission('ap:post')">
           <DropdownMenuTrigger as-child>
             <Button variant="ghost" size="icon" class="h-8 w-8">
               <MoreHorizontal class="h-4 w-4" />
