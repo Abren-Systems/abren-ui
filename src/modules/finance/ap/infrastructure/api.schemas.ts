@@ -66,7 +66,7 @@ export const VendorBillSchema = z.object({
   vendor_id: z.string().uuid(),
   bill_number: z.string(),
   issue_date: z.string(), // ISO Date string
-  due_date: z.string(), // ISO Date string
+  due_date: z.string().nullable().optional(), // ISO Date string
   currency: z.string().length(3),
   justification: z.string(), // Mandatory in DTO
   status: z.string(),
