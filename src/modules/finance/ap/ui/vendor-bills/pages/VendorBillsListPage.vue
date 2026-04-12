@@ -36,9 +36,7 @@ function handleCreate() {
     <!-- Page Header -->
     <div class="flex shrink-0 items-start justify-between">
       <div>
-        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">
-          Vendor Bills
-        </h1>
+        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">Vendor Bills</h1>
         <p class="mt-1 text-body-sm text-[var(--color-grid-text-muted)]">
           Manage inbound supplier invoices and AP accruals.
         </p>

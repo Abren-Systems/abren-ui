@@ -3,13 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/shared/components/button'
 import { Badge } from '@/shared/components/badge'
-import {
-  ArrowLeft,
-  MoreHorizontal,
-  History,
-  CheckCircle,
-  FileText,
-} from 'lucide-vue-next'
+import { ArrowLeft, MoreHorizontal, History, CheckCircle, FileText } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -48,9 +42,7 @@ const { reject, isPending: isRejecting } = useRejectVendorBill(props.id)
 const isTraceOpen = ref(false)
 const isRejectModalOpen = ref(false)
 
-const isActionPending = computed(
-  () => isValidating.value || isRejecting.value,
-)
+const isActionPending = computed(() => isValidating.value || isRejecting.value)
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary'> = {
   DRAFT: 'secondary',
@@ -101,7 +93,6 @@ function goBack() {
 
       <!-- Action Surface: 3-tier hierarchy -->
       <div class="flex items-center gap-2">
-
         <!-- Secondary: Trace -->
         <Button variant="outline" size="sm" @click="isTraceOpen = true">
           <History class="mr-1.5 h-3.5 w-3.5" />
@@ -139,10 +130,7 @@ function goBack() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-destructive"
-              @click="isRejectModalOpen = true"
-            >
+            <DropdownMenuItem class="text-destructive" @click="isRejectModalOpen = true">
               Void Draft Bill
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -168,7 +156,10 @@ function goBack() {
         </div>
         <div class="rounded-lg border p-4">
           <p class="text-xs font-medium uppercase text-neutral-400">Vendor ID</p>
-          <code class="mt-1 block text-sm text-neutral-700 bg-neutral-100 px-2 py-1 rounded truncate">{{ bill.vendorId }}</code>
+          <code
+            class="mt-1 block text-sm text-neutral-700 bg-neutral-100 px-2 py-1 rounded truncate"
+            >{{ bill.vendorId }}</code
+          >
         </div>
       </div>
 
@@ -188,7 +179,9 @@ function goBack() {
             <thead class="bg-neutral-50 dark:bg-neutral-900">
               <tr>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">Description</th>
-                <th class="px-4 py-2.5 text-right font-medium text-neutral-500 tabular-nums">Amount</th>
+                <th class="px-4 py-2.5 text-right font-medium text-neutral-500 tabular-nums">
+                  Amount
+                </th>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">GL Account</th>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">Category</th>
               </tr>
@@ -224,10 +217,7 @@ function goBack() {
     </div>
 
     <!-- ── Stage 3: TraceDrawer ───────────────────────────────── -->
-    <VendorBillTraceDrawer
-      v-model:open="isTraceOpen"
-      :bill="bill"
-    />
+    <VendorBillTraceDrawer v-model:open="isTraceOpen" :bill="bill" />
 
     <!-- ── Guard: Reject ActionModal (destructive) ────────────── -->
     <VendorBillRejectModal

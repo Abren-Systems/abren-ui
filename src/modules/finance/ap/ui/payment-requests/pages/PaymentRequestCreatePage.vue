@@ -20,7 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 /**
  * PaymentRequestCreatePage — Dedicated creation form.
  *
- * Uses the Macro-Create pattern (Full Page) to support complex 
+ * Uses the Macro-Create pattern (Full Page) to support complex
  * tabular line items and maximum data density.
  */
 
@@ -62,7 +62,12 @@ function goBack() {
 
     <form
       class="space-y-6"
-      @submit.prevent="(e) => { (e as Event).stopPropagation(); form.handleSubmit() }"
+      @submit.prevent="
+        (e) => {
+          ;(e as Event).stopPropagation()
+          form.handleSubmit()
+        }
+      "
     >
       <Card>
         <CardHeader>
@@ -72,7 +77,9 @@ function goBack() {
           <form.Field name="beneficiaryId">
             <template #default="{ field, state }">
               <div class="grid gap-1.5">
-                <Label :for="field.name">Beneficiary ID <span class="text-destructive">*</span></Label>
+                <Label :for="field.name"
+                  >Beneficiary ID <span class="text-destructive">*</span></Label
+                >
                 <Input
                   :id="field.name"
                   :model-value="field.state.value"
@@ -125,7 +132,9 @@ function goBack() {
           <form.Field name="justification">
             <template #default="{ field, state }">
               <div class="grid gap-1.5">
-                <Label :for="field.name">Justification <span class="text-destructive">*</span></Label>
+                <Label :for="field.name"
+                  >Justification <span class="text-destructive">*</span></Label
+                >
                 <Textarea
                   :id="field.name"
                   :model-value="field.state.value"
@@ -154,7 +163,15 @@ function goBack() {
                   size="sm"
                   type="button"
                   class="h-7 text-xs"
-                  @click="field.pushValue({ description: '', amount: 0, accountId: '', categoryId: '', taxAmount: 0 })"
+                  @click="
+                    field.pushValue({
+                      description: '',
+                      amount: 0,
+                      accountId: '',
+                      categoryId: '',
+                      taxAmount: 0,
+                    })
+                  "
                 >
                   <Plus class="mr-1 h-3 w-3" /> Add Line
                 </Button>
@@ -226,10 +243,7 @@ function goBack() {
       <div class="flex justify-end gap-3 pt-4">
         <Button variant="outline" type="button" @click="goBack">Cancel</Button>
         <form.Subscribe v-slot="state">
-          <Button
-            :disabled="!state.canSubmit || state.isSubmitting"
-            type="submit"
-          >
+          <Button :disabled="!state.canSubmit || state.isSubmitting" type="submit">
             {{ state.isSubmitting ? 'Creating…' : 'Create Request' }}
           </Button>
         </form.Subscribe>

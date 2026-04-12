@@ -3,13 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/shared/components/button'
 import { Badge } from '@/shared/components/badge'
-import {
-  ArrowLeft,
-  MoreHorizontal,
-  History,
-  CheckCircle,
-  Send,
-} from 'lucide-vue-next'
+import { ArrowLeft, MoreHorizontal, History, CheckCircle, Send } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -114,7 +108,6 @@ function goBack() {
 
       <!-- Action Surface: 3-tier hierarchy -->
       <div class="flex items-center gap-2">
-
         <!-- Secondary: Trace -->
         <Button variant="outline" size="sm" @click="isTraceOpen = true">
           <History class="mr-1.5 h-3.5 w-3.5" />
@@ -162,10 +155,7 @@ function goBack() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-destructive"
-              @click="isRejectModalOpen = true"
-            >
+            <DropdownMenuItem class="text-destructive" @click="isRejectModalOpen = true">
               Reject Request
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -211,7 +201,9 @@ function goBack() {
             <thead class="bg-neutral-50 dark:bg-neutral-900">
               <tr>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">Description</th>
-                <th class="px-4 py-2.5 text-right font-medium text-neutral-500 tabular-nums">Amount</th>
+                <th class="px-4 py-2.5 text-right font-medium text-neutral-500 tabular-nums">
+                  Amount
+                </th>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">GL Account</th>
                 <th class="px-4 py-2.5 text-left font-medium text-neutral-500">Category</th>
               </tr>
@@ -247,10 +239,7 @@ function goBack() {
     </div>
 
     <!-- ── Stage 3: TraceDrawer ───────────────────────────────── -->
-    <PaymentRequestTraceDrawer
-      v-model:open="isTraceOpen"
-      :request="request"
-    />
+    <PaymentRequestTraceDrawer v-model:open="isTraceOpen" :request="request" />
 
     <!-- ── Guard: Reject ActionModal (destructive) ────────────── -->
     <PaymentRequestRejectModal

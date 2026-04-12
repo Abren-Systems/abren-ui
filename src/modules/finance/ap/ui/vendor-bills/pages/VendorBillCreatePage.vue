@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 /**
  * VendorBillCreatePage — Dedicated creation form.
  *
- * Uses the Macro-Create pattern (Full Page) to support complex 
+ * Uses the Macro-Create pattern (Full Page) to support complex
  * tabular line items and maximum data density.
  */
 
@@ -63,7 +63,7 @@ const searchVendors = async (q: string): Promise<ComboboxOption[]> => {
     { value: 'vend-123', label: 'Acme Corp', description: 'vend-123' },
     { value: 'vend-456', label: 'Global Tech', description: 'vend-456' },
     { value: 'vend-789', label: 'Local Supply', description: 'vend-789' },
-  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()))
+  ].filter((v) => v.label.toLowerCase().includes(q.toLowerCase()))
 }
 
 const searchAccounts = async (q: string): Promise<ComboboxOption[]> => {
@@ -71,21 +71,24 @@ const searchAccounts = async (q: string): Promise<ComboboxOption[]> => {
     { value: 'acc-6200', label: '6200 - Office Supplies', description: 'Expense' },
     { value: 'acc-6300', label: '6300 - IT Hardware', description: 'Expense' },
     { value: 'acc-6400', label: '6400 - Travel', description: 'Expense' },
-  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()) || v.value.includes(q))
+  ].filter((v) => v.label.toLowerCase().includes(q.toLowerCase()) || v.value.includes(q))
 }
 
 const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
   return [
     { value: 'cat-opex', label: 'OPEX - Operations', description: 'cat-opex' },
     { value: 'cat-capex', label: 'CAPEX - Capital', description: 'cat-capex' },
-  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()))
+  ].filter((v) => v.label.toLowerCase().includes(q.toLowerCase()))
 }
 </script>
 
 <template>
   <div class="p-6 space-y-6 min-h-screen">
     <!-- Header -->
-    <div class="flex items-center justify-between mx-auto" :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'">
+    <div
+      class="flex items-center justify-between mx-auto"
+      :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'"
+    >
       <div>
         <button
           class="mb-2 flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
@@ -94,11 +97,9 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
           ← Back to Bills
         </button>
         <h1 class="text-2xl font-bold tracking-tight">Register Vendor Bill</h1>
-        <p class="text-sm text-neutral-500">
-          Record a supplier invoice to generate an AP accrual.
-        </p>
+        <p class="text-sm text-neutral-500">Record a supplier invoice to generate an AP accrual.</p>
       </div>
-      
+
       <Button variant="outline" size="sm" @click="showSourceDoc = !showSourceDoc">
         <Eye v-if="!showSourceDoc" class="mr-2 h-4 w-4" />
         <EyeOff v-else class="mr-2 h-4 w-4" />
@@ -107,32 +108,48 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
     </div>
 
     <!-- Layout Container -->
-    <div class="flex gap-6 mx-auto items-start" :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'">
-      
+    <div
+      class="flex gap-6 mx-auto items-start"
+      :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'"
+    >
       <!-- Source Document Split View (Left) -->
-      <aside v-if="showSourceDoc" class="w-1/2 sticky top-6 bg-white border border-neutral-200 rounded-lg shadow-sm flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+      <aside
+        v-if="showSourceDoc"
+        class="w-1/2 sticky top-6 bg-white border border-neutral-200 rounded-lg shadow-sm flex flex-col h-[calc(100vh-4rem)] overflow-hidden"
+      >
         <div class="p-4 border-b bg-neutral-50 flex items-center justify-between shrink-0">
-           <h2 class="font-semibold text-sm">Source Invoice</h2>
-           <span v-if="sourceFile" class="text-xs text-neutral-500">{{ sourceFile.name }}</span>
+          <h2 class="font-semibold text-sm">Source Invoice</h2>
+          <span v-if="sourceFile" class="text-xs text-neutral-500">{{ sourceFile.name }}</span>
         </div>
-        
-        <div class="flex-1 overflow-auto bg-neutral-100/50 p-4 relative flex flex-col items-center justify-center">
-          <FileUploadZone 
+
+        <div
+          class="flex-1 overflow-auto bg-neutral-100/50 p-4 relative flex flex-col items-center justify-center"
+        >
+          <FileUploadZone
             v-if="!sourceFile"
-            accept="application/pdf,image/*" 
+            accept="application/pdf,image/*"
             :max-size-m-b="10"
-            @file-selected="handleFileSelected" 
+            @file-selected="handleFileSelected"
           />
-          
+
           <template v-else-if="sourceFileUrl">
-            <iframe v-if="sourceFile.type === 'application/pdf'" :src="sourceFileUrl" class="w-full h-full rounded shadow-sm border-0"></iframe>
-            <img v-else :src="sourceFileUrl" class="max-w-full rounded shadow-sm" alt="Source Document" />
+            <iframe
+              v-if="sourceFile.type === 'application/pdf'"
+              :src="sourceFileUrl"
+              class="w-full h-full rounded shadow-sm border-0"
+            ></iframe>
+            <img
+              v-else
+              :src="sourceFileUrl"
+              class="max-w-full rounded shadow-sm"
+              alt="Source Document"
+            />
           </template>
-          
+
           <div v-if="sourceFile" class="absolute bottom-4 flex justify-center w-full">
-             <Button variant="destructive" size="sm" class="shadow-lg" @click="handleFileCleared">
-                <Trash2 class="h-4 w-4 mr-2" /> Remove Attachment
-             </Button>
+            <Button variant="destructive" size="sm" class="shadow-lg" @click="handleFileCleared">
+              <Trash2 class="h-4 w-4 mr-2" /> Remove Attachment
+            </Button>
           </div>
         </div>
       </aside>
@@ -150,7 +167,12 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
 
         <form
           class="space-y-6"
-          @submit.prevent="(e) => { (e as Event).stopPropagation(); form.handleSubmit() }"
+          @submit.prevent="
+            (e) => {
+              ;(e as Event).stopPropagation()
+              form.handleSubmit()
+            }
+          "
         >
           <Card>
             <CardHeader>
@@ -161,7 +183,9 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                 <form.Field name="vendorId">
                   <template #default="{ field, state }">
                     <div class="flex-1 grid gap-1.5">
-                      <Label :for="field.name">Vendor ID <span class="text-destructive">*</span></Label>
+                      <Label :for="field.name"
+                        >Vendor ID <span class="text-destructive">*</span></Label
+                      >
                       <DebouncedCombobox
                         :model-value="field.state.value"
                         :fetch-options="searchVendors"
@@ -178,7 +202,9 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                 <form.Field name="billNumber">
                   <template #default="{ field, state }">
                     <div class="flex-1 grid gap-1.5">
-                      <Label :for="field.name">Bill Number <span class="text-destructive">*</span></Label>
+                      <Label :for="field.name"
+                        >Bill Number <span class="text-destructive">*</span></Label
+                      >
                       <Input
                         :id="field.name"
                         :model-value="field.state.value"
@@ -246,7 +272,9 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
               <form.Field name="justification">
                 <template #default="{ field, state }">
                   <div class="grid gap-1.5">
-                    <Label :for="field.name">Justification <span class="text-destructive">*</span></Label>
+                    <Label :for="field.name"
+                      >Justification <span class="text-destructive">*</span></Label
+                    >
                     <Textarea
                       :id="field.name"
                       :model-value="field.state.value"
@@ -267,9 +295,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
           <Card>
             <CardHeader>
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold tracking-tight">
-                  Expense Lines
-                </h3>
+                <h3 class="text-lg font-semibold tracking-tight">Expense Lines</h3>
                 <form.Field name="lines">
                   <template #default="{ field }">
                     <Button
@@ -278,7 +304,12 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                       type="button"
                       class="h-8 text-xs"
                       @click="
-                        field.pushValue({ description: '', amount: 0, accountId: '', categoryId: '' })
+                        field.pushValue({
+                          description: '',
+                          amount: 0,
+                          accountId: '',
+                          categoryId: '',
+                        })
                       "
                     >
                       <Plus class="mr-1 h-3 w-3" /> Add Line
@@ -366,13 +397,22 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                                 :fetch-options="searchCategories"
                                 placeholder="Search categories..."
                                 @update:model-value="(val) => lf.handleChange(val as string)"
-                                @keydown.enter.prevent="() => {
-                                  if (idx === field.state.value.length - 1) {
-                                    field.pushValue({ description: '', amount: 0, accountId: '', categoryId: '' });
+                                @keydown.enter.prevent="
+                                  () => {
+                                    if (idx === field.state.value.length - 1) {
+                                      field.pushValue({
+                                        description: '',
+                                        amount: 0,
+                                        accountId: '',
+                                        categoryId: '',
+                                      })
+                                    }
                                   }
-                                }"
+                                "
                               />
-                              <p class="text-[10px] text-neutral-400">Press Enter to add new line</p>
+                              <p class="text-[10px] text-neutral-400">
+                                Press Enter to add new line
+                              </p>
                             </div>
                           </template>
                         </form.Field>
@@ -387,10 +427,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
           <div class="flex justify-end gap-3 pt-4">
             <Button variant="outline" type="button" @click="goBack">Cancel</Button>
             <form.Subscribe v-slot="state">
-              <Button
-                :disabled="!state.canSubmit || state.isSubmitting"
-                type="submit"
-              >
+              <Button :disabled="!state.canSubmit || state.isSubmitting" type="submit">
                 {{ state.isSubmitting ? 'Registering…' : 'Register Bill' }}
               </Button>
             </form.Subscribe>
