@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
 import { Button } from "@/shared/components/button";
 import { Plus } from "lucide-vue-next";
 import CreateAccountDrawer from "../components/CreateAccountDrawer.vue";
 import { useLedgerAccounts } from "../../../application/composables/useLedgerAccounts";
 import { accountColumns } from "../grids/account.grid";
+import { usePermissions } from "@/shared/auth/usePermissions";
+import type { Account } from "../../../domain/account.types";
 
 // ── Grid state (sorting, selection, global filter) ─────────────
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid();
 
 // ── Application Layer Orchestration ────────────────────────────
 const { accounts: data, isPending } = useLedgerAccounts();
+const { hasPermission } = usePermissions();
+const router = useRouter();
 
 const isDrawerOpen = ref(false);
+
+function handleRowClick(row: Account) {
+  void router.push({ name: "LedgerCoaDetail", params: { accountId: row.id } });
+}
 </script>
 
 <template>
@@ -41,10 +50,17 @@ const isDrawerOpen = ref(false);
         :data="data ?? []"
         :loading="isPending"
         placeholder="Search accounts…"
+        row-clickable
+        @row-click="handleRowClick"
       >
         <!-- Toolbar actions -->
         <template #toolbar>
-          <Button size="sm" class="h-[26px] px-2.5 text-xs" @click="isDrawerOpen = true">
+          <Button
+            v-if="hasPermission('ledger:manage_accounts')"
+            size="sm"
+            class="h-[26px] px-2.5 text-xs"
+            @click="isDrawerOpen = true"
+          >
             <Plus :size="13" class="mr-1" />
             New Account
           </Button>

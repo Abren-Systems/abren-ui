@@ -6,9 +6,17 @@ export const ledgerModule: BusinessDomain = {
   name: "General Ledger",
   category: "business",
   routes,
-  permissions: ["ledger.view", "ledger.edit"],
+  permissions: [
+    "ledger:view",
+    "ledger:create_entry",
+    "ledger:post",
+    "ledger:manage_accounts",
+  ],
   menuItems: [
     { label: "Chart of Accounts", route: "LedgerCoa", icon: "book-open" },
-    { label: "Journal Entries", route: "LedgerEntries", icon: "file-text" },
+    { label: "Journal Entries", route: "LedgerJournals", icon: "file-text" },
+    { label: "Fiscal Periods", route: "LedgerFiscalPeriods", icon: "calendar" },
+    { label: "Settings", route: "LedgerSettings", icon: "settings" },
   ],
 };
+

@@ -1,143 +1,65 @@
 <script setup lang="ts">
-import { h, ref } from "vue";
-import type { ColumnDef } from "@tanstack/vue-table";
+import { ref } from "vue";
 import { DataGrid, useDataGrid } from "@/shared/components/data-grid";
-import { useFiscalPeriods } from "../../../application/composables/useFiscalPeriods";
-import { Badge } from "@/shared/components/badge";
 import { Button } from "@/shared/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/components/dialog";
-import { Input } from "@/shared/components/input";
-import { Label } from "@/shared/components/label";
-import type { components } from "@/shared/api/generated.types";
+import { Plus } from "lucide-vue-next";
+import { useFiscalPeriods } from "../../../application/composables/useFiscalPeriods";
+import { fiscalPeriodColumns } from "../../grids/fiscal-period.grid";
+import { usePermissions } from "@/shared/auth/usePermissions";
+import FiscalPeriodCreateDrawer from "../components/FiscalPeriodCreateDrawer.vue";
 
-const { periods, isLoading, createPeriod } = useFiscalPeriods();
+/**
+ * Stage 1: Queue — Fiscal Periods List Page.
+ *
+ * Full-screen DataGrid showing all financial periods and their status.
+ * Creation handled via slide-out Drawer per the Progressive Disclosure pattern.
+ */
+
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid();
+const { periods, isLoading } = useFiscalPeriods();
+const { hasPermission } = usePermissions();
 
-type FiscalPeriodRead = components["schemas"]["FiscalPeriodRead"];
-const columns: ColumnDef<FiscalPeriodRead>[] = [
-  { accessorKey: "name", header: "Period Name" },
-  { accessorKey: "start_date", header: "Start Date" },
-  { accessorKey: "end_date", header: "End Date" },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      let variant: "default" | "secondary" | "outline" = "secondary";
-      if (status === "OPEN") variant = "default";
-      if (status === "CLOSED") variant = "outline";
-      return h(Badge, { variant }, () => status);
-    },
-  },
-];
-
-const newPeriod = ref({
-  name: "",
-  start_date: "",
-  end_date: "",
-});
-
-const isDialogOpen = ref(false);
-
-const handleCreate = async () => {
-  try {
-    await createPeriod({
-      name: newPeriod.value.name,
-      start_date: newPeriod.value.start_date,
-      end_date: newPeriod.value.end_date,
-    });
-    isDialogOpen.value = false;
-    newPeriod.value = { name: "", start_date: "", end_date: "" };
-  } catch (err) {
-    // Error handled in composable
-  }
-};
+const isCreateOpen = ref(false);
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column; gap: 20px; height: 100%">
-    <div
-      style="display: flex; justify-content: space-between; align-items: center"
-    >
-      <h1
-        style="
-          font-size: 22px;
-          font-weight: 700;
-          color: var(--color-grid-text);
-          margin: 0;
-        "
-      >
-        Fiscal Periods
-      </h1>
-
-      <Dialog v-model:open="isDialogOpen">
-        <DialogTrigger as-child>
-          <Button variant="default">New Period</Button>
-        </DialogTrigger>
-        <DialogContent class="sm:max-width-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Fiscal Period</DialogTitle>
-            <DialogDescription>
-              Define a new timeframe for financial postings.
-            </DialogDescription>
-          </DialogHeader>
-          <div class="grid gap-4 py-4">
-            <div class="grid grid-cols-4 items-center gap-4">
-              <Label for="name" class="text-right">Name</Label>
-              <Input
-                id="name"
-                v-model="newPeriod.name"
-                class="col-span-3"
-                placeholder="e.g. Q1 2026"
-              />
-            </div>
-            <div class="grid grid-cols-4 items-center gap-4">
-              <Label for="start" class="text-right">Start</Label>
-              <Input
-                id="start"
-                type="date"
-                v-model="newPeriod.start_date"
-                class="col-span-3"
-              />
-            </div>
-            <div class="grid grid-cols-4 items-center gap-4">
-              <Label for="end" class="text-right">End</Label>
-              <Input
-                id="end"
-                type="date"
-                v-model="newPeriod.end_date"
-                class="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" @click="handleCreate" :disabled="isLoading"
-              >Create Period</Button
-            >
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+  <div class="flex h-full flex-col gap-5">
+    <div class="flex shrink-0 items-start justify-between">
+      <div>
+        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">
+          Fiscal Periods
+        </h1>
+        <p class="mt-1 text-body-sm text-[var(--color-grid-text-muted)]">
+          Define and lock financial periods for ledger integrity.
+        </p>
+      </div>
     </div>
 
-    <div style="flex: 1; min-height: 0">
+    <div class="min-h-0 flex-1">
       <DataGrid
-        :columns="columns"
-        :data="periods"
-        :loading="isLoading"
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
         v-model:column-visibility="columnVisibility"
         v-model:global-filter="globalFilter"
+        :columns="fiscalPeriodColumns"
+        :data="periods ?? []"
+        :loading="isLoading"
         placeholder="Search periods…"
-      />
+      >
+        <template #toolbar>
+          <Button
+            v-if="hasPermission('ledger:manage_accounts')"
+            size="sm"
+            class="h-[26px] px-2.5 text-xs"
+            @click="isCreateOpen = true"
+          >
+            <Plus :size="13" class="mr-1" />
+            New Period
+          </Button>
+        </template>
+      </DataGrid>
     </div>
+
+    <FiscalPeriodCreateDrawer v-model:open="isCreateOpen" />
   </div>
 </template>
