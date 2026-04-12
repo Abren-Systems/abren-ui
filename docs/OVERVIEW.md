@@ -82,6 +82,7 @@ The frontend mirrors the backend's bounded contexts as self-contained modules:
 ---
 
 ### **Standards Note: Permissions**
+
 To ensure structural alignment across the full stack, all module permissions must strictly follow the `[namespace]:[action]` pattern (e.g., `ap:view`), where `namespace` matches the module's ID.
 
 ---
