@@ -12,8 +12,12 @@ import {
 import { Input } from '@/shared/components/input'
 import { Label } from '@/shared/components/label'
 import { Textarea } from '@/shared/components/textarea'
+import DebouncedCombobox from '@/shared/components/combobox/DebouncedCombobox.vue'
+import type { ComboboxOption } from '@/shared/components/combobox/DebouncedCombobox.vue'
+import FileUploadZone from '@/shared/components/dropzone/FileUploadZone.vue'
 import { useCreateVendorBill } from '../../../application/composables/useCreateVendorBill'
-import { Trash2, Plus, AlertCircle } from 'lucide-vue-next'
+import { useFormPersistence } from '@/shared/composables/useFormPersistence'
+import { Trash2, Plus, AlertCircle, Eye, EyeOff } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 
 /**
@@ -26,29 +30,116 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 const router = useRouter()
 const { form, error: submissionError } = useCreateVendorBill()
 
+const showSourceDoc = ref(false)
+const sourceFile = ref<File | null>(null)
+const sourceFileUrl = ref<string | null>(null)
+
+// Draft Persistence (Phase 2.5)
+useFormPersistence(form, 'abren_draft_vendor_bill')
+
 function goBack() {
   router.push({ name: 'VendorBillsList' })
+}
+
+function handleFileSelected(file: File) {
+  sourceFile.value = file
+  if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+    sourceFileUrl.value = URL.createObjectURL(file)
+  }
+}
+
+function handleFileCleared() {
+  sourceFile.value = null
+  if (sourceFileUrl.value) {
+    URL.revokeObjectURL(sourceFileUrl.value)
+    sourceFileUrl.value = null
+  }
+}
+
+// Mocked search functions for Phase 2.5 Demo
+const searchVendors = async (q: string): Promise<ComboboxOption[]> => {
+  return [
+    { value: 'vend-123', label: 'Acme Corp', description: 'vend-123' },
+    { value: 'vend-456', label: 'Global Tech', description: 'vend-456' },
+    { value: 'vend-789', label: 'Local Supply', description: 'vend-789' },
+  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()))
+}
+
+const searchAccounts = async (q: string): Promise<ComboboxOption[]> => {
+  return [
+    { value: 'acc-6200', label: '6200 - Office Supplies', description: 'Expense' },
+    { value: 'acc-6300', label: '6300 - IT Hardware', description: 'Expense' },
+    { value: 'acc-6400', label: '6400 - Travel', description: 'Expense' },
+  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()) || v.value.includes(q))
+}
+
+const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
+  return [
+    { value: 'cat-opex', label: 'OPEX - Operations', description: 'cat-opex' },
+    { value: 'cat-capex', label: 'CAPEX - Capital', description: 'cat-capex' },
+  ].filter(v => v.label.toLowerCase().includes(q.toLowerCase()))
 }
 </script>
 
 <template>
-  <div class="p-6 space-y-6 max-w-4xl mx-auto">
+  <div class="p-6 space-y-6 min-h-screen">
     <!-- Header -->
-    <div>
-      <button
-        class="mb-2 flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
-        @click="goBack"
-      >
-        ← Back to Bills
-      </button>
-      <h1 class="text-2xl font-bold tracking-tight">Register Vendor Bill</h1>
-      <p class="text-sm text-neutral-500">
-        Record a supplier invoice to generate an AP accrual.
-      </p>
+    <div class="flex items-center justify-between mx-auto" :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'">
+      <div>
+        <button
+          class="mb-2 flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+          @click="goBack"
+        >
+          ← Back to Bills
+        </button>
+        <h1 class="text-2xl font-bold tracking-tight">Register Vendor Bill</h1>
+        <p class="text-sm text-neutral-500">
+          Record a supplier invoice to generate an AP accrual.
+        </p>
+      </div>
+      
+      <Button variant="outline" size="sm" @click="showSourceDoc = !showSourceDoc">
+        <Eye v-if="!showSourceDoc" class="mr-2 h-4 w-4" />
+        <EyeOff v-else class="mr-2 h-4 w-4" />
+        {{ showSourceDoc ? 'Hide Document' : 'View Source Document' }}
+      </Button>
     </div>
 
-    <!-- Submission Error -->
-    <Alert v-if="submissionError" variant="destructive" class="mb-6">
+    <!-- Layout Container -->
+    <div class="flex gap-6 mx-auto items-start" :class="showSourceDoc ? 'max-w-none w-full' : 'max-w-4xl'">
+      
+      <!-- Source Document Split View (Left) -->
+      <aside v-if="showSourceDoc" class="w-1/2 sticky top-6 bg-white border border-neutral-200 rounded-lg shadow-sm flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+        <div class="p-4 border-b bg-neutral-50 flex items-center justify-between shrink-0">
+           <h2 class="font-semibold text-sm">Source Invoice</h2>
+           <span v-if="sourceFile" class="text-xs text-neutral-500">{{ sourceFile.name }}</span>
+        </div>
+        
+        <div class="flex-1 overflow-auto bg-neutral-100/50 p-4 relative flex flex-col items-center justify-center">
+          <FileUploadZone 
+            v-if="!sourceFile"
+            accept="application/pdf,image/*" 
+            :max-size-m-b="10"
+            @file-selected="handleFileSelected" 
+          />
+          
+          <template v-else-if="sourceFileUrl">
+            <iframe v-if="sourceFile.type === 'application/pdf'" :src="sourceFileUrl" class="w-full h-full rounded shadow-sm border-0"></iframe>
+            <img v-else :src="sourceFileUrl" class="max-w-full rounded shadow-sm" alt="Source Document" />
+          </template>
+          
+          <div v-if="sourceFile" class="absolute bottom-4 flex justify-center w-full">
+             <Button variant="destructive" size="sm" class="shadow-lg" @click="handleFileCleared">
+                <Trash2 class="h-4 w-4 mr-2" /> Remove Attachment
+             </Button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Data Entry Form (Right / Center) -->
+      <div :class="showSourceDoc ? 'w-1/2' : 'w-full'">
+        <!-- Submission Error -->
+        <Alert v-if="submissionError" variant="destructive" class="mb-6">
       <AlertCircle class="h-4 w-4" />
       <AlertTitle>Error registering bill</AlertTitle>
       <AlertDescription>
@@ -71,10 +162,10 @@ function goBack() {
                 <template #default="{ field, state }">
                   <div class="flex-1 grid gap-1.5">
                     <Label :for="field.name">Vendor ID <span class="text-destructive">*</span></Label>
-                    <Input
-                      :id="field.name"
+                    <DebouncedCombobox
                       :model-value="field.state.value"
-                      placeholder="UUID of the supplier"
+                      :fetch-options="searchVendors"
+                      placeholder="Search vendors..."
                       @update:model-value="(val) => field.handleChange(val as string)"
                     />
                     <p v-if="state.meta.errors.length" class="text-xs text-destructive">
@@ -258,10 +349,10 @@ function goBack() {
                         <template #default="{ field: lf }">
                           <div class="grid gap-1.5">
                             <Label class="text-xs">GL Account</Label>
-                            <Input
-                              size="sm"
+                            <DebouncedCombobox
                               :model-value="lf.state.value"
-                              placeholder="GL Account UUID"
+                              :fetch-options="searchAccounts"
+                              placeholder="Search accounts..."
                               @update:model-value="(val) => lf.handleChange(val as string)"
                             />
                           </div>
@@ -272,12 +363,18 @@ function goBack() {
                         <template #default="{ field: lf }">
                           <div class="grid gap-1.5">
                             <Label class="text-xs">Category</Label>
-                            <Input
-                              size="sm"
+                            <DebouncedCombobox
                               :model-value="lf.state.value"
-                              placeholder="Procurement UUID"
+                              :fetch-options="searchCategories"
+                              placeholder="Search categories..."
                               @update:model-value="(val) => lf.handleChange(val as string)"
+                              @keydown.enter.prevent="() => {
+                                if (idx === field.state.value.length - 1) {
+                                  field.pushValue({ description: '', amount: 0, accountId: '', categoryId: '' });
+                                }
+                              }"
                             />
+                            <p class="text-[10px] text-neutral-400">Press Enter to add new line</p>
                           </div>
                         </template>
                       </form.Field>
@@ -300,5 +397,7 @@ function goBack() {
         </form.Subscribe>
       </div>
     </form>
+   </div>
   </div>
+ </div>
 </template>

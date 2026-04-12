@@ -13,6 +13,7 @@ import { Input } from '@/shared/components/input'
 import { Label } from '@/shared/components/label'
 import { Textarea } from '@/shared/components/textarea'
 import { useCreatePaymentRequest } from '../../../application/composables/useCreatePaymentRequest'
+import { useFormPersistence } from '@/shared/composables/useFormPersistence'
 import { Trash2, Plus, AlertCircle } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 
@@ -25,6 +26,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 
 const router = useRouter()
 const { form, error: submissionError } = useCreatePaymentRequest()
+
+// Draft Persistence (Phase 2.5)
+useFormPersistence(form, 'abren_draft_payment_request')
 
 function goBack() {
   router.push({ name: 'PaymentRequestsList' })

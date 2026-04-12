@@ -1,4 +1,4 @@
-import type { FieldApi } from "@tanstack/vue-form";
+import { nextTick } from "vue";
 import type { ApiError } from "@/shared/api/http-client";
 
 /**
@@ -49,6 +49,26 @@ export function useFormErrorHandler(
       } else {
         nonFieldErrors.push(detail.message);
       }
+    }
+
+    // UX Hardening — Auto-scroll to the first error on the form
+    if (error.details.length > 0) {
+      void nextTick(() => {
+        // Find the first field marked with aria-invalid or our custom destructive text class
+        const firstErrorEl = document.querySelector(
+          '[aria-invalid="true"], .text-destructive'
+        );
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          // Attempt to find a focusable sibling or the element itself
+          const focusable = firstErrorEl.tagName === 'INPUT'
+            ? firstErrorEl
+            : firstErrorEl.parentElement?.querySelector('input, textarea, select, button');
+
+          (focusable as HTMLElement)?.focus();
+        }
+      });
     }
 
     return nonFieldErrors;
