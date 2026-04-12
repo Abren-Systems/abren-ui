@@ -27,7 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 const router = useRouter()
 const { form, error: submissionError } = useCreatePaymentRequest()
 
-// Draft Persistence (Phase 2.5)
+// Draft Persistence
 useFormPersistence(form, 'abren_draft_payment_request')
 
 function goBack() {

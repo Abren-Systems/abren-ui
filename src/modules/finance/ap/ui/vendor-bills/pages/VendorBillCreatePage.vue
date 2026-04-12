@@ -34,7 +34,7 @@ const showSourceDoc = ref(false)
 const sourceFile = ref<File | null>(null)
 const sourceFileUrl = ref<string | null>(null)
 
-// Draft Persistence (Phase 2.5)
+// Draft Persistence
 useFormPersistence(form, 'abren_draft_vendor_bill')
 
 function goBack() {
@@ -56,7 +56,7 @@ function handleFileCleared() {
   }
 }
 
-// Mocked search functions for Phase 2.5 Demo
+// Mocked search functions for rapid UI mapping
 const searchVendors = async (q: string): Promise<ComboboxOption[]> => {
   return [
     { value: 'vend-123', label: 'Acme Corp', description: 'vend-123' },
