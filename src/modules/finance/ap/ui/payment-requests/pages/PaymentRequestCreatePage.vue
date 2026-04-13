@@ -15,7 +15,7 @@ import { Textarea } from '@/shared/components/textarea'
 import { useCreatePaymentRequest } from '../../../application/composables/useCreatePaymentRequest'
 import { useFormPersistence } from '@/shared/composables/useFormPersistence'
 import { Trash2, Plus, AlertCircle } from 'lucide-vue-next'
-import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
+import { useUsers } from '@/modules/core/application/composables/useUsers'
 
 /**
  * PaymentRequestCreatePage — Dedicated creation form.
@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert'
 
 const router = useRouter()
 const { form, error: submissionError } = useCreatePaymentRequest()
+const { users, isPending: isLoadingUsers } = useUsers()
 
 // Draft Persistence
 useFormPersistence(form, 'abren_draft_payment_request')
@@ -52,13 +53,18 @@ function goBack() {
     </div>
 
     <!-- Submission Error -->
-    <Alert v-if="submissionError" variant="destructive" class="mb-6">
-      <AlertCircle class="h-4 w-4" />
-      <AlertTitle>Error creating request</AlertTitle>
-      <AlertDescription>
-        {{ submissionError.detail ?? 'An unexpected error occurred.' }}
-      </AlertDescription>
-    </Alert>
+    <div
+      v-if="submissionError"
+      class="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
+    >
+      <AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
+      <div>
+        <h3 class="text-sm font-semibold">Error creating request</h3>
+        <p class="mt-1 text-sm">
+          {{ submissionError.detail ?? 'An unexpected error occurred.' }}
+        </p>
+      </div>
+    </div>
 
     <form
       class="space-y-6"
@@ -77,15 +83,21 @@ function goBack() {
           <form.Field name="beneficiaryId">
             <template #default="{ field, state }">
               <div class="grid gap-1.5">
-                <Label :for="field.name"
-                  >Beneficiary ID <span class="text-destructive">*</span></Label
-                >
-                <Input
-                  :id="field.name"
+                <Label :for="field.name">Beneficiary <span class="text-destructive">*</span></Label>
+                <Select
                   :model-value="field.state.value"
-                  placeholder="UUID of the payee"
                   @update:model-value="(val) => field.handleChange(val as string)"
-                />
+                  :disabled="isLoadingUsers"
+                >
+                  <SelectTrigger :id="field.name">
+                    <SelectValue placeholder="Select payee..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="user in users" :key="user.id" :value="user.id">
+                      {{ user.email }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <p v-if="state.meta.errors.length" class="text-xs text-destructive">
                   {{ state.meta.errors.join(', ') }}
                 </p>
