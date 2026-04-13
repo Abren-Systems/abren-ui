@@ -529,6 +529,7 @@ The UI is strictly **stateless and tenant-scoped**. It relies on the backend to 
 | Document                                         | Description                                           |
 | ------------------------------------------------ | ----------------------------------------------------- |
 | [UX Architecture Manifesto](UX_ARCHITECTURE.md)  | The interactive behavior and workflow OS standards    |
+| [Identifier Strategy](IDENTIFIER_STRATEGY.md)    | Mapping Human IDs to Backend UUIDs across the stack   |
 | [Module Structure](MODULE_STRUCTURE.md)          | Detailed module boundaries and folder conventions     |
 | [State Management](STATE_MANAGEMENT.md)          | Pinia store patterns and reactive state flows         |
 | [API Integration](API_INTEGRATION.md)            | HTTP client, mapper patterns, OpenAPI type generation |
