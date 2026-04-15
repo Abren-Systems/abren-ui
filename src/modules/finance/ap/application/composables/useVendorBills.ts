@@ -1,6 +1,5 @@
 import { useResourceQuery } from '@/shared/composables/useResourceQuery'
 import { apAdapter } from '../../infrastructure/ap_adapter'
-import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
 
 /**
@@ -21,7 +20,6 @@ export function useVendorBills() {
   } = useResourceQuery(
     apKeys.vendorBills(),
     () => apAdapter.listBills(),
-    (dtos) => dtos.map((dto) => APMapper.toVendorBill(dto)),
   )
 
   return { bills, isLoading, error, refetch }

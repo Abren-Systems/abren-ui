@@ -23,11 +23,11 @@ export function useApprovePaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>)
     mutateAsync: approve,
     isPending,
     error,
-  } = useApiMutation<void>(
+  } = useApiMutation<PaymentRequest>(
     async () => {
       const unwrappedId = toValue(id)
       if (!unwrappedId) throw new Error('Missing Payment Request ID')
-      await apAdapter.approveRequest(unwrappedId)
+      return await apAdapter.approveRequest(unwrappedId)
     },
     {
       onSuccess: () => {

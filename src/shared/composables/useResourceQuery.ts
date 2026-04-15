@@ -16,17 +16,17 @@ import type { ApiError } from '../api/http-client'
  * @param mapperFn - The mapper method that transforms DTO(s) to Domain Model(s).
  * @param options - Additional TanStack Query options.
  */
-export function useResourceQuery<TDTO, TDomain, TError = ApiError>(
+export function useResourceQuery<TDTO, TDomain = TDTO, TError = ApiError>(
   queryKey: MaybeRefOrGetter<QueryKey>,
   adapterFn: () => Promise<TDTO>,
-  mapperFn: (dto: TDTO) => TDomain,
+  mapperFn?: (dto: TDTO) => TDomain,
   options?: Omit<UseQueryOptions<TDomain, TError>, 'queryKey' | 'queryFn'>,
 ) {
   return useApiQuery<TDomain, TError>(
     queryKey,
     async () => {
-      const dto = await adapterFn()
-      return mapperFn(dto)
+      const data = await adapterFn()
+      return mapperFn ? mapperFn(data) : (data as unknown as TDomain)
     },
     {
       staleTime: 1000 * 60, // 1 minute default for domain resources

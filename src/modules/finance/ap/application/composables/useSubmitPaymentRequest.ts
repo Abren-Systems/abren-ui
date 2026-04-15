@@ -4,6 +4,7 @@ import { type MaybeRefOrGetter, toValue } from 'vue'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
+import type { PaymentRequest } from '../../domain/ap.types'
 
 /**
  * Use Case: Submit a Payment Request for Approval.
@@ -23,11 +24,11 @@ export function useSubmitPaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) 
     mutateAsync: submit,
     isPending,
     error,
-  } = useApiMutation<void>(
+  } = useApiMutation<PaymentRequest>(
     async () => {
       const unwrappedId = toValue(id)
       if (!unwrappedId) throw new Error('Missing Payment Request ID')
-      await apAdapter.submitRequest(unwrappedId)
+      return await apAdapter.submitRequest(unwrappedId)
     },
     {
       onSuccess: () => {

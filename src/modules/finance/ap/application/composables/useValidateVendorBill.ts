@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import type { VendorBillId } from '@/shared/types/brand.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
+import type { VendorBill } from '../../domain/ap.types'
 
 /**
  * Use Case: Validate a Vendor Bill.
@@ -19,9 +20,9 @@ export function useValidateVendorBill(id: VendorBillId) {
     mutateAsync: validate,
     isPending,
     error,
-  } = useApiMutation<void>(
+  } = useApiMutation<VendorBill>(
     async () => {
-      await apAdapter.validateBill(id)
+      return await apAdapter.validateBill(id)
     },
     {
       onSuccess: () => {

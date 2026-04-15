@@ -1,7 +1,6 @@
 import { useApiQuery } from '@/shared/composables/useApiQuery'
 import type { VendorBillId } from '@/shared/types/brand.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
-import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
 
 /**
@@ -21,10 +20,7 @@ export function useVendorBill(id: VendorBillId) {
     error,
   } = useApiQuery(
     apKeys.vendorBill(id),
-    async () => {
-      const dto = await apAdapter.getBill(id)
-      return APMapper.toVendorBill(dto)
-    },
+    () => apAdapter.getBill(id),
     { staleTime: 1000 * 30 }, // 30 seconds
   )
 

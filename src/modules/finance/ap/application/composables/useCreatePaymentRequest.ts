@@ -2,6 +2,7 @@ import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useRouter } from 'vue-router'
 import { apAdapter } from '../../infrastructure/ap_adapter'
+import type { PaymentRequest } from '../../domain/ap.types'
 import type {
   PaymentRequestCreateDTO,
   PaymentRequestLineCreateDTO,
@@ -10,8 +11,6 @@ import { useForm } from '@tanstack/vue-form'
 import { z } from 'zod'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
-import type { PaymentRequestId } from '@/shared/types/brand.types'
-import { toId } from '@/shared/types/brand.types'
 
 /**
  * Validation Schema for Payment Request Creation.
@@ -57,7 +56,7 @@ export function useCreatePaymentRequest() {
     mutateAsync: createRequest,
     isPending: isSubmitting,
     error,
-  } = useApiMutation<{ id: PaymentRequestId }, ApiError, PaymentRequestFormValues>(
+  } = useApiMutation<PaymentRequest, ApiError, PaymentRequestFormValues>(
     async (values: PaymentRequestFormValues) => {
       const mappedLines: PaymentRequestLineCreateDTO[] = values.lines.map((l) => ({
         description: l.description,
@@ -76,11 +75,10 @@ export function useCreatePaymentRequest() {
         lines: mappedLines,
       } as PaymentRequestCreateDTO
 
-      const result = await apAdapter.createRequest(dto)
-      return { id: toId<PaymentRequestId>(result.id) }
+      return await apAdapter.createRequest(dto)
     },
     {
-      onSuccess: (result: { id: PaymentRequestId }) => {
+      onSuccess: (result: PaymentRequest) => {
         void queryClient.invalidateQueries({
           queryKey: apKeys.paymentRequests(),
         })

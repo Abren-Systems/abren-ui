@@ -2,7 +2,6 @@ import { useApiQuery } from '@/shared/composables/useApiQuery'
 import { type MaybeRefOrGetter, toValue, computed } from 'vue'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
-import { APMapper } from '../../infrastructure/mappers'
 import { apKeys } from '../keys'
 
 /**
@@ -26,9 +25,7 @@ export function usePaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) {
     async () => {
       const unwrappedId = toValue(id)
       if (!unwrappedId) return null
-
-      const dto = await apAdapter.getRequest(unwrappedId)
-      return APMapper.toPaymentRequest(dto)
+      return await apAdapter.getRequest(unwrappedId)
     },
     {
       // Enabled only if we have a valid ID

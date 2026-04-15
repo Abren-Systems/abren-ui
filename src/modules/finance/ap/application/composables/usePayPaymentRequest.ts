@@ -6,6 +6,7 @@ import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
+import type { PaymentRequest } from '../../domain/ap.types'
 
 /**
  * Use Case: Record Payment for a Payment Request.
@@ -25,11 +26,11 @@ export function usePayPaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) {
     mutateAsync: pay,
     isPending,
     error,
-  } = useApiMutation<void, ApiError, PaymentRequestPayDTO>(
+  } = useApiMutation<PaymentRequest, ApiError, PaymentRequestPayDTO>(
     async (dto: PaymentRequestPayDTO) => {
       const unwrappedId = toValue(id)
       if (!unwrappedId) throw new Error('Missing Payment Request ID')
-      await apAdapter.payRequest(unwrappedId, dto)
+      return await apAdapter.payRequest(unwrappedId, dto)
     },
     {
       onSuccess: () => {

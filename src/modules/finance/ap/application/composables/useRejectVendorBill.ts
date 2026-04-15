@@ -8,7 +8,7 @@ import type { VendorBillId } from '@/shared/types/brand.types'
 import type { ApiError } from '@/shared/api/http-client'
 
 const useToasts = () => ({ addToast: (msg: unknown) => console.log('Toast:', msg) })
-import type { VendorBillDTO } from '../../infrastructure/api.types'
+import type { VendorBill } from '../../domain/ap.types'
 
 export function useRejectVendorBill(id: string | Ref<string>) {
   const queryClient = useQueryClient()
@@ -16,7 +16,7 @@ export function useRejectVendorBill(id: string | Ref<string>) {
 
   const mutation = useMutation({
     mutationFn: (reason: string) => apAdapter.rejectBill(toValue(id), reason),
-    onSuccess: (updatedBill: VendorBillDTO) => {
+    onSuccess: (updatedBill: VendorBill) => {
       // Update individual cache
       queryClient.setQueryData(apKeys.vendorBill(toId<VendorBillId>(toValue(id))), updatedBill)
       // Invalidate list to fresh state
