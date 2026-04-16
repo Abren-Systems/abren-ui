@@ -2,6 +2,7 @@ import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
+import type { PaymentRequest } from '../../domain/ap.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
 
