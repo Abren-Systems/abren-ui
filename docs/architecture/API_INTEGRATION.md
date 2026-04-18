@@ -8,7 +8,7 @@ tags: [frontend, architecture]
 # API Integration Architecture
 
 > **Parent:** [Frontend Architecture](ARCHITECTURE.md)
-> **Backend Contract:** [API Strategy](../../../abren-api/docs/architecture/API_STRATEGY.md)
+> **Backend Contract:** [API Strategy](../../../abren-api/docs/architecture/modules/API_STRATEGY.md)
 
 ---
 

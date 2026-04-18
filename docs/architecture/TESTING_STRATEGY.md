@@ -8,7 +8,7 @@ tags: [frontend, architecture]
 # Frontend Testing Strategy
 
 > **Parent:** [Frontend Architecture](ARCHITECTURE.md)
-> **Backend Companion:** [Backend Testing Strategy](../../../abren-api/docs/architecture/TESTING_STRATEGY.md)
+> **Backend Companion:** [Backend Testing Strategy](TESTING_STRATEGY.md)
 
 ---
 

@@ -22,8 +22,8 @@ However, UUIDs present significant UI/UX challenges:
 ## Related References
 
 - [Frontend Architecture Hub](ARCHITECTURE.md)
-- [Backend Data Architecture](../../../abren-api/docs/architecture/DATA_ARCHITECTURE.md)
-- [Backend Reference Validation Pattern](../../../abren-api/docs/architecture/REFERENCE_VALIDATION_PATTERN.md)
+- [Backend Data Architecture](../../../abren-api/docs/architecture/infrastructure/DATA_ARCHITECTURE.md)
+- [Backend Reference Validation Pattern](../../../abren-api/docs/architecture/infrastructure/REFERENCE_VALIDATION_PATTERN.md)
 
 ---
 

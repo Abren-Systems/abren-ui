@@ -49,10 +49,10 @@ Navigate by concern:
 
 | Backend Document                                                          | Relevance to Frontend                             |
 | ------------------------------------------------------------------------- | ------------------------------------------------- |
-| [Backend Architecture](../../abren-api/docs/architecture/ARCHITECTURE.md) | Domain model definitions, bounded context rules   |
-| [API Strategy](../../abren-api/docs/architecture/API_STRATEGY.md)         | Action-oriented endpoint patterns the UI consumes |
-| [Tenant Features](../../abren-api/docs/architecture/TENANT_FEATURES.md)   | Feature gate rules mirrored in route guards       |
-| [Webhooks](../../abren-api/docs/architecture/WEBHOOKS.md)                 | Webhook management UI requirements                |
+| [Backend Architecture](architecture/ARCHITECTURE.md) | Domain model definitions, bounded context rules   |
+| [API Strategy](../../abren-api/docs/architecture/modules/API_STRATEGY.md)         | Action-oriented endpoint patterns the UI consumes |
+| [Tenant Features](../../abren-api/docs/architecture/modules/TENANT_FEATURES.md)   | Feature gate rules mirrored in route guards       |
+| [Webhooks](../../abren-api/docs/architecture/infrastructure/WEBHOOKS.md)                 | Webhook management UI requirements                |
 
 ---
 

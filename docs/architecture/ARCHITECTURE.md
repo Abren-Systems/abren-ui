@@ -10,7 +10,7 @@ tags: [frontend, architecture]
 > **Version:** 2.1
 > **Last Updated:** April 2026
 > **Status:** AUTHORITATIVE — This document is the single source of truth for all architectural decisions in the Abren ERP UI.
-> **Backend Companion:** [Backend Architecture](../../../abren-api/docs/architecture/ARCHITECTURE.md)
+> **Backend Companion:** [Backend Architecture](ARCHITECTURE.md)
 
 ---
 
