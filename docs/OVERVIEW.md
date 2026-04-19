@@ -1,6 +1,6 @@
 ---
-title: "Abren ERP UI — Documentation Overview"
-description: "Abren ERP UI is the **domain-aware frontend** for the Abren ERP Financial Operating System. It is not a thin CRUD skin — it is a structurally aligned, modular application that understands the same bou"
+title: 'Abren ERP UI — Documentation Overview'
+description: 'Abren ERP UI is the **domain-aware frontend** for the Abren ERP Financial Operating System. It is not a thin CRUD skin — it is a structurally aligned, modular application that understands the same bou'
 tier: frontend
 tags: [frontend]
 ---
@@ -47,12 +47,12 @@ Navigate by concern:
 
 ### Cross-Reference to Backend
 
-| Backend Document                                                          | Relevance to Frontend                             |
-| ------------------------------------------------------------------------- | ------------------------------------------------- |
-| [Backend Architecture](architecture/ARCHITECTURE.md) | Domain model definitions, bounded context rules   |
-| [API Strategy](../../abren-api/docs/architecture/modules/API_STRATEGY.md)         | Action-oriented endpoint patterns the UI consumes |
-| [Tenant Features](../../abren-api/docs/architecture/modules/TENANT_FEATURES.md)   | Feature gate rules mirrored in route guards       |
-| [Webhooks](../../abren-api/docs/architecture/infrastructure/WEBHOOKS.md)                 | Webhook management UI requirements                |
+| Backend Document                                                                | Relevance to Frontend                             |
+| ------------------------------------------------------------------------------- | ------------------------------------------------- |
+| [Backend Architecture](architecture/ARCHITECTURE.md)                            | Domain model definitions, bounded context rules   |
+| [API Strategy](../../abren-api/docs/architecture/modules/API_STRATEGY.md)       | Action-oriented endpoint patterns the UI consumes |
+| [Tenant Features](../../abren-api/docs/architecture/modules/TENANT_FEATURES.md) | Feature gate rules mirrored in route guards       |
+| [Webhooks](../../abren-api/docs/architecture/infrastructure/WEBHOOKS.md)        | Webhook management UI requirements                |
 
 ---
 

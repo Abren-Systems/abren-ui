@@ -1,6 +1,6 @@
 ---
-title: "Error Handling & Loading States"
-description: "In an ERP, errors are **expected operational events** — network failures, validation rejections, concurrent edit conflicts, permission denials. The error handling strategy must be:"
+title: 'Error Handling & Loading States'
+description: 'In an ERP, errors are **expected operational events** — network failures, validation rejections, concurrent edit conflicts, permission denials. The error handling strategy must be:'
 tier: frontend
 tags: [frontend, architecture]
 ---

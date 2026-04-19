@@ -1,6 +1,6 @@
 ---
-title: "Form Architecture"
-description: "Forms are the **primary interaction surface** in an ERP. Every financial transaction, every configuration change, every approval — all flow through forms. Our form architecture enforces:"
+title: 'Form Architecture'
+description: 'Forms are the **primary interaction surface** in an ERP. Every financial transaction, every configuration change, every approval — all flow through forms. Our form architecture enforces:'
 tier: frontend
 tags: [frontend, architecture]
 ---

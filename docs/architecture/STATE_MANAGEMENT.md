@@ -1,6 +1,6 @@
 ---
-title: "State Management Architecture"
-description: "We distinguish between two types of state to ensure high performance and reliability:"
+title: 'State Management Architecture'
+description: 'We distinguish between two types of state to ensure high performance and reliability:'
 tier: frontend
 tags: [frontend, architecture]
 ---

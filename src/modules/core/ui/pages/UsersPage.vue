@@ -84,8 +84,13 @@ function handleRowClick(user: User) {
       :columns="userColumns"
       :loading="isPending"
       :state="gridState"
+      empty-message="No active users found in this tenant."
       @row-click="handleRowClick"
-    />
+    >
+      <template #empty-action>
+        <Button class="mt-4" @click="console.log('Invite User')">Invite First User</Button>
+      </template>
+    </DataGrid>
 
     <UserRoleAssignmentDialog v-model:open="isAssignmentOpen" :user="selectedUser" />
   </div>

@@ -1,6 +1,6 @@
 ---
-title: "Architectural Decision Record - Entity Identifier Strategy (ID vs UUID)"
-description: "The Abren ERP strictly enforces the use of **UUIDs (v7)** for all database primary and foreign keys. This design ensures global uniqueness, simplifies distributed database replication, and introduces "
+title: 'Architectural Decision Record - Entity Identifier Strategy (ID vs UUID)'
+description: 'The Abren ERP strictly enforces the use of **UUIDs (v7)** for all database primary and foreign keys. This design ensures global uniqueness, simplifies distributed database replication, and introduces '
 tier: frontend
 tags: [frontend, architecture]
 ---

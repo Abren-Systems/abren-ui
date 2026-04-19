@@ -1,6 +1,6 @@
 ---
-title: "API Integration Architecture"
-description: "┌─────────────────────────────────────────────────────┐"
+title: 'API Integration Architecture'
+description: '┌─────────────────────────────────────────────────────┐'
 tier: frontend
 tags: [frontend, architecture]
 ---

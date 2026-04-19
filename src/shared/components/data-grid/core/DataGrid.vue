@@ -26,6 +26,7 @@ const props = withDefaults(
     skeletonRows?: number
     placeholder?: string
     showToolbar?: boolean
+    emptyMessage?: string
   }>(),
   {
     skeletonRows: 8,
@@ -162,7 +163,7 @@ const handleRowClick = (row: Row<TData>) => {
           </template>
 
           <!-- Empty state -->
-          <DataGridEmpty v-else :colspan="colCount">
+          <DataGridEmpty v-else :colspan="colCount" :message="emptyMessage">
             <template #action>
               <slot name="empty-action" />
             </template>

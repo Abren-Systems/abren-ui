@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, h } from 'vue'
+import { ref, h, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import { Button } from '@/shared/components/button'
 import { Plus, RefreshCcw } from 'lucide-vue-next'
 import { useJournalEntries } from '../../../application/composables/useJournalEntries'
+import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 import { journalEntryColumns } from '../../grids/journal-entry.grid'
 import { usePermissions } from '@/shared/auth/usePermissions'
 import JournalEntryCreateDrawer from '../components/JournalEntryCreateDrawer.vue'
@@ -24,6 +25,9 @@ const router = useRouter()
 const { hasPermission } = usePermissions()
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
 const { entries, isLoading, refresh } = useJournalEntries()
+const { accounts, isPending: isAccountsLoading } = useLedgerAccounts()
+
+const hasAccounts = computed(() => accounts.value && accounts.value.length > 0)
 
 const isCreateOpen = ref(false)
 
@@ -55,6 +59,11 @@ function handleRowClick(row: JournalEntry) {
         :data="entries ?? []"
         :loading="isLoading"
         placeholder="Search entries…"
+        :empty-message="
+          hasAccounts
+            ? 'No journal entries found. Book your first transaction.'
+            : 'You must establish your Chart of Accounts before booking journal entries.'
+        "
         row-clickable
         @row-click="handleRowClick"
       >
@@ -67,11 +76,34 @@ function handleRowClick(row: JournalEntry) {
             v-if="hasPermission('ledger:create_entry')"
             size="sm"
             class="h-[26px] px-2.5 text-xs"
+            :disabled="!hasAccounts"
             @click="isCreateOpen = true"
           >
             <Plus :size="13" class="mr-1" />
             New Entry
           </Button>
+        </template>
+
+        <!-- Empty State Operational Action -->
+        <template #empty-action>
+          <template v-if="!isAccountsLoading">
+            <template v-if="hasAccounts">
+              <Button
+                v-if="hasPermission('ledger:create_entry')"
+                variant="default"
+                class="mt-4 shadow-sm"
+                @click="isCreateOpen = true"
+              >
+                <Plus :size="16" class="mr-2" />
+                Book Journal Entry
+              </Button>
+            </template>
+            <template v-else>
+              <router-link :to="{ name: 'LedgerCoa' }">
+                <Button variant="default" class="mt-4 shadow-sm"> Setup Chart of Accounts </Button>
+              </router-link>
+            </template>
+          </template>
         </template>
       </DataGrid>
     </div>

@@ -1,6 +1,6 @@
 ---
-title: "Repository Strategy"
-description: "The Abren ERP platform uses **sibling repositories** under a shared parent directory. Each project is an independent Git repository with its own CI/CD pipeline, release cycle, and versioning."
+title: 'Repository Strategy'
+description: 'The Abren ERP platform uses **sibling repositories** under a shared parent directory. Each project is an independent Git repository with its own CI/CD pipeline, release cycle, and versioning.'
 tier: frontend
 tags: [frontend]
 ---

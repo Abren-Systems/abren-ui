@@ -48,6 +48,7 @@ function handleRowClick(row: Account) {
         :data="data ?? []"
         :loading="isPending"
         placeholder="Search accounts…"
+        empty-message="Your Chart of Accounts is not set up yet. Establish your financial foundation to begin recording transactions."
         row-clickable
         @row-click="handleRowClick"
       >
@@ -61,6 +62,19 @@ function handleRowClick(row: Account) {
           >
             <Plus :size="13" class="mr-1" />
             New Account
+          </Button>
+        </template>
+
+        <!-- Empty State Operational Action -->
+        <template #empty-action>
+          <Button
+            v-if="hasPermission('ledger:manage_accounts')"
+            variant="default"
+            class="mt-4 shadow-sm"
+            @click="isDrawerOpen = true"
+          >
+            <Plus :size="16" class="mr-2" />
+            Setup Chart of Accounts
           </Button>
         </template>
       </DataGrid>

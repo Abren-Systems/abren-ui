@@ -1,6 +1,6 @@
 ---
-title: "Module Structure & Boundary Rules"
-description: "Each backend module has a 1:1 frontend counterpart:"
+title: 'Module Structure & Boundary Rules'
+description: 'Each backend module has a 1:1 frontend counterpart:'
 tier: frontend
 tags: [frontend, architecture]
 ---

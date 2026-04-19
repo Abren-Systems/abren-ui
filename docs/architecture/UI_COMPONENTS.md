@@ -1,5 +1,5 @@
 ---
-title: "UI Component Architecture"
+title: 'UI Component Architecture'
 description: "To ensure scalability and prevent 'component soup,' we categorize all UI elements into four distinct tiers based on their knowledge of the business domain."
 tier: frontend
 tags: [frontend, architecture]

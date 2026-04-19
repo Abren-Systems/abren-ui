@@ -79,8 +79,13 @@ function handleRowClick(role: Role) {
       :columns="roleColumns"
       :loading="isRolesPending"
       :state="gridState"
+      empty-message="No custom roles defined. Create functional boundaries to segregate access."
       @row-click="handleRowClick"
-    />
+    >
+      <template #empty-action>
+        <Button class="mt-4" @click="isCreateOpen = true">Define Identity Boundary</Button>
+      </template>
+    </DataGrid>
 
     <CreateRoleDialog v-model:open="isCreateOpen" />
   </div>

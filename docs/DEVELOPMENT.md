@@ -1,6 +1,6 @@
 ---
-title: "Development Guide"
-description: "feature/{module}/{description}     e.g. feature/accounting/journal-entry-form"
+title: 'Development Guide'
+description: 'feature/{module}/{description}     e.g. feature/accounting/journal-entry-form'
 tier: frontend
 tags: [frontend]
 ---

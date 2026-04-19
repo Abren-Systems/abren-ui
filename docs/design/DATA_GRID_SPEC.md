@@ -1,6 +1,6 @@
 ---
-title: "🧾 ABREN ERP — DATA GRID SPEC (v1.0)"
-description: "┌──────────────────────────────────────────────┐"
+title: '🧾 ABREN ERP — DATA GRID SPEC (v1.0)'
+description: '┌──────────────────────────────────────────────┐'
 tier: frontend
 tags: [frontend]
 ---

@@ -21,7 +21,7 @@ export const reportingAdapter = {
       end_date: query.endDate,
     })
     const raw = (await apiGet<DailyCashflowDTO[]>(
-      `/reporting/daily-cashflow?${params.toString()}`,
+      `/reporting/cashflow/daily?${params.toString()}`,
     )) as unknown[]
     return raw.map((item) => DailyCashflowSchema.parse(item))
   },

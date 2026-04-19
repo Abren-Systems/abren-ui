@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/select'
+import { AlertCircle, ArrowRight } from 'lucide-vue-next'
 import { Label } from '@/shared/components/label'
 import { watch } from 'vue'
 import { useForm } from '@tanstack/vue-form'
@@ -20,7 +21,7 @@ const { hasPermission } = usePermissions()
 const canEdit = hasPermission('ledger:manage_accounts')
 
 const { settings, isLoading, updateSettings } = useLedgerSettings()
-const { accounts } = useLedgerAccounts()
+const { accounts, isPending: isAccountsLoading } = useLedgerAccounts()
 
 const ledgerSettingsSchema = z.object({
   default_bridge_account_id: z.string(),
@@ -80,7 +81,34 @@ watch(
           </CardDescription>
         </CardHeader>
         <CardContent class="grid gap-6">
+          <template v-if="!isAccountsLoading && accounts && accounts.length === 0">
+            <div
+              class="bg-red-50 text-red-900 border border-red-200 rounded-md p-4 flex flex-col gap-3"
+            >
+              <div class="flex items-center gap-2 font-medium">
+                <AlertCircle class="h-4 w-4" />
+                <span>Missing Prerequisites</span>
+              </div>
+              <p class="text-sm text-red-800">
+                Your Chart of Accounts must be established before you can configure ledger mappings.
+                Without accounts, the system cannot reconcile or accrue transactions.
+              </p>
+              <div>
+                <router-link :to="{ name: 'LedgerCoa' }">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="mt-2 text-red-900 border-red-300 hover:bg-red-100"
+                  >
+                    Setup Chart of Accounts <ArrowRight :size="14" class="ml-2" />
+                  </Button>
+                </router-link>
+              </div>
+            </div>
+          </template>
+
           <form
+            v-else
             @submit.prevent="
               (e) => {
                 e.stopPropagation()

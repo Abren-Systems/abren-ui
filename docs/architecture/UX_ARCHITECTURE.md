@@ -1,5 +1,5 @@
 ---
-title: "Abren ERP — The Composable Business Operating System (UX Architecture)"
+title: 'Abren ERP — The Composable Business Operating System (UX Architecture)'
 description: "Before implementing the frontend views for Horizon A modules, we are establishing our ultimate UX/UI philosophy. We are elevating Abren from a 'nice-looking CRUD system' to a **Composable Business Ope"
 tier: frontend
 tags: [frontend, architecture]
