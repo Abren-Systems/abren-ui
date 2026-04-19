@@ -38,14 +38,14 @@ export const accountColumns: ColumnDef<Account>[] = [
     header: ({ column }) => h(DataGridColumnHeader, { column, title: 'Type' }),
     cell: ({ row }) => {
       const type = row.getValue<string>('type')
-      const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-        ASSET: 'default',
-        LIABILITY: 'destructive',
-        EQUITY: 'secondary',
-        REVENUE: 'default',
-        EXPENSE: 'outline',
+      const variantMap: Record<string, 'primary' | 'danger' | 'info' | 'success' | 'warning'> = {
+        ASSET: 'primary',
+        LIABILITY: 'danger',
+        EQUITY: 'info',
+        REVENUE: 'success',
+        EXPENSE: 'warning',
       }
-      return h(BadgeCell, { status: type, variants })
+      return h(BadgeCell, { status: type, variant: variantMap[type] || 'neutral' })
     },
   },
   {
@@ -64,10 +64,7 @@ export const accountColumns: ColumnDef<Account>[] = [
       const isActive = row.getValue<boolean>('isActive')
       return h(BadgeCell, {
         status: isActive ? 'ACTIVE' : 'INACTIVE',
-        variants: {
-          ACTIVE: 'default',
-          INACTIVE: 'secondary',
-        },
+        variant: isActive ? 'success' : 'neutral',
       })
     },
   },

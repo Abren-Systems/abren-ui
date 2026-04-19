@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
+import { AppButton } from '@/shared/components/primitives'
 import { Plus } from 'lucide-vue-next'
 import CreateAccountDrawer from '../components/CreateAccountDrawer.vue'
 import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
@@ -26,19 +26,19 @@ function handleRowClick(row: Account) {
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-5">
+  <div class="flex h-full flex-col gap-6">
     <!-- Page Header -->
-    <div class="flex shrink-0 items-start justify-between">
+    <div class="flex shrink-0 items-start justify-between p-1">
       <div>
-        <h1 class="m-0 text-heading text-[var(--color-grid-text)]">Chart of Accounts</h1>
-        <p class="mt-1 text-body-sm text-[var(--color-grid-text-muted)]">
+        <h1 class="m-0 text-[24px] font-semibold text-[#201f1e]">Chart of Accounts</h1>
+        <p class="mt-1 text-[14px] text-[#605e5c]">
           Manage your ledger accounts and financial structure.
         </p>
       </div>
     </div>
 
     <!-- DataGrid Orchestration -->
-    <div class="min-h-0 flex-1">
+    <div class="min-h-0 flex-1 px-6 pb-6">
       <DataGrid
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
@@ -54,28 +54,27 @@ function handleRowClick(row: Account) {
       >
         <!-- Toolbar actions -->
         <template #toolbar>
-          <Button
+          <AppButton
             v-if="hasPermission('ledger:manage_accounts')"
-            size="sm"
-            class="h-[26px] px-2.5 text-xs"
+            variant="primary"
             @click="isDrawerOpen = true"
           >
-            <Plus :size="13" class="mr-1" />
+            <Plus :size="14" class="mr-2" />
             New Account
-          </Button>
+          </AppButton>
         </template>
 
         <!-- Empty State Operational Action -->
         <template #empty-action>
-          <Button
+          <AppButton
             v-if="hasPermission('ledger:manage_accounts')"
-            variant="default"
-            class="mt-4 shadow-sm"
+            variant="primary"
+            class="mt-4"
             @click="isDrawerOpen = true"
           >
             <Plus :size="16" class="mr-2" />
             Setup Chart of Accounts
-          </Button>
+          </AppButton>
         </template>
       </DataGrid>
     </div>

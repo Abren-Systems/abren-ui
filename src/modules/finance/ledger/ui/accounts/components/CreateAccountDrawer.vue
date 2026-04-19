@@ -1,23 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Button } from '@/shared/components/button'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/shared/components/sheet'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select'
+import { AppButton, AppInput, AppSelect, AppDrawer } from '@/shared/components/primitives'
 import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 import { AccountType } from '../../../domain/account.types'
 
@@ -34,12 +17,21 @@ const form = ref({
 })
 
 const accountTypes = [
-  AccountType.ASSET,
-  AccountType.LIABILITY,
-  AccountType.EQUITY,
-  AccountType.REVENUE,
-  AccountType.EXPENSE,
+  { label: 'Asset', value: AccountType.ASSET },
+  { label: 'Liability', value: AccountType.LIABILITY },
+  { label: 'Equity', value: AccountType.EQUITY },
+  { label: 'Revenue', value: AccountType.REVENUE },
+  { label: 'Expense', value: AccountType.EXPENSE },
 ]
+
+// Transform accounts for AppSelect
+const parentOptions = computed(() => {
+  const opts = accounts.value.map((acc) => ({
+    label: `${acc.code} - ${acc.name}`,
+    value: acc.id,
+  }))
+  return [{ label: 'None (Top Level Account)', value: 'none' }, ...opts]
+})
 
 const error = ref<string | null>(null)
 
@@ -79,76 +71,61 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent class="sm:max-w-[450px]">
-      <SheetHeader>
-        <SheetTitle>New GL Account</SheetTitle>
-        <SheetDescription>
-          Create a new account in the Chart of Accounts to organize transactions.
-        </SheetDescription>
-      </SheetHeader>
+  <AppDrawer
+    :open="open"
+    title="New GL Account"
+    description="Create a new account in the Chart of Accounts to organize transactions."
+    @update:open="emit('update:open', $event)"
+  >
+    <form class="space-y-6" @submit.prevent="handleSubmit">
+      <div class="grid grid-cols-2 gap-6">
+        <AppInput
+          label="Account Code"
+          type="number"
+          v-model.number="form.code"
+          placeholder="e.g. 1010"
+          required
+        />
 
-      <form class="py-6 space-y-6" @submit.prevent="handleSubmit">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="grid gap-2">
-            <Label for="code">Account Code <span class="text-rose-500">*</span></Label>
-            <Input id="code" type="number" v-model.number="form.code" placeholder="e.g. 1010" />
-          </div>
+        <AppSelect
+          label="Account Type"
+          v-model="form.account_type"
+          :options="accountTypes"
+          required
+        />
+      </div>
 
-          <div class="grid gap-2">
-            <Label for="type">Account Type <span class="text-rose-500">*</span></Label>
-            <Select v-model="form.account_type">
-              <SelectTrigger id="type">
-                <SelectValue placeholder="Classification" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="type in accountTypes" :key="type" :value="type">
-                  {{ type.charAt(0) + type.slice(1).toLowerCase() }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      <AppInput label="Account Name" v-model="form.name" placeholder="e.g. Petty Cash" required />
 
-        <div class="grid gap-2">
-          <Label for="name">Account Name <span class="text-rose-500">*</span></Label>
-          <Input id="name" v-model="form.name" placeholder="e.g. Petty Cash" />
-        </div>
+      <div class="space-y-1">
+        <AppSelect
+          label="Parent Account"
+          v-model="form.parent_id"
+          :options="parentOptions"
+          placeholder="Select parent account..."
+        />
+        <p class="text-[13px] text-[#605e5c]">Hierarchical rollup for financial reporting.</p>
+      </div>
 
-        <div class="grid gap-2">
-          <Label for="parent">Parent Account (Optional)</Label>
-          <Select v-model="form.parent_id">
-            <SelectTrigger id="parent">
-              <SelectValue placeholder="None (Top Level Account)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None (Top Level Account)</SelectItem>
-              <SelectItem v-for="acc in accounts" :key="acc.id" :value="acc.id">
-                {{ acc.code }} - {{ acc.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p class="text-[13px] text-neutral-500 mt-1">
-            Hierarchical rollup for financial reporting.
-          </p>
-        </div>
+      <div
+        v-if="error"
+        class="p-3 text-[13px] text-[#a4262c] bg-[#fff8f8] rounded-[2px] border border-[#fde7e9]"
+      >
+        {{ error }}
+      </div>
+    </form>
 
-        <div
-          v-if="error"
-          class="p-3 text-xs text-red-600 bg-red-50 rounded-md border border-red-100 italic"
-        >
-          {{ error }}
-        </div>
-
-        <SheetFooter class="pt-6 border-t mt-6">
-          <Button variant="outline" type="button" @click="emit('update:open', false)">
-            Cancel
-          </Button>
-          <Button variant="default" type="submit" :disabled="!isValid || isCreating">
-            {{ isCreating ? 'Creating…' : 'Save Account' }}
-          </Button>
-        </SheetFooter>
-      </form>
-    </SheetContent>
-  </Sheet>
+    <template #footer>
+      <AppButton variant="secondary" @click="emit('update:open', false)"> Cancel </AppButton>
+      <AppButton
+        variant="primary"
+        type="submit"
+        :disabled="!isValid || isCreating"
+        :loading="isCreating"
+        @click="handleSubmit"
+      >
+        Save Account
+      </AppButton>
+    </template>
+  </AppDrawer>
 </template>

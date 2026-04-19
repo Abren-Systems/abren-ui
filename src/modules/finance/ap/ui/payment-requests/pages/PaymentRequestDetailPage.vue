@@ -82,9 +82,10 @@ function goBack() {
   router.push({ name: 'PaymentRequestsList' })
 }
 
-function formatMoney(money: any) {
-  if (!money || typeof money.format !== 'function') return '—'
-  return money.format()
+function formatMoney(money: unknown) {
+  const m = money as { format: () => string } | null
+  if (!m || typeof m.format !== 'function') return '—'
+  return m.format()
 }
 </script>
 
