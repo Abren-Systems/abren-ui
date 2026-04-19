@@ -60,18 +60,20 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="flex h-screen bg-neutral-50 overflow-hidden">
+  <div class="flex h-screen bg-[var(--app-canvas)] overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 border-r border-neutral-200 bg-white flex flex-col shelf-shadow z-20">
+    <aside
+      class="w-64 border-r border-[var(--color-neutral-200)] bg-[var(--app-sidebar)] flex flex-col z-20"
+    >
       <div class="p-6">
-        <h1 class="text-xl font-bold text-primary-600 tracking-tight">Abren ERP</h1>
+        <h1 class="text-xl font-bold text-[var(--color-primary-600)] tracking-tight">Abren ERP</h1>
       </div>
 
       <nav class="flex-1 px-4 space-y-8 overflow-y-auto pt-2 scrollbar-none pb-8">
         <!-- Business Section -->
         <div>
           <h3
-            class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
+            class="px-3 text-[10.5px] font-bold text-[var(--color-neutral-400)] uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
           >
             <Library class="h-3 w-3 mr-2" />
             Applications
@@ -82,11 +84,11 @@ async function handleLogout() {
               :key="item.label"
               :to="item.href || item.to"
               :class="[
-                'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
+                'flex items-center px-4 py-2 text-sm font-medium rounded-sm transition-all duration-200 group',
                 (item.href && route.path === item.href) ||
                 (item.to?.name && route.name === item.to.name)
-                  ? 'bg-primary-50 text-primary-900 ring-1 ring-primary-100 shadow-sm'
-                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
+                  ? 'bg-white text-[var(--color-primary-700)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-neutral-200)]'
+                  : 'text-[var(--color-neutral-700)] hover:bg-[var(--color-neutral-200)] hover:text-[var(--color-neutral-900)] border-transparent',
               ]"
             >
               <component
@@ -94,13 +96,14 @@ async function handleLogout() {
                 v-if="item.icon"
                 :class="[
                   'mr-3 h-5 w-5 transition-colors',
-                  route.path === item.href
-                    ? 'text-primary-600'
-                    : 'text-neutral-400 group-hover:text-neutral-600',
+                  (item.href && route.path === item.href) ||
+                  (item.to?.name && route.name === item.to.name)
+                    ? 'text-[var(--color-primary-600)]'
+                    : 'text-[var(--color-neutral-500)] group-hover:text-[var(--color-neutral-700)]',
                 ]"
               />
               <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
-                <ChevronRight class="h-4 w-4 text-neutral-300" />
+                <ChevronRight class="h-4 w-4 text-[var(--color-neutral-300)]" />
               </div>
               {{ item.label }}
             </RouterLink>
@@ -110,7 +113,7 @@ async function handleLogout() {
         <!-- Platform Section -->
         <div>
           <h3
-            class="px-3 text-[10.5px] font-bold text-neutral-400 uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
+            class="px-3 text-[10.5px] font-bold text-[var(--color-neutral-400)] uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
           >
             <Cpu class="h-3 w-3 mr-2" />
             Platform Engine
@@ -121,11 +124,11 @@ async function handleLogout() {
               :key="item.label"
               :to="item.href || item.to"
               :class="[
-                'flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 group',
+                'flex items-center px-4 py-2 text-sm font-medium rounded-sm transition-all duration-200 group',
                 (item.href && route.path === item.href) ||
                 (item.to?.name && route.name === item.to.name)
-                  ? 'bg-neutral-100 text-neutral-900 ring-1 ring-neutral-200 shadow-sm'
-                  : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 border-transparent',
+                  ? 'bg-white text-[var(--color-neutral-900)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-neutral-200)]'
+                  : 'text-[var(--color-neutral-600)] hover:bg-[var(--color-neutral-200)] hover:text-[var(--color-neutral-900)] border-transparent',
               ]"
             >
               <component
@@ -135,12 +138,12 @@ async function handleLogout() {
                   'mr-3 h-5 w-5 transition-colors',
                   (item.href && route.path === item.href) ||
                   (item.to?.name && route.name === item.to.name)
-                    ? 'text-neutral-900'
-                    : 'text-neutral-400 group-hover:text-neutral-600',
+                    ? 'text-[var(--color-neutral-900)]'
+                    : 'text-[var(--color-neutral-500)] group-hover:text-[var(--color-neutral-700)]',
                 ]"
               />
               <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
-                <ChevronRight class="h-4 w-4 text-neutral-300" />
+                <ChevronRight class="h-4 w-4 text-[var(--color-neutral-300)]" />
               </div>
               {{ item.label }}
             </RouterLink>
@@ -148,10 +151,10 @@ async function handleLogout() {
         </div>
       </nav>
 
-      <div class="p-4 border-t border-neutral-100 bg-neutral-50/50">
+      <div class="p-4 border-t border-[var(--color-neutral-200)] bg-[var(--app-sidebar)]">
         <Button
           variant="ghost"
-          class="w-full justify-start text-danger-500 hover:text-danger-600 hover:bg-danger-50 h-10"
+          class="w-full justify-start text-[var(--color-danger-600)] hover:bg-[var(--color-danger-50)] h-10"
           @click="handleLogout"
         >
           <LogOut class="mr-3 h-5 w-5" />
@@ -161,26 +164,30 @@ async function handleLogout() {
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-white">
+    <main class="flex-1 flex flex-col overflow-hidden bg-[var(--app-canvas)]">
       <header
-        class="h-16 border-b border-neutral-100 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10 shrink-0"
+        class="h-16 border-b border-[var(--color-neutral-200)] bg-white flex items-center justify-between px-8 sticky top-0 z-10 shrink-0"
       >
-        <h2 class="text-lg font-bold text-neutral-900 tracking-tight">
+        <h2 class="text-lg font-bold text-[var(--color-neutral-900)] tracking-tight">
           {{ route.name || 'Dashboard' }}
         </h2>
         <div class="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" class="rounded-full hover:bg-neutral-100 h-9 w-9">
-            <Settings class="h-5 w-5 text-neutral-500" />
+          <Button
+            variant="ghost"
+            size="icon"
+            class="rounded-full hover:bg-[var(--color-neutral-100)] h-9 w-9"
+          >
+            <Settings class="h-5 w-5 text-[var(--color-neutral-500)]" />
           </Button>
           <div
-            class="h-9 w-9 rounded-full border-2 border-primary-100 bg-primary-600 flex items-center justify-center text-white font-bold text-xs ring-offset-2 ring-1 ring-transparent hover:ring-primary-400 cursor-pointer shadow-sm transition-all duration-200"
+            class="h-9 w-9 rounded-full border-2 border-[var(--color-primary-100)] bg-[var(--color-primary-600)] flex items-center justify-center text-white font-bold text-xs shadow-sm transition-all duration-200"
           >
             AD
           </div>
         </div>
       </header>
 
-      <div class="flex-1 overflow-y-auto p-10 bg-[#fafafa]">
+      <div class="flex-1 overflow-y-auto p-10">
         <div class="max-w-[1400px] mx-auto">
           <RouterView />
         </div>

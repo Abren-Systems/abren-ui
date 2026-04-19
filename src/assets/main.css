@@ -9,9 +9,9 @@
 
 @theme {
   /*
-   * ── Brand / Primary — Indigo ──────────────────────────────────
-   * Changed from sky (playful) to indigo (authoritative/financial).
-   * Radix Indigo scale — mathematically derived, WCAG-tested.
+   * ── Brand / Primary — Abren Indigo ──────────────────────────
+   * Authoritative and precise for financial systems. 
+   * Source: docs/architecture/DESIGN_SYSTEM.md
    */
   --color-primary-50: #eef2ff;
   --color-primary-100: #e0e7ff;
@@ -24,21 +24,34 @@
   --color-primary-800: #3730a3;
   --color-primary-900: #312e81;
 
+  /* Fluent Web Component Token Overrides */
+  --accent-fill-rest: var(--color-primary-600);
+  --accent-fill-hover: var(--color-primary-700);
+  --accent-fill-active: var(--color-primary-800);
+  --accent-foreground-cut-rest: #ffffff;
+
   /*
-   * ── Neutrals — Radix Slate ────────────────────────────────────
-   * Changed from Tailwind gray (cold blue-cast) to Radix Slate
-   * (warm blue-gray). Reads premium at high information density.
+   * ── Neutrals — Fluent Design Neutral Palette ──────────────────
+   * Calibrated for high-density enterprise interfaces.
    */
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
+  --color-neutral-50: #faf9f8; /* Neutral Lager (Page Background) */
+  --color-neutral-100: #f3f2f1; /* Neutral Light */
+  --color-neutral-200: #edebe9; /* Neutral Lighter (Borders) */
+  --color-neutral-300: #e1dfdd;
+  --color-neutral-400: #d2d0ce;
+  --color-neutral-500: #c8c6c4;
+  --color-neutral-600: #a19f9d;
+  --color-neutral-700: #605e5c;
+  --color-neutral-800: #323130;
+  --color-neutral-900: #201f1e;
+
+  /* 
+   * ── Semantic Layout Tokens — Layered Contrast ──────────────────
+   * Standardizes the "Card-on-Canvas" pattern.
+   */
+  --app-canvas: var(--color-neutral-50); /* #faf9f8 - Background desk */
+  --app-sidebar: var(--color-neutral-100); /* #f3f2f1 - Navigation anchor */
+  --app-surface: #ffffff; /* Stark white cards/workspaces */
 
   /*
    * ── Semantic Status Colors ────────────────────────────────────
@@ -124,11 +137,12 @@
 
   /*
    * ── Border Radius ─────────────────────────────────────────────
+   * Dynamics 365 / Fluent standard is very sharp.
    */
-  --radius-sm: 0.25rem; /* 4px */
-  --radius-md: 0.375rem; /* 6px */
-  --radius-lg: 0.5rem; /* 8px */
-  --radius-xl: 0.75rem; /* 12px */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
 
   /*
    * ── Shadows ───────────────────────────────────────────────────
