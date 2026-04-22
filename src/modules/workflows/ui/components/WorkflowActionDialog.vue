@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { Button } from '@/shared/components/button'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
+import { AppButton, AppInput, AppBadge } from '@/shared/components/primitives'
+import { ShieldCheck, MessageSquare, X, Check, AlertTriangle } from 'lucide-vue-next'
 import { useApprovalAction } from '../../application/composables/useApprovalAction'
 
 const props = defineProps<{
@@ -34,35 +33,55 @@ async function handleAction(action: 'APPROVE' | 'REJECT') {
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-neutral-900)]/60 backdrop-blur-sm p-4"
   >
-    <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-xl space-y-4">
-      <header>
-        <h3 class="text-xl font-bold">Review Transition</h3>
-        <p class="text-sm text-neutral-500">
-          Decide the fate of this request. Target state:
-          <span class="font-bold text-primary-600">{{ targetState }}</span>
-        </p>
+    <div
+      class="w-full max-w-md bg-white rounded-sm shadow-2xl overflow-hidden flex flex-col border border-[var(--color-neutral-200)]"
+    >
+      <header
+        class="px-8 py-6 bg-white border-b border-[var(--color-neutral-200)] flex items-center gap-4"
+      >
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <ShieldCheck class="h-5 w-5 text-[var(--color-primary-600)]" />
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-[var(--color-neutral-900)]">Review Transition</h3>
+          <p
+            class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)] mt-0.5"
+          >
+            Target State: <span class="text-[var(--color-primary-600)]">{{ targetState }}</span>
+          </p>
+        </div>
       </header>
 
-      <div class="space-y-2">
-        <Label for="comments">Comments (Optional)</Label>
-        <Input
-          id="comments"
-          v-model="comments"
-          placeholder="Reason for your decision..."
-          autocomplete="off"
-        />
+      <div class="px-8 py-6 bg-[var(--color-neutral-50)]/30 space-y-4">
+        <div class="space-y-1.5">
+          <Label
+            class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+            >Decision Rationale</Label
+          >
+          <AppInput
+            v-model="comments"
+            placeholder="Reason for your decision (Optional)..."
+            autocomplete="off"
+          />
+        </div>
       </div>
 
-      <footer class="flex items-center justify-end gap-3 pt-4">
-        <Button variant="outline" @click="emit('close')" :disabled="isPending"> Cancel </Button>
-        <Button variant="destructive" @click="handleAction('REJECT')" :disabled="isPending">
+      <footer
+        class="px-8 py-4 bg-white border-t border-[var(--color-neutral-200)] flex items-center justify-end gap-3"
+      >
+        <AppButton variant="outline" @click="emit('close')" :disabled="isPending">
+          Cancel
+        </AppButton>
+        <AppButton variant="danger" @click="handleAction('REJECT')" :disabled="isPending">
+          <AlertTriangle :size="14" class="mr-2" />
           Reject
-        </Button>
-        <Button variant="default" @click="handleAction('APPROVE')" :disabled="isPending">
+        </AppButton>
+        <AppButton variant="primary" @click="handleAction('APPROVE')" :disabled="isPending">
+          <Check :size="14" class="mr-2" />
           Approve
-        </Button>
+        </AppButton>
       </footer>
     </div>
   </div>

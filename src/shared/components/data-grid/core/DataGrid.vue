@@ -185,9 +185,9 @@ const handleRowClick = (row: Row<TData>) => {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: var(--app-surface);
+  background: #ffffff;
   border: 1px solid var(--color-neutral-200);
-  border-radius: 2px; /* Sharp corners for Dynamics 365 */
+  border-radius: 0; /* Fully sharp corners for authoritative workspace */
   overflow: hidden;
   font-family: var(--font-sans);
 }
@@ -201,8 +201,8 @@ const handleRowClick = (row: Row<TData>) => {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 13px; /* Slightly larger for clarity */
-  line-height: 1.4;
+  font-size: 12px; /* High-density standard */
+  line-height: 1.2;
   color: var(--color-neutral-800);
 }
 
@@ -210,18 +210,21 @@ const handleRowClick = (row: Row<TData>) => {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--color-neutral-50); /* #faf9f8 */
+  background: var(--color-neutral-50);
 }
 
 .grid-header-row {
-  height: 32px; /* High-density but professional height */
+  height: 32px;
 }
 
 .grid-th {
   padding: 0 12px;
   text-align: left;
-  font-weight: 600;
-  color: var(--color-neutral-700);
+  font-size: 11px;
+  font-bold: 800; /* Extra bold for headers */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
   border-bottom: 1px solid var(--color-neutral-200);
   border-right: 1px solid var(--color-neutral-100);
   white-space: nowrap;
@@ -239,16 +242,34 @@ const handleRowClick = (row: Row<TData>) => {
   border-bottom: 1px solid var(--color-neutral-100);
   cursor: pointer;
   background: #ffffff;
-  transition: background 0.1s ease;
+  transition: all 0.05s ease;
+  position: relative;
+}
+
+.grid-row:nth-child(even) {
+  background: var(--color-neutral-50) / 30; /* Subtle zebra striping */
 }
 
 .grid-row:hover {
-  background: var(--color-neutral-100); /* #f3f2f1 */
+  background: var(--color-neutral-100);
 }
 
 .grid-row--selected {
   background: var(--color-primary-50) !important;
-  color: var(--color-primary-800);
+  color: var(--color-primary-900);
+  font-weight: 500;
+}
+
+/* Vertical indicator for selected row */
+.grid-row--selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary-600);
+  z-index: 1;
 }
 
 .grid-row--selected:hover {
@@ -257,7 +278,7 @@ const handleRowClick = (row: Row<TData>) => {
 
 .grid-td {
   padding: 0 12px;
-  border-right: 1px solid transparent; /* Hide internal dividers for cleaner look */
+  border-right: 1px solid transparent;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -274,7 +295,8 @@ const handleRowClick = (row: Row<TData>) => {
   padding: 0 12px;
   border-top: 1px solid var(--color-neutral-200);
   background: var(--color-neutral-50);
-  font-size: 12px;
-  color: var(--color-neutral-600);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-500);
 }
 </style>

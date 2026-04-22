@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { h, ref } from 'vue'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
-import { Badge } from '@/shared/components/badge'
+import { AppButton, AppBadge } from '@/shared/components/primitives'
+import { Shield, ShieldPlus, Lock, Key } from 'lucide-vue-next'
 import { useRoles } from '../../application/composables/useRoles'
 import type { Role } from '../../domain/user.types'
 import CreateRoleDialog from '../components/CreateRoleDialog.vue'
@@ -17,11 +17,9 @@ const roleColumns = [
     accessorKey: 'name',
     header: 'Role Identity',
     cell: ({ row }: { row: { original: Role } }) => {
-      return h('div', { class: 'font-medium' }, [
+      return h('div', { class: 'font-medium flex items-center gap-2' }, [
         row.original.name,
-        row.original.isSystem
-          ? h(Badge, { variant: 'secondary', class: 'ml-2 text-xs' }, () => 'System Protected')
-          : null,
+        row.original.isSystem ? h(AppBadge, { variant: 'info' }, () => 'System') : null,
       ])
     },
   },
@@ -39,19 +37,21 @@ const roleColumns = [
       const remainder = perms.length - 3
 
       const chips = display.map((p: string) =>
-        h(Badge, { variant: 'outline', class: 'mr-1 mb-1 font-mono text-[10px]' }, () => p),
+        h(AppBadge, { variant: 'neutral' }, () => p.toLowerCase()),
       )
 
       if (remainder > 0) {
-        chips.push(
-          h(Badge, { variant: 'default', class: 'text-[10px]' }, () => `+${remainder} more`),
-        )
+        chips.push(h(AppBadge, { variant: 'neutral' }, () => `+${remainder} more`))
       }
 
       if (chips.length === 0)
-        return h('span', { class: 'text-muted-foreground' }, 'No Boundaries Defined')
+        return h(
+          'span',
+          { class: 'text-[var(--color-neutral-400)] italic text-xs' },
+          'No Boundaries Defined',
+        )
 
-      return h('div', { class: 'flex flex-wrap' }, chips)
+      return h('div', { class: 'flex flex-wrap gap-1' }, chips)
     },
   },
 ]
@@ -63,29 +63,51 @@ function handleRowClick(role: Role) {
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">Identity Roles</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          Manage system boundaries and custom multi-tenant permission matrices.
-        </p>
-      </div>
-      <Button @click="isCreateOpen = true"> Define Boundary </Button>
-    </header>
-
-    <DataGrid
-      :data="roles || []"
-      :columns="roleColumns"
-      :loading="isRolesPending"
-      :state="gridState"
-      empty-message="No custom roles defined. Create functional boundaries to segregate access."
-      @row-click="handleRowClick"
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
+    <div
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
     >
-      <template #empty-action>
-        <Button class="mt-4" @click="isCreateOpen = true">Define Identity Boundary</Button>
-      </template>
-    </DataGrid>
+      <div class="flex items-center gap-4">
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <Shield class="h-6 w-6 text-[var(--color-primary-600)]" />
+        </div>
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Identity Roles
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Manage system boundaries and custom multi-tenant permission matrices.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <AppButton variant="primary" @click="isCreateOpen = true">
+          <ShieldPlus :size="14" class="mr-2" />
+          Define Boundary
+        </AppButton>
+      </div>
+    </div>
+
+    <!-- DataGrid Orchestration -->
+    <div class="min-h-0 flex-1 p-8">
+      <DataGrid
+        :data="roles || []"
+        :columns="roleColumns"
+        :loading="isRolesPending"
+        :state="gridState"
+        empty-message="No custom roles defined. Create functional boundaries to segregate access."
+        @row-click="handleRowClick"
+      >
+        <template #empty-action>
+          <AppButton class="mt-4" @click="isCreateOpen = true">
+            <ShieldPlus :size="14" class="mr-2" />
+            Define Identity Boundary
+          </AppButton>
+        </template>
+      </DataGrid>
+    </div>
 
     <CreateRoleDialog v-model:open="isCreateOpen" />
   </div>

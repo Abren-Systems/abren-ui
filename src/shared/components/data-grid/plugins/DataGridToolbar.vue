@@ -75,7 +75,7 @@ function clear() {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 48px; /* Slightly taller for Dynamics 365 style */
+  height: 40px; /* Higher density height */
   padding: 0 12px;
   background: #ffffff;
   border-bottom: 1px solid var(--color-neutral-200);
@@ -83,11 +83,11 @@ function clear() {
 }
 
 .search-wrap {
-  width: 280px;
+  width: 240px;
 }
 
 .search-icon {
-  color: var(--color-neutral-600);
+  color: var(--color-neutral-400);
   margin-left: 4px;
 }
 
@@ -96,25 +96,26 @@ function clear() {
   align-items: center;
   justify-content: center;
   padding: 4px;
-  color: var(--color-neutral-600);
+  color: var(--color-neutral-400);
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.1s ease;
 }
 
 .clear-btn:hover {
-  color: var(--color-neutral-900);
-  background: var(--color-neutral-100);
-  border-radius: 2px;
+  color: var(--color-danger-600);
 }
 
 .selection-badge {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  font-bold: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--color-primary-700);
   background: var(--color-primary-50);
-  padding: 2px 10px;
-  border-radius: 2px;
+  padding: 2px 8px;
+  border-radius: 1px;
   border: 1px solid var(--color-primary-100);
 }
 
@@ -122,6 +123,6 @@ function clear() {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 </style>

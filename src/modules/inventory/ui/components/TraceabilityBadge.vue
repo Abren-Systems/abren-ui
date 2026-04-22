@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Badge } from '@/shared/components/badge'
+import { AppBadge } from '@/shared/components/primitives'
+import { ShieldAlert, CheckCircle, PackageSearch } from 'lucide-vue-next'
 
 const props = defineProps<{
   isQuarantine?: boolean
@@ -16,34 +17,25 @@ const statusText = computed(() => {
 })
 
 const variant = computed(() => {
-  if (props.isQuarantine) return 'destructive'
-  if (props.isAvailable === false) return 'secondary'
-  if (props.trackingMode === 'BATCH') return 'default'
-  if (props.trackingMode === 'SERIAL') return 'outline'
-  return 'default' // Need to ensure fallback matches expected types in our shadcn badge
+  if (props.isQuarantine) return 'danger'
+  if (props.isAvailable === false) return 'neutral'
+  if (props.trackingMode === 'BATCH') return 'info'
+  if (props.trackingMode === 'SERIAL') return 'primary'
+  return 'success'
 })
 </script>
 
 <template>
-  <Badge :variant="variant" class="font-semibold shadow-sm">
+  <AppBadge :variant="variant">
     <template v-if="props.isQuarantine">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-shield-alert inline-block mr-1 w-3 h-3"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-        <path d="M12 8v4" />
-        <path d="M12 16h.01" />
-      </svg>
+      <ShieldAlert :size="10" class="mr-1" />
+    </template>
+    <template v-else-if="props.isAvailable === false">
+      <PackageSearch :size="10" class="mr-1" />
+    </template>
+    <template v-else>
+      <CheckCircle :size="10" class="mr-1" />
     </template>
     {{ statusText }}
-  </Badge>
+  </AppBadge>
 </template>

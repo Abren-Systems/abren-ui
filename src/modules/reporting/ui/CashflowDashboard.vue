@@ -3,7 +3,16 @@ import { computed } from 'vue'
 import { useCashflow } from '../application/composables/useCashflow'
 import { BusinessDate } from '@/shared/domain/business-date'
 import ReportingChart from './ReportingChart.vue'
-import { TrendingUp, TrendingDown, Clock, Wallet, LayoutDashboard } from 'lucide-vue-next'
+import { AppButton } from '@/shared/components/primitives'
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Wallet,
+  LayoutDashboard,
+  FileDown,
+  Calendar,
+} from 'lucide-vue-next'
 
 // Date Range (Last 30 days)
 const endDate = BusinessDate.today()
@@ -18,184 +27,192 @@ const displayStats = computed(() => [
     name: 'Total Actual Inflow',
     value: cashflowStats.value?.totalActualInflow.format() ?? '...',
     icon: TrendingUp,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
+    color: 'text-[var(--color-success-600)]',
+    bg: 'bg-[var(--color-success-50)]',
   },
   {
     name: 'Total Actual Outflow',
     value: cashflowStats.value?.totalActualOutflow.format() ?? '...',
     icon: TrendingDown,
-    color: 'text-rose-600',
-    bg: 'bg-rose-50',
+    color: 'text-[var(--color-danger-600)]',
+    bg: 'bg-[var(--color-danger-50)]',
   },
   {
     name: 'Projected Exposure',
     value: cashflowStats.value?.projectedExposure.format() ?? '...',
     icon: Clock,
-    color: 'text-amber-600',
-    bg: 'bg-amber-50',
+    color: 'text-[var(--color-warning-600)]',
+    bg: 'bg-[var(--color-warning-50)]',
   },
   {
     name: 'Net Cash Position',
     value: cashflowStats.value?.netCashPosition.format() ?? '...',
     icon: Wallet,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
+    color: 'text-[var(--color-primary-600)]',
+    bg: 'bg-[var(--color-primary-50)]',
   },
 ])
 </script>
 
 <template>
-  <div
-    class="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700"
-  >
-    <!-- Header -->
-    <header
-      class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100"
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
+    <div
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
     >
-      <div>
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-          <LayoutDashboard class="w-8 h-8 text-blue-600" />
-          Financial Insights
-        </h1>
-        <p class="text-slate-500 mt-2 text-lg">Real-time dual-layer cashflow reporting.</p>
-      </div>
-
-      <div
-        class="flex items-center gap-3 p-1 rounded-xl bg-slate-100/50 border border-slate-200 shadow-inner"
-      >
-        <button
-          class="px-6 py-2 rounded-lg bg-white text-slate-800 font-semibold shadow-sm transition-all hover:bg-white/80 active:scale-95"
-        >
-          Daily
-        </button>
-        <button
-          class="px-6 py-2 rounded-lg text-slate-500 font-medium transition-all hover:bg-slate-200"
-        >
-          Weekly
-        </button>
-        <button
-          class="px-6 py-2 rounded-lg text-slate-500 font-medium transition-all hover:bg-slate-200"
-        >
-          Monthly
-        </button>
-      </div>
-    </header>
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div
-        v-for="stat in displayStats"
-        :key="stat.name"
-        class="group relative p-6 rounded-2xl bg-white border border-slate-200 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden"
-      >
-        <div class="flex items-center gap-5">
-          <div
-            :class="[
-              stat.bg,
-              'p-4 rounded-xl transition-colors group-hover:bg-opacity-80 shadow-inner',
-            ]"
-          >
-            <component :is="stat.icon" :class="[stat.color, 'w-8 h-8']" />
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-              {{ stat.name }}
-            </p>
-            <p class="text-2xl font-black text-slate-900 mt-1 tracking-tighter">
-              {{ stat.value }}
-            </p>
-          </div>
+      <div class="flex items-center gap-4">
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <LayoutDashboard class="h-6 w-6 text-[var(--color-primary-600)]" />
         </div>
-        <!-- Decorative background element -->
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Financial Insights
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Real-time dual-layer cashflow reporting engine.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="flex items-center gap-2 bg-[var(--color-neutral-50)] p-1 rounded-sm border border-[var(--color-neutral-200)]"
+      >
+        <AppButton variant="stealth" size="sm" class="bg-white shadow-sm font-bold"
+          >Daily</AppButton
+        >
+        <AppButton variant="stealth" size="sm">Weekly</AppButton>
+        <AppButton variant="stealth" size="sm">Monthly</AppButton>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8 space-y-8">
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
-          class="absolute -right-4 -bottom-4 opacity-10 blur-xl transition-all group-hover:scale-125"
+          v-for="stat in displayStats"
+          :key="stat.name"
+          class="p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
         >
-          <component :is="stat.icon" class="w-24 h-24" />
+          <div class="flex items-center gap-4">
+            <div :class="[stat.bg, 'p-3 rounded-sm']">
+              <component :is="stat.icon" :class="[stat.color, 'w-5 h-5']" />
+            </div>
+            <div>
+              <p
+                class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+              >
+                {{ stat.name }}
+              </p>
+              <p class="text-2xl font-bold text-[var(--color-neutral-900)] mt-0.5 tabular-nums">
+                {{ stat.value }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-      <ReportingChart
-        title="Cash Inflow: Actual vs Committed"
-        :data="
-          (entries ?? []).map((d) => ({
-            date: d.date,
-            actual: d.actualInflow.amount,
-            projected: d.projectedInflow.amount,
-          }))
-        "
-      />
-      <ReportingChart
-        title="Cash Outflow: Actual vs Committed"
-        :data="
-          (entries ?? []).map((d) => ({
-            date: d.date,
-            actual: d.actualOutflow.amount,
-            projected: d.projectedOutflow.amount,
-          }))
-        "
-      />
-    </div>
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-6 shadow-sm">
+          <ReportingChart
+            title="Inflow: Actual vs Committed"
+            :data="
+              (entries ?? []).map((d) => ({
+                date: d.date,
+                actual: d.actualInflow.amount,
+                projected: d.projectedInflow.amount,
+              }))
+            "
+          />
+        </div>
+        <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-6 shadow-sm">
+          <ReportingChart
+            title="Outflow: Actual vs Committed"
+            :data="
+              (entries ?? []).map((d) => ({
+                date: d.date,
+                actual: d.actualOutflow.amount,
+                projected: d.projectedOutflow.amount,
+              }))
+            "
+          />
+        </div>
+      </div>
 
-    <!-- Detailed Table Section -->
-    <section class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
-      <div
-        class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between"
+      <!-- Detailed Table Section -->
+      <section
+        class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm overflow-hidden flex flex-col"
       >
-        <h2 class="text-xl font-bold text-slate-800">Transactional History</h2>
-        <button
-          class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors px-4 py-2 hover:bg-blue-50 rounded-lg"
+        <div
+          class="px-8 py-4 border-b border-[var(--color-neutral-100)] bg-[var(--color-neutral-50)] flex items-center justify-between"
         >
-          Export Report
-        </button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr
-              class="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-widest border-b border-slate-100"
-            >
-              <th class="px-8 py-4">Date</th>
-              <th class="px-8 py-4">Actual Inflow</th>
-              <th class="px-8 py-4">Actual Outflow</th>
-              <th class="px-8 py-4">Projected Outflow</th>
-              <th class="px-8 py-4 text-right">Net Liquidity</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr
-              v-for="row in entries ?? []"
-              :key="row.date"
-              class="hover:bg-blue-50/30 transition-colors"
-            >
-              <td class="px-8 py-5 text-sm font-medium text-slate-700">
-                {{ BusinessDate.format(row.date) }}
-              </td>
-              <td class="px-8 py-5 text-sm font-semibold text-emerald-600">
-                + {{ row.actualInflow.format() }}
-              </td>
-              <td class="px-8 py-5 text-sm font-semibold text-rose-600">
-                - {{ row.actualOutflow.format() }}
-              </td>
-              <td class="px-8 py-5 text-sm font-semibold text-amber-500">
-                {{ row.projectedOutflow.format() }}
-              </td>
-              <td class="px-8 py-5 text-sm font-black text-slate-900 text-right">
-                {{ row.netCashflow.format() }}
-              </td>
-            </tr>
-            <tr v-if="!entries || entries.length === 0" class="text-center py-20 text-slate-400">
-              <td colspan="5" class="py-20 italic">
-                No transactional data available for the selected period.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+          <h2
+            class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)] flex items-center gap-2"
+          >
+            <Calendar :size="14" />
+            Transactional Timeline
+          </h2>
+          <AppButton variant="outline" size="sm">
+            <FileDown :size="14" class="mr-2" />
+            Export Report
+          </AppButton>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr
+                class="bg-[var(--color-neutral-50)] text-[var(--color-neutral-400)] text-[10px] font-bold uppercase tracking-widest border-b border-[var(--color-neutral-100)]"
+              >
+                <th class="px-8 py-3">Reporting Date</th>
+                <th class="px-8 py-3">Actual Inflow</th>
+                <th class="px-8 py-3">Actual Outflow</th>
+                <th class="px-8 py-3">Projected Outflow</th>
+                <th class="px-8 py-3 text-right">Net Liquidity</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--color-neutral-100)]">
+              <tr
+                v-for="row in entries ?? []"
+                :key="row.date"
+                class="hover:bg-[var(--color-primary-50)]/30 transition-colors group"
+              >
+                <td class="px-8 py-3.5 text-xs font-medium text-[var(--color-neutral-700)]">
+                  {{ BusinessDate.format(row.date) }}
+                </td>
+                <td
+                  class="px-8 py-3.5 text-xs font-bold text-[var(--color-success-600)] tabular-nums"
+                >
+                  + {{ row.actualInflow.format() }}
+                </td>
+                <td
+                  class="px-8 py-3.5 text-xs font-bold text-[var(--color-danger-600)] tabular-nums"
+                >
+                  - {{ row.actualOutflow.format() }}
+                </td>
+                <td
+                  class="px-8 py-3.5 text-xs font-bold text-[var(--color-warning-500)] tabular-nums"
+                >
+                  {{ row.projectedOutflow.format() }}
+                </td>
+                <td
+                  class="px-8 py-3.5 text-sm font-bold text-[var(--color-neutral-900)] text-right tabular-nums"
+                >
+                  {{ row.netCashflow.format() }}
+                </td>
+              </tr>
+              <tr
+                v-if="!entries || entries.length === 0"
+                class="text-center py-12 text-[var(--color-neutral-400)]"
+              >
+                <td colspan="5" class="py-12 italic text-xs">
+                  No transactional data available for the selected period.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 

@@ -6,7 +6,18 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/shared/components/sheet'
-import { Badge } from '@/shared/components/badge'
+import { AppBadge } from '@/shared/components/primitives'
+import {
+  History,
+  Search,
+  FileText,
+  Globe,
+  Clock,
+  User,
+  ShieldCheck,
+  Banknote,
+  CreditCard,
+} from 'lucide-vue-next'
 import type { PaymentRequest } from '../../../domain/ap.types'
 
 /**
@@ -28,100 +39,135 @@ const emit = defineEmits<{
 
 <template>
   <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent class="sm:max-w-[480px] overflow-y-auto">
-      <SheetHeader>
-        <SheetTitle>Trace: Payment Request</SheetTitle>
-        <SheetDescription>
-          Workflow history and financial impact of this request.
-        </SheetDescription>
+    <SheetContent class="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl flex flex-col">
+      <SheetHeader class="px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]">
+        <div class="flex items-center gap-4">
+          <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+            <History class="h-5 w-5 text-[var(--color-primary-600)]" />
+          </div>
+          <div>
+            <SheetTitle class="text-lg font-bold text-[var(--color-neutral-900)]"
+              >Trace: Payment Request</SheetTitle
+            >
+            <SheetDescription class="text-xs text-[var(--color-neutral-500)]">
+              Workflow history and financial impact of this request.
+            </SheetDescription>
+          </div>
+        </div>
       </SheetHeader>
 
-      <div class="space-y-6 py-6">
+      <div class="flex-1 overflow-y-auto px-8 py-6 space-y-8 bg-[var(--color-neutral-50)]/30">
         <!-- Workflow Timeline -->
         <section>
-          <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          <h3
+            class="mb-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)] flex items-center gap-2"
+          >
+            <Clock :size="12" />
             Workflow History
           </h3>
           <div class="space-y-3">
-            <div class="flex items-start gap-3 rounded-md border p-3">
-              <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-neutral-400" />
+            <div
+              class="flex items-start gap-4 p-4 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
+            >
+              <div class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-neutral-400)]" />
               <div class="flex-1">
-                <p class="text-sm font-medium">Created</p>
-                <p class="text-xs text-neutral-500">Requested by {{ request.requesterId }}</p>
+                <p class="text-xs font-bold text-[var(--color-neutral-900)]">Created</p>
+                <p class="text-[10px] text-[var(--color-neutral-500)] mt-0.5">
+                  Requested by {{ request.requesterId }}
+                </p>
               </div>
-              <Badge variant="outline" class="text-xs">DRAFT</Badge>
+              <AppBadge variant="neutral">DRAFT</AppBadge>
             </div>
 
             <div
               v-if="['SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'].includes(request.status)"
-              class="flex items-start gap-3 rounded-md border p-3"
+              class="flex items-start gap-4 p-4 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
             >
-              <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-blue-400" />
+              <div class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-primary-400)]" />
               <div class="flex-1">
-                <p class="text-sm font-medium">Submitted for Approval</p>
-                <p class="text-xs text-neutral-500">
+                <p class="text-xs font-bold text-[var(--color-neutral-900)]">
+                  Submitted for Approval
+                </p>
+                <p class="text-[10px] text-[var(--color-neutral-500)] mt-0.5">
                   {{ request.submittedAt ?? 'Date unavailable' }}
                 </p>
               </div>
-              <Badge variant="secondary" class="text-xs">SUBMITTED</Badge>
+              <AppBadge variant="primary">SUBMITTED</AppBadge>
             </div>
 
             <div
               v-if="request.status === 'APPROVED' || request.status === 'PAID'"
-              class="flex items-start gap-3 rounded-md border p-3"
+              class="flex items-start gap-4 p-4 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
             >
-              <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-green-500" />
+              <div class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-success-500)]" />
               <div class="flex-1">
-                <p class="text-sm font-medium">Approved</p>
-                <p class="text-xs text-neutral-500">
+                <p class="text-xs font-bold text-[var(--color-neutral-900)]">Approved</p>
+                <p class="text-[10px] text-[var(--color-neutral-500)] mt-0.5">
                   Approved by {{ request.assignedApproverId ?? 'approver' }}
                 </p>
               </div>
-              <Badge variant="default" class="text-xs">APPROVED</Badge>
+              <AppBadge variant="success">APPROVED</AppBadge>
             </div>
 
             <div
               v-if="request.status === 'REJECTED'"
-              class="flex items-start gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3"
+              class="flex items-start gap-4 p-4 bg-[var(--color-danger-50)]/30 rounded-sm border border-[var(--color-danger-200)] shadow-sm"
             >
-              <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+              <div class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-danger-500)]" />
               <div class="flex-1">
-                <p class="text-sm font-medium text-destructive">Rejected</p>
+                <p class="text-xs font-bold text-[var(--color-danger-700)]">Rejected</p>
               </div>
-              <Badge variant="destructive" class="text-xs">REJECTED</Badge>
+              <AppBadge variant="danger">REJECTED</AppBadge>
             </div>
 
             <div
               v-if="request.status === 'PAID'"
-              class="flex items-start gap-3 rounded-md border p-3"
+              class="flex items-start gap-4 p-4 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
             >
-              <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+              <div class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-success-600)]" />
               <div class="flex-1">
-                <p class="text-sm font-medium">Payment Recorded</p>
-                <p class="text-xs text-neutral-500">
+                <p class="text-xs font-bold text-[var(--color-neutral-900)]">Payment Recorded</p>
+                <p class="text-[10px] text-[var(--color-neutral-500)] mt-0.5">
                   {{ request.paidAt ?? 'Date unavailable' }}
                 </p>
               </div>
-              <Badge variant="default" class="text-xs">PAID</Badge>
+              <AppBadge variant="success">PAID</AppBadge>
             </div>
           </div>
         </section>
 
         <!-- GL Journal Impact -->
         <section v-if="request.targetLiabilityAccountId">
-          <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            GL Impact
+          <h3
+            class="mb-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)] flex items-center gap-2"
+          >
+            <Banknote :size="12" />
+            Financial Impact (GL)
           </h3>
-          <div class="rounded-lg border p-3 text-sm space-y-2">
-            <div class="flex justify-between">
-              <span class="text-neutral-500">Liability Account</span>
-              <code class="text-xs font-mono">
+          <div
+            class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm overflow-hidden"
+          >
+            <div
+              class="px-4 py-3 flex justify-between items-center border-b border-[var(--color-neutral-100)]"
+            >
+              <span
+                class="text-[10px] font-bold text-[var(--color-neutral-500)] uppercase tracking-wider"
+                >Liability Account</span
+              >
+              <code
+                class="text-[10px] font-bold text-[var(--color-primary-600)] bg-[var(--color-primary-50)] px-1.5 py-0.5 rounded-sm"
+              >
                 {{ request.targetLiabilityAccountId.slice(0, 8) }}…
               </code>
             </div>
-            <div class="flex justify-between">
-              <span class="text-neutral-500">Bank Account</span>
-              <code class="text-xs font-mono">
+            <div class="px-4 py-3 flex justify-between items-center">
+              <span
+                class="text-[10px] font-bold text-[var(--color-neutral-500)] uppercase tracking-wider"
+                >Disbursement Account</span
+              >
+              <code
+                class="text-[10px] font-bold text-[var(--color-neutral-600)] bg-[var(--color-neutral-50)] px-1.5 py-0.5 rounded-sm"
+              >
                 {{ request.bankAccountId?.slice(0, 8) ?? '—' }}
               </code>
             </div>
@@ -130,17 +176,35 @@ const emit = defineEmits<{
 
         <!-- Source Document -->
         <section v-if="request.sourceModule">
-          <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          <h3
+            class="mb-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)] flex items-center gap-2"
+          >
+            <FileText :size="12" />
             Source Document
           </h3>
-          <div class="rounded-lg border p-3 text-sm space-y-1">
-            <div class="flex justify-between">
-              <span class="text-neutral-500">Module</span>
-              <span class="font-medium">{{ request.sourceModule }}</span>
+          <div
+            class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm overflow-hidden"
+          >
+            <div
+              class="px-4 py-3 flex justify-between items-center border-b border-[var(--color-neutral-100)]"
+            >
+              <span
+                class="text-[10px] font-bold text-[var(--color-neutral-500)] uppercase tracking-wider"
+                >Originating Module</span
+              >
+              <span class="text-xs font-bold text-[var(--color-neutral-900)]">{{
+                request.sourceModule
+              }}</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-neutral-500">Document ID</span>
-              <code class="text-xs font-mono">{{ request.sourceId ?? '—' }}</code>
+            <div class="px-4 py-3 flex justify-between items-center">
+              <span
+                class="text-[10px] font-bold text-[var(--color-neutral-500)] uppercase tracking-wider"
+                >Internal Reference</span
+              >
+              <code
+                class="text-[10px] font-bold text-[var(--color-neutral-600)] bg-[var(--color-neutral-50)] px-1.5 py-0.5 rounded-sm"
+                >{{ request.sourceId ?? '—' }}</code
+              >
             </div>
           </div>
         </section>

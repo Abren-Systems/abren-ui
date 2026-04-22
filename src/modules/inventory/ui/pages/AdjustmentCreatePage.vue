@@ -2,16 +2,8 @@
 import { useRouter } from 'vue-router'
 import { useForm } from '@tanstack/vue-form'
 import { z } from 'zod'
-import { Button } from '@/shared/components/button'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select'
+import { AppButton, AppSelect, AppInput } from '@/shared/components/primitives'
+import { ClipboardEdit, Plus, Trash2, ArrowLeft } from 'lucide-vue-next'
 import { useInventoryAdjustment } from '../../application/composables/useInventoryAdjustment'
 import { useWarehouses } from '../../application/composables/useWarehouses'
 import type { AdjustmentCreateDTO } from '../../infrastructure/api.types'
@@ -75,164 +67,178 @@ function removeLine(index: number) {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-6 space-y-8">
-    <header>
-      <h1 class="text-2xl font-bold tracking-tight">Post Inventory Adjustment</h1>
-      <p class="text-sm text-muted-foreground mt-1">
-        Record manual inventory corrections. Note: Positive adjustments without an PO use manual
-        valuation. Negative adjustments use WAC.
-      </p>
-    </header>
-
-    <form @submit.prevent="form.handleSubmit" class="space-y-6">
-      <!-- General Info -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-card rounded-lg border shadow-sm">
-        <form.Field name="warehouse_id">
-          <template #default="{ field, state }">
-            <div class="space-y-2">
-              <Label :class="{ 'text-destructive': state.meta.errors.length }">Warehouse</Label>
-              <Select :model-value="field.state.value" @update:model-value="field.handleChange">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Warehouse" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="wh in warehouses" :key="wh.id" :value="wh.id">
-                    {{ wh.name }} ({{ wh.code }})
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p v-if="state.meta.errors.length" class="text-sm text-destructive">
-                {{ state.meta.errors[0] }}
-              </p>
-            </div>
-          </template>
-        </form.Field>
-
-        <form.Field name="reason">
-          <template #default="{ field, state }">
-            <div class="space-y-2">
-              <Label :class="{ 'text-destructive': state.meta.errors.length }"
-                >Reason for Adjustment</Label
-              >
-              <Input
-                :model-value="field.state.value"
-                @input="(e: Event) => field.handleChange((e.target as HTMLInputElement).value)"
-                placeholder="e.g. Cycle count shrinkage"
-              />
-              <p v-if="state.meta.errors.length" class="text-sm text-destructive">
-                {{ state.meta.errors[0] }}
-              </p>
-            </div>
-          </template>
-        </form.Field>
-      </div>
-
-      <!-- Line Items Section (Simplified for Demo) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">Adjustment Lines</h2>
-          <Button type="button" variant="outline" size="sm" @click="addLine">Add Line</Button>
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
+    <div
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+    >
+      <div class="flex items-center gap-4">
+        <AppButton variant="stealth" @click="router.back()">
+          <ArrowLeft :size="18" />
+        </AppButton>
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <ClipboardEdit class="h-6 w-6 text-[var(--color-primary-600)]" />
         </div>
-
-        <form.Field name="lines">
-          <template #default="{ field }">
-            <div class="space-y-4">
-              <div
-                v-for="(line, index) in field.state.value"
-                :key="index"
-                class="grid grid-cols-12 gap-4 items-end p-4 border rounded-md"
-              >
-                <!-- Assuming the UI renders a dropdown of available stock items here based on the selected warehouse -->
-                <div class="col-span-12 md:col-span-5 space-y-2">
-                  <Label>Stock Item ID (Simulation)</Label>
-                  <Input
-                    :value="line.stock_item_id"
-                    @input="
-                      (e: Event) =>
-                        form.setFieldValue(
-                          `lines[${index}].stock_item_id`,
-                          (e.target as HTMLInputElement).value,
-                        )
-                    "
-                    placeholder="UUID..."
-                  />
-                </div>
-
-                <div class="col-span-6 md:col-span-2 space-y-2">
-                  <Label>Quantity Delta</Label>
-                  <Input
-                    type="number"
-                    :value="line.quantity_delta"
-                    @input="
-                      (e: Event) =>
-                        form.setFieldValue(
-                          `lines[${index}].quantity_delta`,
-                          parseFloat((e.target as HTMLInputElement).value),
-                        )
-                    "
-                  />
-                </div>
-
-                <div class="col-span-6 md:col-span-3 space-y-2">
-                  <Label>Valuation</Label>
-                  <Select
-                    :model-value="line.valuation_strategy"
-                    @update:model-value="
-                      (val) =>
-                        form.setFieldValue(
-                          `lines[${index}].valuation_strategy`,
-                          val as 'AUTO' | 'MANUAL',
-                        )
-                    "
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AUTO">WAC Auto</SelectItem>
-                      <SelectItem value="MANUAL">Manual Override</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div class="col-span-12 md:col-span-2 text-right">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    @click="removeLine(index)"
-                    :disabled="field.state.value.length === 1"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="lucide lucide-trash-2 w-4 h-4 text-destructive"
-                    >
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                      <line x1="10" x2="10" y1="11" y2="17" />
-                      <line x1="14" x2="14" y1="11" y2="17" />
-                    </svg>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </template>
-        </form.Field>
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Post Inventory Adjustment
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Record manual inventory corrections and valuation overrides.
+          </p>
+        </div>
       </div>
 
-      <div class="flex justify-end gap-4 pt-6 mt-6 border-t">
-        <Button type="button" variant="outline" @click="router.back()">Cancel</Button>
-        <Button type="submit" :disabled="isSubmitting">
+      <div class="flex items-center gap-2">
+        <AppButton variant="outline" @click="router.back()">Cancel</AppButton>
+        <AppButton variant="primary" @click="form.handleSubmit" :disabled="isSubmitting">
           {{ isSubmitting ? 'Posting...' : 'Post Adjustment' }}
-        </Button>
+        </AppButton>
       </div>
-    </form>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8">
+      <div class="max-w-4xl mx-auto">
+        <form @submit.prevent="form.handleSubmit" class="space-y-6">
+          <!-- General Info -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
+          >
+            <form.Field name="warehouse_id">
+              <template #default="{ field, state }">
+                <div class="space-y-1.5">
+                  <Label
+                    class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+                    >Warehouse</Label
+                  >
+                  <AppSelect
+                    :model-value="field.state.value"
+                    @update:model-value="field.handleChange"
+                    :options="
+                      warehouses?.map((wh) => ({
+                        label: `${wh.name} (${wh.code})`,
+                        value: wh.id,
+                      })) ?? []
+                    "
+                    placeholder="Select Warehouse"
+                  />
+                  <p v-if="state.meta.errors.length" class="text-xs text-[var(--color-danger-600)]">
+                    {{ state.meta.errors[0] }}
+                  </p>
+                </div>
+              </template>
+            </form.Field>
+
+            <form.Field name="reason">
+              <template #default="{ field, state }">
+                <div class="space-y-1.5">
+                  <Label
+                    class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+                    >Reason for Adjustment</Label
+                  >
+                  <AppInput
+                    :model-value="field.state.value"
+                    @update:model-value="field.handleChange"
+                    placeholder="e.g. Cycle count shrinkage"
+                  />
+                  <p v-if="state.meta.errors.length" class="text-xs text-[var(--color-danger-600)]">
+                    {{ state.meta.errors[0] }}
+                  </p>
+                </div>
+              </template>
+            </form.Field>
+          </div>
+
+          <!-- Line Items Section -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h2
+                class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)]"
+              >
+                Adjustment Lines
+              </h2>
+              <AppButton type="button" variant="outline" @click="addLine">
+                <Plus :size="14" class="mr-2" />
+                Add Line
+              </AppButton>
+            </div>
+
+            <form.Field name="lines">
+              <template #default="{ field }">
+                <div class="space-y-4">
+                  <div
+                    v-for="(line, index) in field.state.value"
+                    :key="index"
+                    class="grid grid-cols-12 gap-4 items-end p-5 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
+                  >
+                    <!-- Assuming the UI renders a dropdown of available stock items here based on the selected warehouse -->
+                    <div class="col-span-12 md:col-span-5 space-y-1.5">
+                      <Label
+                        class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+                        >Stock Item ID</Label
+                      >
+                      <AppInput
+                        :model-value="line.stock_item_id"
+                        @update:model-value="
+                          (val) => form.setFieldValue(`lines[${index}].stock_item_id`, val)
+                        "
+                        placeholder="UUID..."
+                      />
+                    </div>
+
+                    <div class="col-span-6 md:col-span-2 space-y-1.5">
+                      <Label
+                        class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+                        >Delta</Label
+                      >
+                      <AppInput
+                        type="number"
+                        :model-value="line.quantity_delta"
+                        @update:model-value="
+                          (val) =>
+                            form.setFieldValue(`lines[${index}].quantity_delta`, parseFloat(val))
+                        "
+                      />
+                    </div>
+
+                    <div class="col-span-6 md:col-span-3 space-y-1.5">
+                      <Label
+                        class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+                        >Valuation</Label
+                      >
+                      <AppSelect
+                        :model-value="line.valuation_strategy"
+                        @update:model-value="
+                          (val) =>
+                            form.setFieldValue(
+                              `lines[${index}].valuation_strategy`,
+                              val as 'AUTO' | 'MANUAL',
+                            )
+                        "
+                        :options="[
+                          { label: 'WAC Auto', value: 'AUTO' },
+                          { label: 'Manual Override', value: 'MANUAL' },
+                        ]"
+                      />
+                    </div>
+
+                    <div class="col-span-12 md:col-span-2 text-right">
+                      <AppButton
+                        type="button"
+                        variant="stealth"
+                        @click="removeLine(index)"
+                        :disabled="field.state.value.length === 1"
+                      >
+                        <Trash2 :size="16" class="text-[var(--color-danger-600)]" />
+                      </AppButton>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </form.Field>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>

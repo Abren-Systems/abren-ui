@@ -2,14 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select'
+import { AppButton, AppSelect } from '@/shared/components/primitives'
+import { Package, MapPin, Plus, ListFilter } from 'lucide-vue-next'
 import { useStockPositions } from '../../application/composables/useStockPositions'
 import { useWarehouses } from '../../application/composables/useWarehouses'
 import TraceabilityBadge from '../components/TraceabilityBadge.vue'
@@ -65,51 +59,69 @@ function handleRowClick(stock: StockItem) {
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <header class="flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">Physical Stock Position</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          Monitor your exact inventory valuations and batch locations.
-        </p>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <!-- Warehouse Filter -->
-        <Select v-model="selectedWarehouseId">
-          <SelectTrigger class="w-[250px]">
-            <SelectValue placeholder="Select a location..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="wh in warehouses" :key="wh.id" :value="wh.id">
-              {{ wh.name }} ({{ wh.code }})
-              <span v-if="wh.isQuarantine" class="text-red-500 ml-2">⚠️</span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Button @click="router.push({ name: 'inventory.adjustment-create' })" variant="secondary">
-          Post Adjustment
-        </Button>
-      </div>
-    </header>
-
-    <!-- Graceful state when no warehouse is selected -->
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
     <div
-      v-if="!selectedWarehouseId"
-      class="py-12 text-center text-muted-foreground border border-dashed rounded-lg"
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
     >
-      Please select a warehouse location to view its stock positions.
+      <div class="flex items-center gap-4">
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <Package class="h-6 w-6 text-[var(--color-primary-600)]" />
+        </div>
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Physical Stock Position
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Monitor your exact inventory valuations and batch locations.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Warehouse Filter -->
+        <div
+          class="flex items-center gap-2 bg-[var(--color-neutral-50)] px-3 py-1.5 rounded-sm border border-[var(--color-neutral-200)]"
+        >
+          <MapPin :size="14" class="text-[var(--color-neutral-400)]" />
+          <AppSelect
+            v-model="selectedWarehouseId"
+            class="min-w-[200px]"
+            :options="
+              warehouses?.map((wh) => ({ label: `${wh.name} (${wh.code})`, value: wh.id })) ?? []
+            "
+            placeholder="Select Location"
+          />
+        </div>
+
+        <AppButton variant="primary" @click="router.push({ name: 'inventory.adjustment-create' })">
+          <Plus :size="14" class="mr-2" />
+          Post Adjustment
+        </AppButton>
+      </div>
     </div>
 
-    <!-- Data Grid -->
-    <DataGrid
-      v-else
-      :data="stockItems || []"
-      :columns="stockColumns"
-      :loading="isPending"
-      :state="gridState"
-      @row-click="handleRowClick"
-    />
+    <!-- DataGrid Orchestration -->
+    <div class="min-h-0 flex-1 p-8">
+      <!-- Graceful state when no warehouse is selected -->
+      <div
+        v-if="!selectedWarehouseId"
+        class="h-full flex flex-col items-center justify-center text-[var(--color-neutral-500)] bg-white border border-[var(--color-neutral-200)] rounded-sm"
+      >
+        <ListFilter :size="48" class="mb-4 opacity-10" />
+        <p class="text-sm font-medium">Select a warehouse location to view current stock.</p>
+        <p class="text-xs mt-1 opacity-60">Use the location filter in the header to proceed.</p>
+      </div>
+
+      <!-- Data Grid -->
+      <DataGrid
+        v-else
+        :data="stockItems || []"
+        :columns="stockColumns"
+        :loading="isPending"
+        :state="gridState"
+        @row-click="handleRowClick"
+      />
+    </div>
   </div>
 </template>

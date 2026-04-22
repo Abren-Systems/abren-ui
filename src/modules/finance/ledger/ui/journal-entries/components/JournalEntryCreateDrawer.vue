@@ -1,25 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button } from '@/shared/components/button'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
+import { AppButton, AppInput, AppSelect } from '@/shared/components/primitives'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/shared/components/sheet'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select'
-import { Plus, Trash2 } from 'lucide-vue-next'
+  Plus,
+  Trash2,
+  BookOpen,
+  AlertCircle,
+  CheckCircle2,
+  Calendar,
+  DollarSign,
+} from 'lucide-vue-next'
 import { useJournalEntries } from '../../../application/composables/useJournalEntries'
 import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 
@@ -119,56 +110,81 @@ async function handleSubmit() {
 
 <template>
   <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent class="sm:max-w-[640px] flex flex-col h-full">
-      <SheetHeader>
-        <SheetTitle>New Journal Entry</SheetTitle>
-        <SheetDescription>
-          Record a double-entry journal. Debits must equal Credits before posting.
-        </SheetDescription>
+    <SheetContent
+      class="sm:max-w-[640px] flex flex-col h-full p-0 overflow-hidden border-none shadow-2xl"
+    >
+      <SheetHeader class="px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]">
+        <div class="flex items-center gap-4">
+          <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+            <BookOpen class="h-5 w-5 text-[var(--color-primary-600)]" />
+          </div>
+          <div>
+            <SheetTitle class="text-lg font-bold text-[var(--color-neutral-900)]"
+              >New Journal Entry</SheetTitle
+            >
+            <SheetDescription class="text-xs text-[var(--color-neutral-500)]">
+              Record a double-entry journal. Debits must equal Credits before posting.
+            </SheetDescription>
+          </div>
+        </div>
       </SheetHeader>
 
-      <form class="flex-1 overflow-y-auto py-6 space-y-6" @submit.prevent="handleSubmit">
+      <form
+        class="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-[var(--color-neutral-50)]/30"
+        @submit.prevent="handleSubmit"
+      >
         <!-- Header fields -->
         <div class="grid grid-cols-2 gap-4">
-          <div class="grid gap-2">
-            <Label for="je-date">Date <span class="text-destructive">*</span></Label>
-            <Input id="je-date" type="date" v-model="form.date" />
+          <div class="space-y-1.5">
+            <Label
+              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)] flex items-center gap-1.5"
+            >
+              <Calendar :size="10" />
+              Date <span class="text-[var(--color-danger-600)]">*</span>
+            </Label>
+            <AppInput type="date" v-model="form.date" />
           </div>
-          <div class="grid gap-2">
-            <Label for="je-currency">Currency</Label>
-            <Select v-model="form.base_currency">
-              <SelectTrigger id="je-currency">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ETB">ETB — Ethiopian Birr</SelectItem>
-                <SelectItem value="USD">USD — US Dollar</SelectItem>
-                <SelectItem value="EUR">EUR — Euro</SelectItem>
-              </SelectContent>
-            </Select>
+          <div class="space-y-1.5">
+            <Label
+              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)] flex items-center gap-1.5"
+            >
+              <DollarSign :size="10" />
+              Currency
+            </Label>
+            <AppSelect
+              v-model="form.base_currency"
+              :options="[
+                { label: 'ETB — Ethiopian Birr', value: 'ETB' },
+                { label: 'USD — US Dollar', value: 'USD' },
+                { label: 'EUR — Euro', value: 'EUR' },
+              ]"
+            />
           </div>
         </div>
 
-        <div class="grid gap-2">
-          <Label for="je-description">Description <span class="text-destructive">*</span></Label>
-          <Input
-            id="je-description"
-            v-model="form.description"
-            placeholder="e.g. Purchase of office supplies"
-          />
+        <div class="space-y-1.5">
+          <Label
+            class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+            >Narrative / Description <span class="text-[var(--color-danger-600)]">*</span></Label
+          >
+          <AppInput v-model="form.description" placeholder="e.g. Purchase of office supplies" />
         </div>
 
         <!-- Journal Lines -->
-        <div>
-          <div class="mb-3 flex items-center justify-between">
-            <h3 class="text-sm font-semibold">Journal Lines</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3
+              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+            >
+              Journal Segments
+            </h3>
             <div class="flex gap-2">
-              <Button type="button" variant="outline" size="xs" @click="addLine(true)">
+              <AppButton type="button" variant="outline" @click="addLine(true)">
                 <Plus :size="12" class="mr-1" /> Debit
-              </Button>
-              <Button type="button" variant="outline" size="xs" @click="addLine(false)">
+              </AppButton>
+              <AppButton type="button" variant="outline" @click="addLine(false)">
                 <Plus :size="12" class="mr-1" /> Credit
-              </Button>
+              </AppButton>
             </div>
           </div>
 
@@ -176,98 +192,129 @@ async function handleSubmit() {
             <div
               v-for="(line, idx) in form.lines"
               :key="idx"
-              class="grid grid-cols-[1fr_100px_60px_28px] gap-2 items-start rounded-md border p-3"
-              :class="
-                line.is_debit
-                  ? 'border-blue-100 bg-blue-50/30 dark:border-blue-900/30 dark:bg-blue-900/10'
-                  : 'border-green-100 bg-green-50/30 dark:border-green-900/30 dark:bg-green-900/10'
-              "
+              class="grid grid-cols-[1fr_120px_60px_32px] gap-3 items-end p-4 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm"
             >
-              <div class="grid gap-1.5">
+              <div class="space-y-1.5">
                 <span
-                  class="text-[10px] font-semibold uppercase tracking-wider"
-                  :class="line.is_debit ? 'text-blue-500' : 'text-green-500'"
+                  class="text-[10px] font-bold uppercase tracking-wider"
+                  :class="
+                    line.is_debit
+                      ? 'text-[var(--color-primary-600)]'
+                      : 'text-[var(--color-success-600)]'
+                  "
                 >
-                  {{ line.is_debit ? 'DEBIT' : 'CREDIT' }}
+                  {{ line.is_debit ? 'Debit Account' : 'Credit Account' }}
                 </span>
-                <Select v-model="line.account_id">
-                  <SelectTrigger class="h-8 text-xs">
-                    <SelectValue placeholder="Select account…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="acc in accounts" :key="acc.id" :value="acc.id">
-                      {{ acc.code }} — {{ acc.name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div class="grid gap-1.5">
-                <span class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400"
-                  >Amount</span
-                >
-                <Input
-                  v-model="line.amount"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="0.00"
-                  class="h-8 text-right tabular-nums text-xs font-medium"
+                <AppSelect
+                  v-model="line.account_id"
+                  placeholder="Select account…"
+                  :options="
+                    accounts?.map((acc) => ({
+                      label: `${acc.code} — ${acc.name}`,
+                      value: acc.id,
+                    })) ?? []
+                  "
                 />
               </div>
 
-              <div class="grid gap-1.5">
-                <span class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400"
-                  >CCY</span
+              <div class="space-y-1.5">
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider text-[var(--color-neutral-400)]"
+                  >Amount</span
                 >
-                <Select v-model="line.currency">
-                  <SelectTrigger class="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ETB">ETB</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                  </SelectContent>
-                </Select>
+                <AppInput
+                  v-model="line.amount"
+                  type="number"
+                  placeholder="0.00"
+                  class="text-right tabular-nums font-bold"
+                />
               </div>
 
-              <Button
+              <div class="space-y-1.5">
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider text-[var(--color-neutral-400)]"
+                  >CCY</span
+                >
+                <AppSelect
+                  v-model="line.currency"
+                  :options="[
+                    { label: 'ETB', value: 'ETB' },
+                    { label: 'USD', value: 'USD' },
+                    { label: 'EUR', value: 'EUR' },
+                  ]"
+                />
+              </div>
+
+              <AppButton
                 type="button"
-                variant="ghost"
-                size="icon"
-                class="mt-5 h-8 w-7 text-neutral-400 hover:text-destructive"
+                variant="stealth"
+                class="text-[var(--color-neutral-400)] hover:text-[var(--color-danger-600)]"
                 :disabled="form.lines.length <= 2"
                 @click="removeLine(idx)"
               >
-                <Trash2 :size="13" />
-              </Button>
+                <Trash2 :size="14" />
+              </AppButton>
             </div>
           </div>
 
           <!-- Balance indicator -->
-          <div class="mt-3 flex items-center justify-between rounded-md border px-4 py-2 text-sm">
-            <span class="text-neutral-500"
-              >Debits: <strong class="tabular-nums">{{ totalDebits.toFixed(2) }}</strong></span
-            >
-            <span class="font-medium" :class="isBalanced ? 'text-green-600' : 'text-destructive'">
-              {{ isBalanced ? '✓ Balanced' : '✗ Unbalanced' }}
-            </span>
-            <span class="text-neutral-500"
-              >Credits: <strong class="tabular-nums">{{ totalCredits.toFixed(2) }}</strong></span
-            >
+          <div
+            class="mt-4 flex items-center justify-between rounded-sm border border-[var(--color-neutral-200)] bg-white px-6 py-3"
+          >
+            <div class="space-y-1">
+              <p
+                class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
+              >
+                Total Debits
+              </p>
+              <p class="text-sm font-bold text-[var(--color-neutral-900)] tabular-nums">
+                {{ totalDebits.toFixed(2) }}
+              </p>
+            </div>
+
+            <div class="flex flex-col items-center gap-1">
+              <component
+                :is="isBalanced ? CheckCircle2 : AlertCircle"
+                :size="16"
+                :class="
+                  isBalanced ? 'text-[var(--color-success-600)]' : 'text-[var(--color-danger-600)]'
+                "
+              />
+              <span
+                class="text-[10px] font-bold uppercase tracking-widest"
+                :class="
+                  isBalanced ? 'text-[var(--color-success-600)]' : 'text-[var(--color-danger-600)]'
+                "
+              >
+                {{ isBalanced ? 'Balanced' : 'Unbalanced' }}
+              </span>
+            </div>
+
+            <div class="space-y-1 text-right">
+              <p
+                class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
+              >
+                Total Credits
+              </p>
+              <p class="text-sm font-bold text-[var(--color-neutral-900)] tabular-nums">
+                {{ totalCredits.toFixed(2) }}
+              </p>
+            </div>
           </div>
         </div>
       </form>
 
-      <SheetFooter class="border-t pt-4">
-        <Button variant="outline" @click="emit('update:open', false)">Cancel</Button>
-        <Button
+      <SheetFooter
+        class="px-8 py-4 bg-white border-t border-[var(--color-neutral-200)] flex items-center justify-end gap-3"
+      >
+        <AppButton variant="outline" @click="emit('update:open', false)">Cancel</AppButton>
+        <AppButton
+          variant="primary"
           :disabled="!form.description || !form.date || !isBalanced || isLoading"
           @click="handleSubmit"
         >
           {{ isLoading ? 'Creating…' : 'Save as Draft' }}
-        </Button>
+        </AppButton>
       </SheetFooter>
     </SheetContent>
   </Sheet>

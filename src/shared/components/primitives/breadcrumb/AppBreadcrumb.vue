@@ -14,9 +14,9 @@ const route = useRoute()
 const breadcrumbs = computed(() => {
   const matched = route.matched
   return matched
-    .filter((record) => record.meta && (record.meta.title || record.name))
+    .filter((record) => record.meta && (record.meta['title'] || record.name))
     .map((record) => ({
-      label: (record.meta.title as string) || (record.name as string),
+      label: (record.meta['title'] as string) || (record.name as string),
       path: record.path,
       active: record.path === route.path,
     }))

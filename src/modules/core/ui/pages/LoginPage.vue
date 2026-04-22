@@ -2,9 +2,8 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/shared/auth/auth.store'
-import { Button } from '@/shared/components/button'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
+import { AppButton, AppInput } from '@/shared/components/primitives'
+import { Lock, Mail, ShieldCheck } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -37,86 +36,94 @@ async function handleLogin() {
 
 <template>
   <div
-    class="w-full max-w-md space-y-8 rounded-2xl border border-neutral-200 bg-white p-10 shadow-xl"
+    class="w-full max-w-md space-y-8 rounded-sm border border-[var(--color-neutral-200)] bg-white p-10 shadow-xl"
   >
     <div class="text-center">
-      <h2 class="text-4xl font-bold tracking-tight text-neutral-900">Abren ERP</h2>
-      <p class="mt-3 text-sm text-neutral-500 font-medium">
-        Sign in to your financial operating system
+      <div class="inline-flex p-3 rounded-sm bg-[var(--color-primary-50)] mb-6">
+        <ShieldCheck class="h-10 w-10 text-[var(--color-primary-600)]" />
+      </div>
+      <h2 class="text-3xl font-bold tracking-tight text-[var(--color-neutral-900)]">Abren ERP</h2>
+      <p class="mt-2 text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-400)]">
+        Autonomous Financial Engine
       </p>
     </div>
 
     <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-      <div class="space-y-5">
-        <div class="space-y-2">
-          <Label for="email" class="text-neutral-700 font-semibold">Email address</Label>
-          <Input
+      <div class="space-y-4">
+        <div class="space-y-1.5">
+          <Label
+            for="email"
+            class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+            >Email address</Label
+          >
+          <AppInput
             id="email"
             v-model="email"
             type="email"
             required
             placeholder="name@company.com"
-            class="h-12"
+            class="h-11"
           />
         </div>
-        <div class="space-y-2">
-          <Label for="password" class="text-neutral-700 font-semibold">Password</Label>
-          <Input
+        <div class="space-y-1.5">
+          <Label
+            for="password"
+            class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
+            >Password</Label
+          >
+          <AppInput
             id="password"
             v-model="password"
             type="password"
             required
             placeholder="••••••••"
-            class="h-12"
+            class="h-11"
           />
         </div>
       </div>
 
       <p
         v-if="errorMessage"
-        class="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+        class="rounded-sm border border-[var(--color-danger-200)] bg-[var(--color-danger-50)] px-3 py-2.5 text-xs font-medium text-[var(--color-danger-700)]"
       >
         {{ errorMessage }}
       </p>
 
-      <div class="flex items-center justify-between px-0.5">
+      <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <input
             id="remember-me"
             name="remember-me"
             type="checkbox"
-            class="h-4.5 w-4.5 rounded-md border-neutral-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+            class="h-4 w-4 rounded-sm border-[var(--color-neutral-300)] text-[var(--color-primary-600)] focus:ring-[var(--color-primary-500)] cursor-pointer"
           />
-          <label for="remember-me" class="text-sm text-neutral-600 cursor-pointer select-none">
-            Remember me
+          <label
+            for="remember-me"
+            class="text-xs font-medium text-[var(--color-neutral-600)] cursor-pointer select-none"
+          >
+            Keep me authenticated
           </label>
         </div>
 
-        <div class="text-sm">
+        <div class="text-xs">
           <a
             href="#"
-            class="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+            class="font-bold text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
           >
-            Forgot password?
+            Forgot access?
           </a>
         </div>
       </div>
 
-      <Button
+      <AppButton
         type="submit"
-        class="w-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+        variant="primary"
+        class="w-full h-11 text-sm font-bold shadow-sm"
         :disabled="isLoading"
       >
-        <template v-if="isLoading">
-          <div class="flex items-center gap-2">
-            <div
-              class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-            ></div>
-            Signing in...
-          </div>
-        </template>
-        <template v-else> Sign in </template>
-      </Button>
+        <template v-if="isLoading"> Signing in... </template>
+        <template v-else> Authenticate </template>
+      </AppButton>
     </form>
   </div>
 </template>

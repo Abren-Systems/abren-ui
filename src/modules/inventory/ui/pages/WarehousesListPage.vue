@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
+import { AppButton, AppBadge } from '@/shared/components/primitives'
+import { Warehouse as WarehouseIcon, MapPin, Plus } from 'lucide-vue-next'
 import { useWarehouses } from '../../application/composables/useWarehouses'
 import TraceabilityBadge from '../components/TraceabilityBadge.vue'
 import { h } from 'vue'
@@ -35,7 +36,13 @@ const warehouseColumns = [
     accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }: { row: { original: Warehouse } }) => {
-      return row.original.isActive ? 'Active' : 'Inactive'
+      return h(
+        AppBadge,
+        {
+          variant: row.original.isActive ? 'success' : 'neutral',
+        },
+        () => (row.original.isActive ? 'Active' : 'Inactive'),
+      )
     },
   },
 ]
@@ -49,23 +56,42 @@ function handleRowClick(warehouse: Warehouse) {
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">Warehouses</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          Manage physical locations and regulatory quarantine zones.
-        </p>
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
+    <div
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+    >
+      <div class="flex items-center gap-4">
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <WarehouseIcon class="h-6 w-6 text-[var(--color-primary-600)]" />
+        </div>
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Warehouses
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Manage physical locations and regulatory quarantine zones.
+          </p>
+        </div>
       </div>
-      <Button @click="router.push({ name: 'inventory.warehouse-create' })"> Add Location </Button>
-    </header>
 
-    <DataGrid
-      :data="warehouses || []"
-      :columns="warehouseColumns"
-      :loading="isPending"
-      :state="gridState"
-      @row-click="handleRowClick"
-    />
+      <div class="flex items-center gap-2">
+        <AppButton variant="primary" @click="router.push({ name: 'inventory.warehouse-create' })">
+          <Plus :size="14" class="mr-2" />
+          Add Location
+        </AppButton>
+      </div>
+    </div>
+
+    <!-- DataGrid Orchestration -->
+    <div class="min-h-0 flex-1 p-8">
+      <DataGrid
+        :data="warehouses || []"
+        :columns="warehouseColumns"
+        :loading="isPending"
+        :state="gridState"
+        @row-click="handleRowClick"
+      />
+    </div>
   </div>
 </template>

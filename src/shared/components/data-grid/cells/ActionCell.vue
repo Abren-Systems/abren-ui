@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreHorizontal } from 'lucide-vue-next'
-import { Button } from '@/shared/components/button'
+import { AppButton } from '@/shared/components/primitives'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +19,10 @@ defineProps<{
   <div class="flex justify-end">
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
-        <Button variant="ghost" class="h-8 w-8 p-0">
+        <AppButton variant="stealth" class="h-8 w-8 p-0">
           <span class="sr-only">Open menu</span>
           <MoreHorizontal class="h-4 w-4" />
-        </Button>
+        </AppButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem

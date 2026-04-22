@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useTenantSettings } from '../../application/composables/useTenantSettings'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { Button } from '@/shared/components/button'
+import { AppButton } from '@/shared/components/primitives'
+import { Building2, Settings, Edit3 } from 'lucide-vue-next'
 import { usePermissions } from '@/shared/auth/usePermissions'
 
 const { settings, isSettingsPending } = useTenantSettings()
@@ -23,22 +24,41 @@ const settingColumns = [
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">Tenant Settings</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          Configure system-wide parameters and module thresholds for your organisation.
-        </p>
+  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+    <!-- Page Header -->
+    <div
+      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+    >
+      <div class="flex items-center gap-4">
+        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
+          <Building2 class="h-6 w-6 text-[var(--color-primary-600)]" />
+        </div>
+        <div>
+          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
+            Tenant Settings
+          </h1>
+          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
+            Configure system-wide parameters and module thresholds for your organisation.
+          </p>
+        </div>
       </div>
-      <Button v-if="hasPermission('core:tenant_edit')" variant="outline"> Bulk Edit </Button>
-    </header>
 
-    <DataGrid
-      :data="settings || []"
-      :columns="settingColumns"
-      :loading="isSettingsPending"
-      :state="gridState"
-    />
+      <div class="flex items-center gap-2">
+        <AppButton v-if="hasPermission('core:tenant_edit')" variant="outline">
+          <Edit3 :size="14" class="mr-2" />
+          Bulk Edit
+        </AppButton>
+      </div>
+    </div>
+
+    <!-- DataGrid Orchestration -->
+    <div class="min-h-0 flex-1 p-8">
+      <DataGrid
+        :data="settings || []"
+        :columns="settingColumns"
+        :loading="isSettingsPending"
+        :state="gridState"
+      />
+    </div>
   </div>
 </template>
