@@ -17,6 +17,34 @@ import type {
 
 export type PaymentRequestStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PAID'
 
+export namespace PaymentRequestStatus {
+  export const isFinal = (status: PaymentRequestStatus): boolean =>
+    status === 'PAID' || status === 'REJECTED'
+
+  export const isApproved = (status: PaymentRequestStatus): boolean =>
+    status === 'APPROVED' || status === 'PAID'
+
+  export const isEditable = (status: PaymentRequestStatus): boolean => status === 'DRAFT'
+
+  export const canTransitionTo = (
+    current: PaymentRequestStatus,
+    target: PaymentRequestStatus,
+  ): boolean => {
+    if (current === target) return true
+    if (isFinal(current)) return false
+
+    const transitions: Record<PaymentRequestStatus, PaymentRequestStatus[]> = {
+      DRAFT: ['SUBMITTED'],
+      SUBMITTED: ['APPROVED', 'REJECTED'],
+      APPROVED: ['PAID', 'REJECTED'],
+      REJECTED: [],
+      PAID: [],
+    }
+
+    return transitions[current].includes(target)
+  }
+}
+
 export interface PaymentRequestLine {
   id: PaymentRequestLineId // Line IDs are now branded for full type purity
   description: string
@@ -48,6 +76,12 @@ export interface PaymentRequest {
 // --- Vendor Bill Types ---
 
 export type VendorBillStatus = 'DRAFT' | 'VALIDATED' | 'PAID'
+
+export namespace VendorBillStatus {
+  export const isPaid = (status: VendorBillStatus): boolean => status === 'PAID'
+  export const isValidated = (status: VendorBillStatus): boolean =>
+    status === 'VALIDATED' || status === 'PAID'
+}
 
 export interface VendorBillLine {
   id?: VendorBillLineId | undefined
