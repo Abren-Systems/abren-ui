@@ -5,6 +5,7 @@ import { Badge } from '@/shared/components/badge'
 
 /**
  * Grid definition for Tax Rules.
+ * Displays rule metadata and statutory directionality.
  */
 export const taxRuleColumns: ColumnDef<TaxRule>[] = [
   {
@@ -13,11 +14,23 @@ export const taxRuleColumns: ColumnDef<TaxRule>[] = [
     cell: ({ row }) => h('div', { class: 'font-medium' }, row.getValue('name')),
   },
   {
-    accessorKey: 'tax_type',
+    accessorKey: 'taxType',
     header: 'Type',
     cell: ({ row }) => {
-      const type = row.getValue('tax_type') as string
+      const type = row.getValue('taxType') as string
       return h(Badge, { variant: type === 'VAT' ? 'default' : 'secondary' }, () => type)
+    },
+  },
+  {
+    accessorKey: 'direction',
+    header: 'Direction',
+    cell: ({ row }) => {
+      const direction = row.getValue('direction') as string
+      let variant: 'default' | 'secondary' | 'outline' = 'outline'
+      if (direction === 'INPUT') variant = 'default'
+      if (direction === 'OUTPUT') variant = 'secondary'
+
+      return h(Badge, { variant }, () => direction)
     },
   },
   {
@@ -29,15 +42,15 @@ export const taxRuleColumns: ColumnDef<TaxRule>[] = [
     },
   },
   {
-    accessorKey: 'gl_account_id',
+    accessorKey: 'glAccountId',
     header: 'GL Account',
-    cell: ({ row }) => h('code', { class: 'text-xs' }, row.getValue('gl_account_id')),
+    cell: ({ row }) => h('code', { class: 'text-xs' }, row.getValue('glAccountId')),
   },
   {
-    accessorKey: 'is_active',
+    accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }) => {
-      const isActive = row.getValue('is_active') as boolean
+      const isActive = row.getValue('isActive') as boolean
       return h(Badge, { variant: isActive ? 'outline' : 'destructive' }, () =>
         isActive ? 'Active' : 'Inactive',
       )

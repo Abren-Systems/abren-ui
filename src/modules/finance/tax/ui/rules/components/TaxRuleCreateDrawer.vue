@@ -18,13 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/select'
-import { useCreateTaxRule } from '../../../application/useCreateTaxRule'
+import { useCreateTaxRule } from '../../../application/useTaxRules'
 import type { TaxRuleCreateDTO } from '../../../infrastructure/api.types'
 
 /**
  * Drawer: Create Tax Rule.
  *
- * Orchestrates the tax rule creation form.
+ * Orchestrates the tax rule creation form with statutory directionality support.
  */
 const props = defineProps<{
   open: boolean
@@ -40,6 +40,7 @@ const form = ref<TaxRuleCreateDTO>({
   name: '',
   rate: 0,
   tax_type: 'VAT',
+  direction: 'NON_DIRECTIONAL',
   gl_account_id: '',
 })
 
@@ -52,6 +53,7 @@ async function handleSubmit() {
       name: '',
       rate: 0,
       tax_type: 'VAT',
+      direction: 'NON_DIRECTIONAL',
       gl_account_id: '',
     }
   } catch (error) {
@@ -83,6 +85,20 @@ async function handleSubmit() {
             <SelectContent>
               <SelectItem value="VAT">VAT (Value Added Tax)</SelectItem>
               <SelectItem value="WHT">WHT (Withholding Tax)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div class="grid gap-2">
+          <Label for="direction">Statutory Direction</Label>
+          <Select v-model="form.direction">
+            <SelectTrigger id="direction">
+              <SelectValue placeholder="Select direction" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="INPUT">Input Tax (Purchases)</SelectItem>
+              <SelectItem value="OUTPUT">Output Tax (Sales)</SelectItem>
+              <SelectItem value="NON_DIRECTIONAL">Non-Directional</SelectItem>
             </SelectContent>
           </Select>
         </div>

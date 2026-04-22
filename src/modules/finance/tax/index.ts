@@ -1,15 +1,10 @@
 import type { BusinessDomain } from '@/shared/types/module.types'
 import { taxRoutes } from './routes'
 
-// Domain exports
-// export * from './domain/tax.types';
-
-// Application exports
-// export * from './application/useTaxRules';
-
-// UI exports
-export * from './routes'
-
+/**
+ * Tax Module Definition.
+ * Handles configuration for the taxation subdomain.
+ */
 export const taxModule: BusinessDomain = {
   id: 'tax',
   name: 'Taxation',
@@ -21,6 +16,11 @@ export const taxModule: BusinessDomain = {
       label: 'Tax Rules',
       route: 'finance.tax.rules',
       icon: 'percent',
+    },
+    {
+      label: 'Tax Groups',
+      route: 'finance.tax.groups',
+      icon: 'layout-grid',
     },
   ],
 }

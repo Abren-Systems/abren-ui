@@ -4,10 +4,12 @@ import type {
   TaxRuleDTO,
   TaxCalculationResponse,
   TaxRuleCreateDTO,
+  TaxGroupDTO,
+  TaxGroupCreateDTO,
 } from './api.types'
-import { TaxRuleSchema, TaxCalculationResponseSchema } from './api.schemas'
+import { TaxRuleSchema, TaxCalculationResponseSchema, TaxGroupSchema } from './api.schemas'
 import { TaxMapper } from './mappers'
-import type { TaxRule, TaxCalculationResult } from '../domain/tax.types'
+import type { TaxRule, TaxCalculationResult, TaxGroup } from '../domain/tax.types'
 import { z } from 'zod'
 
 export const TaxAdapter = {
@@ -16,9 +18,7 @@ export const TaxAdapter = {
    */
   async getActiveRules(): Promise<TaxRule[]> {
     const response = await apiGet<TaxRuleDTO[]>('/finance/tax/rules')
-    // Zod shielding
     const dtos = z.array(TaxRuleSchema).parse(response) as TaxRuleDTO[]
-    // Mapping to pure domain
     return dtos.map((dto) => TaxMapper.toTaxRule(dto))
   },
 
@@ -47,5 +47,23 @@ export const TaxAdapter = {
     const response = await apiPost<TaxRuleDTO>('/finance/tax/rules', dto)
     const parsedDto = TaxRuleSchema.parse(response) as TaxRuleDTO
     return TaxMapper.toTaxRule(parsedDto)
+  },
+
+  /**
+   * Retrieves all active tax groups from the backend.
+   */
+  async getActiveGroups(): Promise<TaxGroup[]> {
+    const response = await apiGet<TaxGroupDTO[]>('/finance/tax/groups')
+    const dtos = z.array(TaxGroupSchema).parse(response) as TaxGroupDTO[]
+    return dtos.map((dto) => TaxMapper.toTaxGroup(dto))
+  },
+
+  /**
+   * Registers a new tax group via the backend.
+   */
+  async createTaxGroup(dto: TaxGroupCreateDTO): Promise<TaxGroup> {
+    const response = await apiPost<TaxGroupDTO>('/finance/tax/groups', dto)
+    const parsedDto = TaxGroupSchema.parse(response) as TaxGroupDTO
+    return TaxMapper.toTaxGroup(parsedDto)
   },
 }
