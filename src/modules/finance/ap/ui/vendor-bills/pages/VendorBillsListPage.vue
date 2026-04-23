@@ -52,10 +52,7 @@ function handleCreate() {
       </div>
 
       <div class="flex items-center gap-2">
-        <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
-          <Plus :size="14" class="mr-2" />
-          New Bill
-        </AppButton>
+        <!-- Actions moved to Grid Toolbar -->
       </div>
     </div>
 
@@ -71,7 +68,16 @@ function handleCreate() {
         :loading="isLoading"
         placeholder="Search vendor bills..."
         @row-click="handleRowClick"
-      />
+      >
+        <template #toolbar>
+          <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
+            <template #start>
+              <Plus :size="14" />
+            </template>
+            New Bill
+          </AppButton>
+        </template>
+      </DataGrid>
     </div>
   </div>
 </template>

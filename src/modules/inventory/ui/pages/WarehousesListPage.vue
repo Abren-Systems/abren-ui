@@ -77,7 +77,9 @@ function handleRowClick(warehouse: Warehouse) {
 
       <div class="flex items-center gap-2">
         <AppButton variant="primary" @click="router.push({ name: 'inventory.warehouse-create' })">
-          <Plus :size="14" class="mr-2" />
+          <template #start>
+            <Plus :size="14" />
+          </template>
           Add Location
         </AppButton>
       </div>

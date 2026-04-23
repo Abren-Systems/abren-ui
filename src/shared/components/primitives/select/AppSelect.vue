@@ -87,35 +87,47 @@ const handleChange = (event: Event) => {
 .app-select-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
 }
 
 .app-select-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #323130;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
 }
 
 .required-mark {
-  color: #a4262c;
+  color: var(--color-danger-600);
   margin-left: 2px;
 }
 
 .app-select-field {
   width: 100%;
-  --control-corner-radius: 2px;
-  --height-number: 32;
+  --control-corner-radius: var(--radius-sm);
+  --height-number: 32; /* Standard Fluent High-Density */
+  --neutral-stroke-rest: var(--color-neutral-300);
+  --neutral-stroke-hover: var(--color-neutral-400);
+  --neutral-fill-rest: var(--app-surface);
+}
+
+.app-select-field :deep(::part(control)) {
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-900);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.1s ease;
+}
+
+.app-select-field :deep(::part(control):focus-within) {
+  border-color: var(--color-primary-600);
 }
 
 .app-input-error {
-  font-size: 12px;
-  color: #a4262c;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--color-danger-600);
   margin-top: 2px;
-}
-
-/* Ensure the selected value in the fluent-select matches high density */
-.app-select-field :deep(::part(control)) {
-  font-size: 14px;
 }
 </style>

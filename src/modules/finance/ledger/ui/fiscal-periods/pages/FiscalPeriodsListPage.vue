@@ -42,14 +42,7 @@ const isCreateOpen = ref(false)
       </div>
 
       <div class="flex items-center gap-2">
-        <AppButton
-          v-if="hasPermission('ledger:manage_accounts')"
-          variant="primary"
-          @click="isCreateOpen = true"
-        >
-          <Plus :size="14" class="mr-2" />
-          New Period
-        </AppButton>
+        <!-- Actions moved to Grid Toolbar -->
       </div>
     </div>
 
@@ -63,7 +56,20 @@ const isCreateOpen = ref(false)
         :data="periods ?? []"
         :loading="isLoading"
         placeholder="Search periods..."
-      />
+      >
+        <template #toolbar>
+          <AppButton
+            v-if="hasPermission('ledger:manage_accounts')"
+            variant="primary"
+            @click="isCreateOpen = true"
+          >
+            <template #start>
+              <Plus :size="14" />
+            </template>
+            New Period
+          </AppButton>
+        </template>
+      </DataGrid>
     </div>
 
     <FiscalPeriodCreateDrawer v-model:open="isCreateOpen" />

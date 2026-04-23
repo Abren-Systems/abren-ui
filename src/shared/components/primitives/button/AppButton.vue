@@ -52,12 +52,11 @@ defineEmits(['click'])
     :disabled="disabled || loading"
     :type="type"
     class="app-button-root"
+    :class="[`variant-${variant}`]"
     @click="$emit('click', $event)"
   >
     <!-- Start Icon Slot -->
-    <span v-if="$slots.start" slot="start" class="flex items-center">
-      <slot name="start" />
-    </span>
+    <slot v-if="$slots.start" name="start" slot="start" />
 
     <!-- Progress Ring for Loading -->
     <fluent-progress-ring v-if="loading" slot="start" class="loading-ring" />
@@ -66,9 +65,7 @@ defineEmits(['click'])
     <slot />
 
     <!-- End Icon Slot -->
-    <span v-if="$slots.end" slot="end" class="flex items-center">
-      <slot name="end" />
-    </span>
+    <slot v-if="$slots.end" name="end" slot="end" />
   </fluent-button>
 </template>
 
@@ -78,38 +75,48 @@ defineEmits(['click'])
  * We target the custom element to ensure the spacing fits the Dynamics 365 Sales aesthetic.
  */
 .app-button-root {
-  /* Ensure the button matches our high-density spacing standard */
+  /* Restore Dynamics 365 / Fluent high-density standard */
   height: 32px;
-  min-width: 64px;
   cursor: pointer;
-
-  /* 
-   * Fluent components use CSS variables for their internal styling.
-   * Here we can reinforce our 2px border-radius standard globally.
-   */
-  --control-corner-radius: 2px;
-
-  /* Dynamics 365 uses tight font-weight and clear typography */
+  transition:
+    background-color 0.1s ease,
+    box-shadow 0.1s ease;
+  --control-corner-radius: var(--radius-sm);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+
+  /* Fluent Web Component Padding/Gap Tokens */
+  --accent-fill-rest: var(--color-primary-600);
+  --accent-fill-hover: var(--color-primary-700);
+  --accent-fill-active: var(--color-primary-800);
+  --button-padding-left: 12px;
+  --button-padding-right: 12px;
+  --density-filter-size: 0;
+
+  /* Ensure the button doesn't stretch and centers its content */
+  display: inline-flex;
+  width: auto;
+  min-width: 80px; /* Dynamics 365 / Fluent standard min-width */
 }
 
-.loading-ring {
-  width: 16px;
-  height: 16px;
-  --progress-ring-foreground: currentColor;
-}
-
-.flex {
+.app-button-root::part(control) {
   display: flex;
-}
-.items-center {
   align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .app-button-root[appearance='accent'] {
-  /* Optional: Force the specific Abren primary blue if the design token fails */
-  /* --accent-fill-rest: #0078d4; */
+  box-shadow: var(--elevation-1);
+}
+
+.app-button-root[appearance='accent']:hover {
+  box-shadow: var(--elevation-2);
+}
+
+.app-button-root[appearance='accent']:active {
+  box-shadow: var(--elevation-1);
 }
 
 /* 

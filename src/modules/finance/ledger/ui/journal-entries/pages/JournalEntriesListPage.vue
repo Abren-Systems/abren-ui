@@ -63,7 +63,9 @@ function handleRowClick(row: JournalEntry) {
           :disabled="!hasAccounts"
           @click="isCreateOpen = true"
         >
-          <Plus :size="14" class="mr-2" />
+          <template #start>
+            <Plus :size="14" />
+          </template>
           New Entry
         </AppButton>
       </div>
@@ -90,7 +92,9 @@ function handleRowClick(row: JournalEntry) {
       >
         <template #toolbar>
           <AppButton variant="stealth" @click="refresh()">
-            <RefreshCcw :class="['mr-1 h-3.5 w-3.5', isLoading && 'animate-spin']" />
+            <template #start>
+              <RefreshCcw :class="['h-3.5 w-3.5', isLoading && 'animate-spin']" />
+            </template>
             Refresh
           </AppButton>
         </template>
@@ -104,7 +108,9 @@ function handleRowClick(row: JournalEntry) {
                 variant="primary"
                 @click="isCreateOpen = true"
               >
-                <Plus :size="16" class="mr-2" />
+                <template #start>
+                  <Plus :size="16" />
+                </template>
                 Book Journal Entry
               </AppButton>
             </template>

@@ -107,7 +107,9 @@ function formatMoney(money: unknown) {
     >
       <div class="flex items-center gap-4">
         <AppButton variant="stealth" @click="goBack">
-          <ArrowLeft class="h-4 w-4" />
+          <template #start>
+            <ArrowLeft class="h-4 w-4" />
+          </template>
         </AppButton>
         <div>
           <div class="flex items-center gap-3">
@@ -126,7 +128,9 @@ function formatMoney(money: unknown) {
       <div class="flex items-center gap-2">
         <!-- Secondary: Trace -->
         <AppButton variant="outline" @click="isTraceOpen = true">
-          <History class="mr-1.5 h-3.5 w-3.5" />
+          <template #start>
+            <History class="h-3.5 w-3.5" />
+          </template>
           Trace
         </AppButton>
 
@@ -137,7 +141,9 @@ function formatMoney(money: unknown) {
           :disabled="isActionPending"
           @click="handleSubmit"
         >
-          <Send class="mr-1.5 h-3.5 w-3.5" />
+          <template #start>
+            <Send class="h-3.5 w-3.5" />
+          </template>
           Submit for Approval
         </AppButton>
 
@@ -148,7 +154,9 @@ function formatMoney(money: unknown) {
           :disabled="isActionPending"
           @click="handleApprove"
         >
-          <CheckCircle class="mr-1.5 h-3.5 w-3.5" />
+          <template #start>
+            <CheckCircle class="h-3.5 w-3.5" />
+          </template>
           Approve
         </AppButton>
 
@@ -166,7 +174,9 @@ function formatMoney(money: unknown) {
         <DropdownMenu v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')">
           <DropdownMenuTrigger as-child>
             <AppButton variant="stealth">
-              <MoreHorizontal class="h-4 w-4" />
+              <template #start>
+                <MoreHorizontal class="h-4 w-4" />
+              </template>
             </AppButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

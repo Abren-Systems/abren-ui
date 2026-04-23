@@ -46,14 +46,7 @@ function handleRowClick(row: Account) {
       </div>
 
       <div class="flex items-center gap-2">
-        <AppButton
-          v-if="hasPermission('ledger:manage_accounts')"
-          variant="primary"
-          @click="isDrawerOpen = true"
-        >
-          <Plus :size="14" class="mr-2" />
-          New Account
-        </AppButton>
+        <!-- Actions moved to Grid Toolbar -->
       </div>
     </div>
 
@@ -74,7 +67,16 @@ function handleRowClick(row: Account) {
       >
         <!-- Toolbar actions -->
         <template #toolbar>
-          <!-- Grid-specific actions can go here (Export, Import) -->
+          <AppButton
+            v-if="hasPermission('ledger:manage_accounts')"
+            variant="primary"
+            @click="isDrawerOpen = true"
+          >
+            <template #start>
+              <Plus :size="14" />
+            </template>
+            New Account
+          </AppButton>
         </template>
 
         <!-- Empty State Operational Action -->
@@ -85,7 +87,9 @@ function handleRowClick(row: Account) {
             class="mt-4"
             @click="isDrawerOpen = true"
           >
-            <Plus :size="16" class="mr-2" />
+            <template #start>
+              <Plus :size="16" />
+            </template>
             Setup Chart of Accounts
           </AppButton>
         </template>

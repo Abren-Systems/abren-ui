@@ -73,37 +73,50 @@ const handleInput = (event: Event) => {
 .app-input-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
 }
 
 .app-input-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #323130; /* Neutral Primary in Fluent */
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
 }
 
 .required-mark {
-  color: #a4262c; /* Error color in Fluent */
+  color: var(--color-danger-600);
   margin-left: 2px;
 }
 
 .app-input-field {
   width: 100%;
-  --control-corner-radius: 2px;
-  --height-number: 32; /* Dynamics High-Density standard */
+  --control-corner-radius: var(--radius-sm);
+  --height-number: 32; /* Standard Fluent High-Density */
+  --stroke-width: 1;
+  --accent-fill-rest: var(--color-primary-600);
+  --neutral-stroke-rest: var(--color-neutral-300);
+  --neutral-stroke-hover: var(--color-neutral-400);
+  --neutral-fill-rest: var(--app-surface);
 }
 
-/* 
- * Standard Fluent text-field tokens for high density 
- */
 .app-input-field :deep(::part(control)) {
-  font-size: 14px;
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-900);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.1s ease;
+}
+
+.app-input-field :deep(::part(control):focus-within) {
+  border-color: var(--color-primary-600);
+  /* Fluent uses a bottom-border emphasis or subtle 1px increase, not a halo */
 }
 
 .app-input-error {
-  font-size: 12px;
-  color: #a4262c;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--color-danger-600);
   margin-top: 2px;
 }
 </style>

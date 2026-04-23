@@ -24,34 +24,29 @@
   --color-primary-800: #3730a3;
   --color-primary-900: #312e81;
 
-  /* Fluent Web Component Token Overrides */
-  --accent-fill-rest: var(--color-primary-600);
-  --accent-fill-hover: var(--color-primary-700);
-  --accent-fill-active: var(--color-primary-800);
-  --accent-foreground-cut-rest: #ffffff;
-
   /*
    * ── Neutrals — Fluent Design Neutral Palette ──────────────────
    * Calibrated for high-density enterprise interfaces.
    */
-  --color-neutral-50: #faf9f8; /* Neutral Lager (Page Background) */
-  --color-neutral-100: #f3f2f1; /* Neutral Light */
-  --color-neutral-200: #edebe9; /* Neutral Lighter (Borders) */
-  --color-neutral-300: #e1dfdd;
-  --color-neutral-400: #d2d0ce;
-  --color-neutral-500: #c8c6c4;
-  --color-neutral-600: #a19f9d;
-  --color-neutral-700: #605e5c;
-  --color-neutral-800: #323130;
-  --color-neutral-900: #201f1e;
+  --color-neutral-50: #f8f9fa; /* Neutral Lager (Page Background) */
+  --color-neutral-100: #f0f2f5; /* Neutral Light */
+  --color-neutral-200: #e2e8f0; /* Neutral Lighter (Borders) */
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
 
   /* 
    * ── Semantic Layout Tokens — Layered Contrast ──────────────────
    * Standardizes the "Card-on-Canvas" pattern.
    */
-  --app-canvas: var(--color-neutral-50); /* #faf9f8 - Background desk */
-  --app-sidebar: var(--color-neutral-100); /* #f3f2f1 - Navigation anchor */
-  --app-surface: #ffffff; /* Stark white cards/workspaces */
+  --app-canvas: #f8f9fa; /* Fluent Neutral Lager */
+  --app-sidebar: #ffffff;
+  --app-surface: #ffffff;
+  --app-border: var(--color-neutral-200);
 
   /*
    * ── Semantic Status Colors ────────────────────────────────────
@@ -147,10 +142,15 @@
   /*
    * ── Shadows ───────────────────────────────────────────────────
    */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+
+  /* Fluent-style elevation layers */
+  --elevation-1: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+  --elevation-2: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+  --elevation-3: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
 
   /*
    * ── Z-index ───────────────────────────────────────────────────
@@ -185,6 +185,19 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
+}
+
+/* 
+ * ═══════════════════════════════════════════════════════
+ * Theme Injection
+ * ═══════════════════════════════════════════════════════
+ */
+:root {
+  /* Fluent Web Component Token Overrides */
+  --accent-fill-rest: #4f46e5;
+  --accent-fill-hover: #4338ca;
+  --accent-fill-active: #3730a3;
+  --accent-foreground-cut-rest: #ffffff;
 }
 
 /*

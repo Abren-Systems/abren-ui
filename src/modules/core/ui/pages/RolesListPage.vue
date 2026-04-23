@@ -84,7 +84,9 @@ function handleRowClick(role: Role) {
 
       <div class="flex items-center gap-2">
         <AppButton variant="primary" @click="isCreateOpen = true">
-          <ShieldPlus :size="14" class="mr-2" />
+          <template #start>
+            <ShieldPlus :size="14" />
+          </template>
           Define Boundary
         </AppButton>
       </div>
@@ -102,7 +104,9 @@ function handleRowClick(role: Role) {
       >
         <template #empty-action>
           <AppButton class="mt-4" @click="isCreateOpen = true">
-            <ShieldPlus :size="14" class="mr-2" />
+            <template #start>
+              <ShieldPlus :size="14" />
+            </template>
             Define Identity Boundary
           </AppButton>
         </template>

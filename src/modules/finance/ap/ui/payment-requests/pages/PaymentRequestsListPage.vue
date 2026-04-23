@@ -57,7 +57,9 @@ function handleCreate() {
 
       <div class="flex items-center gap-2">
         <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
-          <Plus :size="14" class="mr-2" />
+          <template #start>
+            <Plus :size="14" />
+          </template>
           New Request
         </AppButton>
       </div>

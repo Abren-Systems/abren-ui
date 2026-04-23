@@ -34,7 +34,9 @@ function goBack() {
     >
       <div class="flex items-center gap-4">
         <AppButton variant="stealth" @click="goBack">
-          <ArrowLeft :size="18" />
+          <template #start>
+            <ArrowLeft :size="18" />
+          </template>
         </AppButton>
         <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
           <CreditCard class="h-6 w-6 text-[var(--color-primary-600)]" />
@@ -184,7 +186,10 @@ function goBack() {
                       })
                     "
                   >
-                    <Plus :size="14" class="mr-2" /> Add Line
+                    <template #start>
+                      <Plus :size="14" />
+                    </template>
+                    Add Line
                   </AppButton>
                 </template>
               </form.Field>
@@ -211,7 +216,9 @@ function goBack() {
                         :disabled="field.state.value.length === 1"
                         @click="field.removeValue(idx)"
                       >
-                        <Trash2 :size="14" />
+                        <template #start>
+                          <Trash2 :size="14" />
+                        </template>
                       </AppButton>
                     </div>
 
