@@ -1,67 +1,187 @@
 <script setup lang="ts">
-/**
- * AuthenticatedLayout
- *
- * Root shell for all authenticated `/app/*` routes.
- * Renders a fixed sidebar with two navigation sections:
- *   - Applications: Dashboard + registered BusinessDomain modules
- *   - Platform Engine: registered PlatformEngine modules
- *
- * Navigation items are derived dynamically from the module registry
- * (`src/modules/index.ts`), so adding a new module automatically
- * surfaces it in the sidebar without touching this component.
- *
- * The active route is highlighted via exact `route.path` matching.
- * The header displays the current route name and a static user avatar
- * placeholder (to be replaced with a real profile dropdown).
- */
+import { computed, ref } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { businessModules, platformModules } from '@/modules'
+import type { Component } from 'vue'
+import { allModules, businessModules, platformModules } from '@/modules'
 import type { BusinessDomain, PlatformEngine, MenuItem } from '@/shared/types/module.types'
 import { useAuthStore } from '@/shared/auth/auth.store'
-import { AppButton, AppBreadcrumb } from '@/shared/components/primitives'
+import { AppBreadcrumb } from '@/shared/components/primitives'
 import {
-  LayoutDashboard,
-  LogOut,
-  ChevronRight,
-  Library,
-  Cpu,
-  Settings,
   Bell,
-  Search,
+  BookOpen,
+  Boxes,
+  Building,
+  Calendar,
+  ChevronRight,
   Command,
+  CreditCard,
+  FileText,
+  GitBranch,
+  Inbox,
+  Landmark,
+  LayoutDashboard,
+  LayoutGrid,
+  LogOut,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Percent,
+  Search,
+  Settings,
+  Shield,
+  Users,
+  Warehouse,
+  BarChart3,
 } from 'lucide-vue-next'
+
+interface NavigationItem {
+  label: string
+  icon?: Component
+  href?: string
+  to?: { name?: string; path?: string }
+  permissions?: string[]
+}
+
+interface NavigationGroup {
+  title: string
+  items: NavigationItem[]
+}
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Primary Navigation (Dashboard + Business Domains)
-const coreItems = [{ label: 'Dashboard', icon: LayoutDashboard, href: '/app' }]
+const isSidebarCollapsed = ref(false)
+const isMobileSidebarOpen = ref(false)
 
-/**
- * Flatten all business module menu items into a single nav list.
- * Falls back to a generated href (`/app/{moduleId}/{label-slug}`) when
- * the module definition does not provide an explicit `href`.
- */
-const businessItems = businessModules.flatMap((m: BusinessDomain) =>
-  m.menuItems.map((item: MenuItem) => ({
-    ...item,
+const iconMap: Record<string, Component> = {
+  users: Users,
+  shield: Shield,
+  building: Building,
+  'credit-card': CreditCard,
+  'file-text': FileText,
+  'book-open': BookOpen,
+  calendar: Calendar,
+  settings: Settings,
+  inbox: Inbox,
+  'git-branch': GitBranch,
+  percent: Percent,
+  'layout-grid': LayoutGrid,
+  landmark: Landmark,
+  'bar-chart-3': BarChart3,
+  warehouse: Warehouse,
+  boxes: Boxes,
+}
+
+function resolveIcon(icon?: string | Component): Component | undefined {
+  if (!icon) return undefined
+  if (typeof icon !== 'string') return icon
+  return iconMap[icon]
+}
+
+function toNavigationItem(moduleId: string, item: MenuItem): NavigationItem {
+  return {
+    label: item.label,
+    icon: resolveIcon(item.icon),
+    permissions: item.permissions,
+    href: item.href,
     to: item.route
       ? { name: item.route }
-      : { path: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` },
+      : { path: item.href || `/app/${moduleId}/${item.label.toLowerCase().replace(/ /g, '-')}` },
+  }
+}
+
+const startGroups = computed<NavigationGroup[]>(() => [
+  {
+    title: 'Start',
+    items: [{ label: 'Workboard', icon: LayoutDashboard, href: '/app' }],
+  },
+])
+
+const businessGroups = computed<NavigationGroup[]>(() =>
+  businessModules.map((module: BusinessDomain) => ({
+    title: module.name,
+    items: module.menuItems.map((item) => toNavigationItem(module.id, item)),
   })),
 )
 
-// Platform/Infrastructure Navigation — same logic
-const platformItems = platformModules.flatMap((m: PlatformEngine) =>
-  m.menuItems.map((item: MenuItem) => ({
-    ...item,
-    to: item.route
-      ? { name: item.route }
-      : { path: item.href || `/app/${m.id}/${item.label.toLowerCase().replace(/ /g, '-')}` },
+const platformGroups = computed<NavigationGroup[]>(() =>
+  platformModules.map((module: PlatformEngine) => ({
+    title: module.name,
+    items: module.menuItems.map((item) => toNavigationItem(module.id, item)),
   })),
 )
+
+const currentModuleName = computed(() => {
+  const moduleId = route.path.split('/')[2]
+  if (!moduleId) return 'Operations'
+  return allModules.find((module) => module.id === moduleId)?.name ?? 'Operations'
+})
+
+const currentTitle = computed(() => {
+  const titledMatch = [...route.matched]
+    .reverse()
+    .find((record) => typeof record.meta.title === 'string')
+  if (titledMatch?.meta.title) {
+    return titledMatch.meta.title as string
+  }
+
+  if (route.name === 'DashboardPage') {
+    return 'Workboard'
+  }
+
+  return typeof route.name === 'string' ? route.name : currentModuleName.value
+})
+
+const currentDescription = computed(() => {
+  if (route.name === 'DashboardPage') {
+    return 'Prioritize approvals, exceptions, and operational changes without getting buried in dashboard noise.'
+  }
+
+  return `You are working inside ${currentModuleName.value}. Keep actions explicit and traceable.`
+})
+
+const tenantName = computed(() => authStore.currentTenant?.name || 'Current Tenant')
+const userEmail = computed(() => authStore.currentUser?.email || 'operator@abren.local')
+const userInitials = computed(
+  () =>
+    userEmail.value
+      .split('@')[0]
+      .split(/[.\-_]/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((segment) => segment[0]?.toUpperCase() ?? '')
+      .join('') || 'AB',
+)
+
+function canAccess(item: NavigationItem): boolean {
+  if (!item.permissions?.length) return true
+  return item.permissions.every((permission) => authStore.hasPermission(permission))
+}
+
+function isItemActive(item: NavigationItem): boolean {
+  if (item.href) {
+    return route.path === item.href
+  }
+
+  if (item.to?.name) {
+    return route.name === item.to.name
+  }
+
+  if (item.to?.path) {
+    return route.path === item.to.path
+  }
+
+  return false
+}
+
+function toggleSidebar() {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+}
+
+function closeMobileSidebar() {
+  isMobileSidebarOpen.value = false
+}
 
 async function handleLogout() {
   authStore.logout()
@@ -70,180 +190,253 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="flex h-screen bg-[var(--app-canvas)] overflow-hidden">
-    <!-- Sidebar -->
+  <div class="flex min-h-screen bg-[var(--app-canvas)] text-[var(--color-neutral-900)]">
+    <div
+      v-if="isMobileSidebarOpen"
+      class="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-[2px] lg:hidden"
+      @click="closeMobileSidebar"
+    />
+
     <aside
-      class="w-64 border-r border-[var(--color-neutral-200)] bg-[var(--app-sidebar)] flex flex-col z-20"
+      :class="[
+        'fixed inset-y-0 left-0 z-40 flex w-[19rem] flex-col border-r border-[color:var(--color-neutral-200)] bg-[linear-gradient(180deg,#ffffff,rgba(248,250,252,0.96))] transition-transform duration-200 lg:static lg:translate-x-0',
+        isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        isSidebarCollapsed ? 'lg:w-[5.5rem]' : 'lg:w-[19rem]',
+      ]"
     >
-      <div class="p-6">
-        <h1 class="text-xl font-bold text-[var(--color-primary-600)] tracking-tight">Abren ERP</h1>
+      <div
+        class="flex items-center justify-between border-b border-[color:var(--color-neutral-200)] px-4 py-3"
+      >
+        <div class="flex min-w-0 items-center gap-3">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-primary-600)] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,70,229,0.22)]"
+          >
+            AB
+          </div>
+          <div v-if="!isSidebarCollapsed" class="min-w-0">
+            <p class="truncate text-sm font-semibold text-[var(--color-neutral-900)]">Abren ERP</p>
+            <p class="mt-0.5 truncate text-xs text-[var(--color-neutral-500)]">
+              Finance operations workspace
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--color-neutral-200)] bg-white text-[var(--color-neutral-600)] lg:hidden"
+            type="button"
+            @click="closeMobileSidebar"
+          >
+            <PanelLeftClose class="h-4 w-4" />
+          </button>
+          <button
+            class="hidden h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--color-neutral-200)] bg-white text-[var(--color-neutral-600)] lg:inline-flex"
+            type="button"
+            @click="toggleSidebar"
+          >
+            <component :is="isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose" class="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      <nav class="flex-1 px-4 space-y-8 overflow-y-auto pt-2 scrollbar-none pb-8">
-        <!-- Business Section -->
-        <div>
-          <h3
-            class="px-3 text-[10.5px] font-bold text-[var(--color-neutral-400)] uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
+      <div
+        v-if="!isSidebarCollapsed"
+        class="border-b border-[color:var(--color-neutral-200)] px-4 py-3"
+      >
+        <div
+          class="rounded-2xl bg-[linear-gradient(145deg,rgba(99,102,241,0.10),rgba(59,130,246,0.04),rgba(255,255,255,0.96))] p-3.5 ring-1 ring-[color:var(--color-neutral-200)]"
+        >
+          <p
+            class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-neutral-500)]"
           >
-            <Library class="h-3 w-3 mr-2" />
-            Applications
-          </h3>
-          <div class="space-y-0.5">
-            <RouterLink
-              v-for="item in [...coreItems, ...businessItems]"
-              :key="item.label"
-              :to="item.href || item.to"
-              :class="[
-                'flex items-center px-4 py-2 text-sm font-medium rounded-sm transition-all duration-200 group',
-                (item.href && route.path === item.href) ||
-                (item.to?.name && route.name === item.to.name)
-                  ? 'bg-white text-[var(--color-primary-700)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-neutral-200)]'
-                  : 'text-[var(--color-neutral-700)] hover:bg-[var(--color-neutral-200)] hover:text-[var(--color-neutral-900)] border-transparent',
-              ]"
+            Current workspace
+          </p>
+          <p class="mt-2 text-sm font-semibold text-[var(--color-neutral-900)]">
+            {{ currentTitle }}
+          </p>
+          <p class="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-neutral-600)]">
+            {{ currentDescription }}
+          </p>
+        </div>
+      </div>
+
+      <nav class="flex-1 space-y-4 overflow-y-auto px-3 py-3">
+        <div v-for="group in startGroups" :key="group.title" class="space-y-2">
+          <p
+            v-if="!isSidebarCollapsed"
+            class="px-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-neutral-500)]"
+          >
+            {{ group.title }}
+          </p>
+          <RouterLink
+            v-for="item in group.items.filter(canAccess)"
+            :key="item.label"
+            :to="item.href || item.to!"
+            :class="[
+              'group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors',
+              isItemActive(item)
+                ? 'bg-[var(--color-primary-600)] text-white shadow-[0_14px_28px_rgba(79,70,229,0.22)]'
+                : 'text-[var(--color-neutral-700)] hover:bg-[var(--color-neutral-100)]',
+              isSidebarCollapsed ? 'justify-center px-0' : '',
+            ]"
+            @click="closeMobileSidebar"
+          >
+            <component :is="item.icon" class="h-4 w-4 shrink-0" />
+            <span v-if="!isSidebarCollapsed" class="truncate">{{ item.label }}</span>
+          </RouterLink>
+        </div>
+
+        <div class="space-y-3">
+          <div v-for="group in businessGroups" :key="group.title" class="space-y-1.5">
+            <p
+              v-if="!isSidebarCollapsed"
+              class="px-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-neutral-500)]"
             >
-              <component
-                :is="item.icon"
-                v-if="item.icon"
-                :class="[
-                  'mr-3 h-5 w-5 transition-colors',
-                  (item.href && route.path === item.href) ||
-                  (item.to?.name && route.name === item.to.name)
-                    ? 'text-[var(--color-primary-600)]'
-                    : 'text-[var(--color-neutral-500)] group-hover:text-[var(--color-neutral-700)]',
-                ]"
-              />
-              <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
-                <ChevronRight class="h-4 w-4 text-[var(--color-neutral-300)]" />
-              </div>
-              {{ item.label }}
+              {{ group.title }}
+            </p>
+            <RouterLink
+              v-for="item in group.items.filter(canAccess)"
+              :key="`${group.title}-${item.label}`"
+              :to="item.href || item.to!"
+              :class="[
+                'group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors',
+                isItemActive(item)
+                  ? 'bg-[var(--color-neutral-900)] text-white'
+                  : 'text-[var(--color-neutral-700)] hover:bg-[var(--color-neutral-100)]',
+                isSidebarCollapsed ? 'justify-center px-0' : '',
+              ]"
+              @click="closeMobileSidebar"
+            >
+              <component :is="item.icon || ChevronRight" class="h-4 w-4 shrink-0" />
+              <span v-if="!isSidebarCollapsed" class="truncate">{{ item.label }}</span>
             </RouterLink>
           </div>
         </div>
 
-        <!-- Platform Section -->
-        <div>
-          <h3
-            class="px-3 text-[10.5px] font-bold text-[var(--color-neutral-400)] uppercase tracking-[0.1em] mb-3 flex items-center opacity-60"
-          >
-            <Cpu class="h-3 w-3 mr-2" />
-            Platform Engine
-          </h3>
-          <div class="space-y-0.5">
-            <RouterLink
-              v-for="item in platformItems"
-              :key="item.label"
-              :to="item.href || item.to"
-              :class="[
-                'flex items-center px-4 py-2 text-sm font-medium rounded-sm transition-all duration-200 group',
-                (item.href && route.path === item.href) ||
-                (item.to?.name && route.name === item.to.name)
-                  ? 'bg-white text-[var(--color-neutral-900)] shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-neutral-200)]'
-                  : 'text-[var(--color-neutral-600)] hover:bg-[var(--color-neutral-200)] hover:text-[var(--color-neutral-900)] border-transparent',
-              ]"
+        <div class="space-y-3 border-t border-[color:var(--color-neutral-200)] pt-4">
+          <div v-for="group in platformGroups" :key="group.title" class="space-y-1.5">
+            <p
+              v-if="!isSidebarCollapsed"
+              class="px-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-neutral-500)]"
             >
-              <component
-                :is="item.icon"
-                v-if="item.icon"
-                :class="[
-                  'mr-3 h-5 w-5 transition-colors',
-                  (item.href && route.path === item.href) ||
-                  (item.to?.name && route.name === item.to.name)
-                    ? 'text-[var(--color-neutral-900)]'
-                    : 'text-[var(--color-neutral-500)] group-hover:text-[var(--color-neutral-700)]',
-                ]"
-              />
-              <div v-else class="mr-3 h-5 w-5 flex items-center justify-center">
-                <ChevronRight class="h-4 w-4 text-[var(--color-neutral-300)]" />
-              </div>
-              {{ item.label }}
+              {{ group.title }}
+            </p>
+            <RouterLink
+              v-for="item in group.items.filter(canAccess)"
+              :key="`${group.title}-${item.label}`"
+              :to="item.href || item.to!"
+              :class="[
+                'group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors',
+                isItemActive(item)
+                  ? 'bg-[var(--color-neutral-900)] text-white'
+                  : 'text-[var(--color-neutral-600)] hover:bg-[var(--color-neutral-100)] hover:text-[var(--color-neutral-900)]',
+                isSidebarCollapsed ? 'justify-center px-0' : '',
+              ]"
+              @click="closeMobileSidebar"
+            >
+              <component :is="item.icon || ChevronRight" class="h-4 w-4 shrink-0" />
+              <span v-if="!isSidebarCollapsed" class="truncate">{{ item.label }}</span>
             </RouterLink>
           </div>
         </div>
       </nav>
 
-      <div class="p-4 border-t border-[var(--color-neutral-200)] bg-[var(--app-sidebar)]">
-        <AppButton
-          variant="stealth"
-          class="w-full justify-start text-[var(--color-danger-600)] hover:bg-[var(--color-danger-50)]"
+      <div class="border-t border-[color:var(--color-neutral-200)] p-3">
+        <button
+          type="button"
+          :class="[
+            'flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium text-[var(--color-danger-700)] transition-colors hover:bg-[var(--color-danger-50)]',
+            isSidebarCollapsed ? 'justify-center px-0' : '',
+          ]"
           @click="handleLogout"
         >
-          <LogOut class="mr-3 h-5 w-5" />
-          Logout
-        </AppButton>
+          <LogOut class="h-4 w-4 shrink-0" />
+          <span v-if="!isSidebarCollapsed">Logout</span>
+        </button>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-[var(--app-canvas)]">
+    <main class="flex min-w-0 flex-1 flex-col">
       <header
-        class="h-14 border-b border-[var(--color-neutral-200)] bg-white flex items-center justify-between px-6 sticky top-0 z-10 shrink-0"
+        class="sticky top-0 z-20 border-b border-[color:var(--color-neutral-200)] bg-[rgba(248,249,250,0.88)] backdrop-blur"
       >
-        <div class="flex items-center gap-6">
-          <div
-            class="flex items-center gap-2 text-[var(--color-neutral-500)] px-3 py-1 bg-[var(--color-neutral-50)] rounded-sm border border-[var(--color-neutral-200)] cursor-text hover:bg-[var(--color-neutral-100)] transition-colors min-w-[240px]"
-          >
-            <Search :size="14" />
-            <span class="text-xs">Search global records...</span>
-            <span class="ml-auto flex items-center gap-1 text-[10px] opacity-50">
-              <Command :size="10" />
-              <span>K</span>
-            </span>
+        <div class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <button
+              class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--color-neutral-200)] bg-white text-[var(--color-neutral-700)] lg:hidden"
+              type="button"
+              @click="isMobileSidebarOpen = true"
+            >
+              <Menu class="h-4 w-4" />
+            </button>
+
+            <div class="min-w-0">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-neutral-500)]"
+              >
+                {{ currentModuleName }}
+              </p>
+              <h1
+                class="truncate text-lg font-semibold tracking-tight text-[var(--color-neutral-900)]"
+              >
+                {{ currentTitle }}
+              </h1>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              class="hidden items-center gap-2 rounded-2xl border border-[color:var(--color-neutral-200)] bg-white px-3 py-2 text-sm text-[var(--color-neutral-600)] shadow-sm transition-colors hover:bg-[var(--color-neutral-100)] md:inline-flex"
+            >
+              <Search class="h-4 w-4" />
+              <span>Search records and actions</span>
+              <span
+                class="ml-2 inline-flex items-center gap-1 rounded-lg bg-[var(--color-neutral-100)] px-2 py-0.5 text-[11px]"
+              >
+                <Command class="h-3 w-3" />
+                K
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--color-neutral-200)] bg-white text-[var(--color-neutral-600)] shadow-sm"
+            >
+              <Bell class="h-4 w-4" />
+            </button>
+
+            <div class="hidden h-8 w-px bg-[var(--color-neutral-200)] sm:block" />
+
+            <div
+              class="flex items-center gap-3 rounded-2xl border border-[color:var(--color-neutral-200)] bg-white px-3 py-2 shadow-sm"
+            >
+              <div class="hidden text-right sm:block">
+                <p class="text-sm font-semibold text-[var(--color-neutral-900)]">
+                  {{ tenantName }}
+                </p>
+                <p class="text-xs text-[var(--color-neutral-500)]">{{ userEmail }}</p>
+              </div>
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-neutral-900)] text-sm font-semibold text-white"
+              >
+                {{ userInitials }}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <AppButton variant="stealth">
-            <Bell :size="18" class="text-[var(--color-neutral-500)]" />
-          </AppButton>
-          <AppButton variant="stealth">
-            <Settings :size="18" class="text-[var(--color-neutral-500)]" />
-          </AppButton>
-
-          <div class="h-6 w-px bg-[var(--color-neutral-200)] mx-2" />
-
-          <div class="flex items-center gap-3 pl-2">
-            <div class="text-right hidden sm:block">
-              <p class="text-[12px] font-bold leading-none text-[var(--color-neutral-900)]">
-                Abren Admin
-              </p>
-              <p class="text-[10px] text-[var(--color-neutral-500)] mt-1">Tenant Administrator</p>
-            </div>
-            <div
-              class="h-8 w-8 rounded-full border border-[var(--color-primary-100)] bg-[var(--color-primary-600)] flex items-center justify-center text-white font-bold text-xs shadow-sm"
-            >
-              AD
-            </div>
-          </div>
+        <div class="flex items-center justify-between gap-4 px-4 py-2 sm:px-6">
+          <AppBreadcrumb />
+          <div id="command-bar-portal" class="hidden sm:block" />
         </div>
       </header>
 
-      <!-- Sub-Header / Breadcrumb / Command Bar Area -->
-      <div
-        class="h-10 bg-white border-b border-[var(--color-neutral-200)] flex items-center justify-between px-6 shrink-0"
-      >
-        <AppBreadcrumb />
-        <div id="command-bar-portal" />
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="w-full">
+      <div class="flex-1 overflow-y-auto">
+        <div class="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8">
           <RouterView />
         </div>
       </div>
     </main>
   </div>
 </template>
-
-<style scoped>
-.shelf-shadow {
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

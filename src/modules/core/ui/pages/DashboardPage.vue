@@ -1,173 +1,390 @@
 <script setup lang="ts">
-import { useAuditStore } from '@/shared/infrastructure/audit.store'
-import { storeToRefs } from 'pinia'
-import GlobalActivityFeed from '../components/GlobalActivityFeed.vue'
-import { Activity, DollarSign, TrendingUp, Users, LayoutDashboard, Zap } from 'lucide-vue-next'
-import { useUsers } from '../../application/composables/useUsers'
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  CreditCard,
+  FileClock,
+  Inbox,
+  LayoutDashboard,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Workflow,
+} from 'lucide-vue-next'
+import { useAuditStore } from '@/shared/infrastructure/audit.store'
+import { useAuthStore } from '@/shared/auth/auth.store'
+import { PageHeader, WorkspacePanel } from '@/shared/components/workspace'
+import { useUsers } from '../../application/composables/useUsers'
+import { usePendingApprovals } from '@/modules/workflows/application/composables/usePendingApprovals'
+import { usePaymentRequestStats } from '@/modules/finance/ap/application/composables/usePaymentRequestStats'
 
+const authStore = useAuthStore()
 const auditStore = useAuditStore()
-const { totalLogs } = storeToRefs(auditStore)
+const { activityLog, totalLogs } = storeToRefs(auditStore)
 
-const { users, isPending: isLoadingUsers } = useUsers()
+const { users } = useUsers()
+const { tasks, isLoading: isLoadingTasks } = usePendingApprovals()
+const { stats, isLoading: isLoadingStats } = usePaymentRequestStats()
+
+const pendingApprovalsCount = computed(() => tasks.value?.length ?? 0)
 const activeUsersCount = computed(() => users.value?.length ?? 0)
+const submittedRequestsCount = computed(() => stats.value?.submittedCount ?? 0)
+const approvedRequestsCount = computed(() => stats.value?.approvedCount ?? 0)
+const paidRequestsCount = computed(() => stats.value?.paidCount ?? 0)
+const rejectedRequestsCount = computed(() => stats.value?.rejectedCount ?? 0)
+const totalOperationalAmount = computed(
+  () => stats.value?.totalAmount.format('en-ET') ?? 'Awaiting source',
+)
+const tenantName = computed(() => authStore.currentTenant?.name ?? 'Current tenant')
+
+const priorityItems = computed(() =>
+  (tasks.value ?? []).slice(0, 5).map((task) => ({
+    id: task.id,
+    title: `${task.entityType.replace(/_/g, ' ')} approval`,
+    subtitle: task.targetState
+      ? `Move ${task.currentState} to ${task.targetState}`
+      : `Currently in ${task.currentState}`,
+    submittedAt: formatDate(task.submittedAt),
+  })),
+)
+
+const recentEvents = computed(() =>
+  activityLog.value.slice(0, 6).map((event) => ({
+    id: event.metadata.id,
+    title: formatEventTitle(event.type),
+    sourceModule: event.metadata.sourceModule,
+    timestamp: formatDate(event.metadata.timestamp),
+  })),
+)
+
+const quickLinks = [
+  {
+    title: 'Workflow Inbox',
+    description: 'Process approvals and unblock waiting work.',
+    to: { name: 'workflows.inbox' },
+  },
+  {
+    title: 'Payment Requests',
+    description: 'Review requests moving through the finance pipeline.',
+    to: { name: 'PaymentRequestsList' },
+  },
+  {
+    title: 'Vendor Bills',
+    description: 'Validate bill intake and source document coverage.',
+    to: { name: 'VendorBillsList' },
+  },
+  {
+    title: 'Chart of Accounts',
+    description: 'Maintain the ledger structure and accounting controls.',
+    to: { name: 'LedgerCoa' },
+  },
+]
+
+function formatEventTitle(eventName: string): string {
+  const [entity, action] = eventName.split(':')
+  const formattedEntity = entity
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+
+  return action ? `${formattedEntity} ${action.replace(/-/g, ' ')}` : formattedEntity
+}
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) {
+    return 'Awaiting timestamp'
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return 'Awaiting timestamp'
+  }
+
+  return new Intl.DateTimeFormat('en-ET', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+}
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
-    <!-- Page Header -->
-    <div
-      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+  <div class="space-y-6">
+    <PageHeader
+      eyebrow="Workboard"
+      title="Operational finance at a glance"
+      :description="`Focus ${tenantName} on what needs action now, what is blocked, and what changed recently.`"
     >
-      <div class="flex items-center gap-4">
-        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
-          <LayoutDashboard class="h-6 w-6 text-[var(--color-primary-600)]" />
+      <template #icon>
+        <LayoutDashboard class="h-6 w-6" />
+      </template>
+
+      <template #actions>
+        <RouterLink
+          :to="{ name: 'workflows.inbox' }"
+          class="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-neutral-900)] px-4 py-2.5 text-sm font-medium text-white shadow-[0_12px_24px_rgba(15,23,42,0.16)] transition-transform hover:-translate-y-0.5"
+        >
+          Open Inbox
+          <ArrowRight class="h-4 w-4" />
+        </RouterLink>
+      </template>
+    </PageHeader>
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
+      >
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-[var(--color-neutral-500)]">Pending approvals</p>
+          <Inbox class="h-4 w-4 text-[var(--color-primary-600)]" />
         </div>
-        <div>
-          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
-            Dashboard
-          </h1>
-          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
-            Real-time financial visibility & system monitoring.
-          </p>
-        </div>
+        <p class="mt-4 text-3xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ isLoadingTasks ? '...' : pendingApprovalsCount }}
+        </p>
+        <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+          Waiting on explicit review before work can move forward.
+        </p>
       </div>
 
       <div
-        class="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-success-50)] rounded-sm border border-[var(--color-success-200)]"
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
       >
-        <div class="w-1.5 h-1.5 rounded-full bg-[var(--color-success-600)] animate-pulse"></div>
-        <span
-          class="text-[10px] font-bold text-[var(--color-success-700)] uppercase tracking-widest"
-          >System Live</span
-        >
-      </div>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-8 space-y-6">
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]">
-              System Activity
-            </p>
-            <Activity class="w-4 h-4 text-[var(--color-primary-500)]" />
-          </div>
-          <p class="text-3xl font-bold text-[var(--color-neutral-900)] tabular-nums">
-            {{ totalLogs }}
-          </p>
-          <div class="mt-2 flex items-center gap-1.5">
-            <Zap :size="12" class="text-[var(--color-primary-600)]" />
-            <p
-              class="text-[10px] text-[var(--color-primary-600)] font-bold tracking-widest uppercase"
-            >
-              Hardened Events
-            </p>
-          </div>
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-[var(--color-neutral-500)]">Submitted requests</p>
+          <FileClock class="h-4 w-4 text-[var(--color-warning-600)]" />
         </div>
-
-        <div class="p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]">
-              Total Revenue
-            </p>
-            <DollarSign class="w-4 h-4 text-[var(--color-success-500)]" />
-          </div>
-          <p class="text-3xl font-bold text-[var(--color-neutral-900)] tabular-nums">$45,231</p>
-          <p
-            class="mt-2 text-[10px] text-[var(--color-success-600)] font-bold tracking-widest uppercase"
-          >
-            +20.1% growth
-          </p>
-        </div>
-
-        <div class="p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]">
-              Active Users
-            </p>
-            <Users class="w-4 h-4 text-[var(--color-info-500)]" />
-          </div>
-          <div
-            v-if="isLoadingUsers"
-            class="h-9 w-12 bg-[var(--color-neutral-100)] animate-pulse rounded"
-          ></div>
-          <p v-else class="text-3xl font-bold text-[var(--color-neutral-900)]">
-            {{ activeUsersCount }}
-          </p>
-          <p
-            class="mt-2 text-[10px] text-[var(--color-info-600)] font-bold tracking-widest uppercase"
-          >
-            Tenant Context
-          </p>
-        </div>
-
-        <div class="p-6 bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]">
-              Avg Latency
-            </p>
-            <TrendingUp class="w-4 h-4 text-[var(--color-warning-500)]" />
-          </div>
-          <p class="text-3xl font-bold text-[var(--color-neutral-900)] tabular-nums">140ms</p>
-          <p
-            class="mt-2 text-[10px] text-[var(--color-warning-600)] font-bold tracking-widest uppercase"
-          >
-            Api Performance
-          </p>
-        </div>
+        <p class="mt-4 text-3xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ isLoadingStats ? '...' : submittedRequestsCount }}
+        </p>
+        <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+          Work in review before approval and settlement.
+        </p>
       </div>
 
-      <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
-        <!-- Activity Feed -->
-        <div
-          class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm h-[600px] overflow-hidden flex flex-col"
-        >
-          <div
-            class="px-6 py-4 border-b border-[var(--color-neutral-100)] bg-[var(--color-neutral-50)]"
-          >
-            <h3
-              class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)] flex items-center gap-2"
-            >
-              <Activity :size="14" />
-              Global Activity Stream
-            </h3>
-          </div>
-          <div class="flex-1 overflow-y-auto p-6">
-            <GlobalActivityFeed />
-          </div>
+      <div
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
+      >
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-[var(--color-neutral-500)]">Tracked amount</p>
+          <CreditCard class="h-4 w-4 text-[var(--color-success-600)]" />
         </div>
+        <p class="mt-4 text-3xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ totalOperationalAmount }}
+        </p>
+        <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+          Payment request value currently visible in the system.
+        </p>
+      </div>
 
-        <!-- Secondary Metrics -->
-        <div
-          class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm h-[600px] overflow-hidden flex flex-col"
-        >
-          <div
-            class="px-6 py-4 border-b border-[var(--color-neutral-100)] bg-[var(--color-neutral-50)]"
+      <div
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
+      >
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-[var(--color-neutral-500)]">Active users</p>
+          <Users class="h-4 w-4 text-[var(--color-info-600)]" />
+        </div>
+        <p class="mt-4 text-3xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ activeUsersCount }}
+        </p>
+        <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+          Authenticated operators in the current tenant context.
+        </p>
+      </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <WorkspacePanel
+        title="Attention queue"
+        description="The items below need a human decision before more work can happen."
+      >
+        <template #icon>
+          <AlertTriangle class="h-5 w-5" />
+        </template>
+
+        <template #actions>
+          <RouterLink
+            :to="{ name: 'workflows.inbox' }"
+            class="text-sm font-medium text-[var(--color-primary-700)] hover:text-[var(--color-primary-800)]"
           >
-            <h3
-              class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)] flex items-center gap-2"
-            >
-              <TrendingUp :size="14" />
-              Cashflow Projection
-            </h3>
-          </div>
-          <div
-            class="flex-1 flex flex-col items-center justify-center p-6 text-[var(--color-neutral-400)] italic space-y-4"
+            View all
+          </RouterLink>
+        </template>
+
+        <div v-if="priorityItems.length" class="space-y-3">
+          <RouterLink
+            v-for="item in priorityItems"
+            :key="item.id"
+            :to="{ name: 'workflows.inbox' }"
+            class="flex items-center justify-between gap-4 rounded-2xl border border-[color:var(--color-neutral-200)] bg-[var(--color-neutral-50)] px-4 py-3 transition-colors hover:bg-white"
           >
-            <div
-              class="w-full h-64 bg-[var(--color-neutral-50)] rounded-sm border border-dashed border-[var(--color-neutral-200)] flex items-center justify-center"
-            >
-              <TrendingUp :size="48" class="opacity-10" />
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-[var(--color-neutral-900)]">
+                {{ item.title }}
+              </p>
+              <p class="mt-1 text-sm text-[var(--color-neutral-600)]">{{ item.subtitle }}</p>
             </div>
-            <p class="text-xs font-medium uppercase tracking-wider">
-              Financial intelligence engine warming up...
-            </p>
+            <div class="shrink-0 text-right">
+              <p
+                class="text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-neutral-500)]"
+              >
+                Submitted
+              </p>
+              <p class="mt-1 text-sm text-[var(--color-neutral-700)]">{{ item.submittedAt }}</p>
+            </div>
+          </RouterLink>
+        </div>
+
+        <div
+          v-else
+          class="rounded-2xl border border-dashed border-[color:var(--color-neutral-200)] bg-[var(--color-neutral-50)] px-5 py-8 text-center"
+        >
+          <p class="text-sm font-semibold text-[var(--color-neutral-900)]">
+            No approvals are waiting right now.
+          </p>
+          <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+            When workflow tasks arrive, this queue becomes the fastest way to clear them.
+          </p>
+        </div>
+      </WorkspacePanel>
+
+      <WorkspacePanel
+        title="Flow health"
+        description="A truthful snapshot of the payment-request pipeline."
+      >
+        <template #icon>
+          <Workflow class="h-5 w-5" />
+        </template>
+
+        <div class="space-y-4">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div
+              class="rounded-2xl bg-[var(--color-neutral-50)] p-4 ring-1 ring-[color:var(--color-neutral-200)]"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-neutral-500)]"
+              >
+                Approved
+              </p>
+              <p class="mt-3 text-2xl font-semibold text-[var(--color-neutral-900)]">
+                {{ isLoadingStats ? '...' : approvedRequestsCount }}
+              </p>
+            </div>
+            <div
+              class="rounded-2xl bg-[var(--color-neutral-50)] p-4 ring-1 ring-[color:var(--color-neutral-200)]"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-neutral-500)]"
+              >
+                Paid
+              </p>
+              <p class="mt-3 text-2xl font-semibold text-[var(--color-neutral-900)]">
+                {{ isLoadingStats ? '...' : paidRequestsCount }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border border-[color:var(--color-neutral-200)] bg-[linear-gradient(180deg,rgba(248,250,252,0.9),#ffffff)] p-4"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-danger-50)] text-[var(--color-danger-700)]"
+              >
+                <ShieldCheck class="h-4 w-4" />
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[var(--color-neutral-900)]">
+                  Rejected requests
+                </p>
+                <p class="mt-1 text-sm text-[var(--color-neutral-600)]">
+                  {{
+                    isLoadingStats
+                      ? 'Awaiting source'
+                      : `${rejectedRequestsCount} requests currently require follow-up or correction.`
+                  }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </WorkspacePanel>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <WorkspacePanel
+        title="Recent operational trace"
+        description="Visible history builds trust. Nothing important should feel untraceable."
+      >
+        <template #icon>
+          <Sparkles class="h-5 w-5" />
+        </template>
+
+        <template #actions>
+          <span class="text-sm text-[var(--color-neutral-500)]">{{ totalLogs }} total events</span>
+        </template>
+
+        <div v-if="recentEvents.length" class="space-y-3">
+          <div
+            v-for="event in recentEvents"
+            :key="event.id"
+            class="flex items-start justify-between gap-4 rounded-2xl border border-[color:var(--color-neutral-200)] px-4 py-3"
+          >
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-[var(--color-neutral-900)]">{{ event.title }}</p>
+              <p class="mt-1 text-sm text-[var(--color-neutral-600)]">
+                {{ event.sourceModule }} module
+              </p>
+            </div>
+            <p class="shrink-0 text-sm text-[var(--color-neutral-500)]">{{ event.timestamp }}</p>
+          </div>
+        </div>
+
+        <div
+          v-else
+          class="rounded-2xl border border-dashed border-[color:var(--color-neutral-200)] bg-[var(--color-neutral-50)] px-5 py-8 text-center"
+        >
+          <p class="text-sm font-semibold text-[var(--color-neutral-900)]">
+            No operational events captured yet.
+          </p>
+          <p class="mt-2 text-sm text-[var(--color-neutral-600)]">
+            The workboard stays honest: it will show activity when real events are flowing.
+          </p>
+        </div>
+      </WorkspacePanel>
+
+      <WorkspacePanel
+        title="Jump into work"
+        description="Shortcuts into the parts of the system that drive real execution."
+      >
+        <template #icon>
+          <CheckCircle2 class="h-5 w-5" />
+        </template>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <RouterLink
+            v-for="link in quickLinks"
+            :key="link.title"
+            :to="link.to"
+            class="group rounded-2xl border border-[color:var(--color-neutral-200)] bg-[linear-gradient(180deg,#ffffff,rgba(248,250,252,0.88))] p-4 transition-transform hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)]"
+          >
+            <p class="text-sm font-semibold text-[var(--color-neutral-900)]">{{ link.title }}</p>
+            <p class="mt-2 text-sm leading-6 text-[var(--color-neutral-600)]">
+              {{ link.description }}
+            </p>
+            <div
+              class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary-700)]"
+            >
+              Open
+              <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </div>
+          </RouterLink>
+        </div>
+      </WorkspacePanel>
+    </section>
   </div>
 </template>
