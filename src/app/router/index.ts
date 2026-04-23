@@ -32,12 +32,12 @@ const router = createRouter({
         },
         // Dynamically register module routes
         // Dynamically register module routes (synchronous mapping, components remain lazy loaded)
-        ...allModules.flatMap((m) => {
-          return m.routes.map((r) => ({
-            ...r,
-            path: `${m.id}/${r.path}`.replace(/\/+/g, '/'),
-          }))
-        }),
+        ...allModules.map((m) => ({
+          path: m.id,
+          meta: { title: m.name },
+          component: () => import('@/shared/components/workspace/ModuleShell.vue'),
+          children: m.routes,
+        })),
       ],
     },
     {

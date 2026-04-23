@@ -4,37 +4,54 @@ export default [
   // --- Payment Requests ---
   {
     path: 'requests',
-    name: 'PaymentRequestsList',
-    component: () => import('./ui/payment-requests/pages/PaymentRequestsListPage.vue'),
-  },
-
-  {
-    path: 'requests/create',
-    name: 'PaymentRequestCreate',
-    component: () => import('./ui/payment-requests/pages/PaymentRequestCreatePage.vue'),
-  },
-  {
-    path: 'requests/:id',
-    name: 'PaymentRequestDetail',
-    component: () => import('./ui/payment-requests/pages/PaymentRequestDetailPage.vue'),
-    props: true,
+    meta: { title: 'Payment Requests' },
+    component: () => import('@/shared/components/workspace/ModuleShell.vue'),
+    children: [
+      {
+        path: '',
+        name: 'PaymentRequestsList',
+        component: () => import('./ui/payment-requests/pages/PaymentRequestsListPage.vue'),
+      },
+      {
+        path: 'create',
+        name: 'PaymentRequestCreate',
+        meta: { title: 'New Request' },
+        component: () => import('./ui/payment-requests/pages/PaymentRequestCreatePage.vue'),
+      },
+      {
+        path: ':id',
+        name: 'PaymentRequestDetail',
+        meta: { title: 'Detail' },
+        component: () => import('./ui/payment-requests/pages/PaymentRequestDetailPage.vue'),
+        props: true,
+      },
+    ],
   },
 
   // --- Vendor Bills ---
   {
     path: 'vendor-bills',
-    name: 'VendorBillsList',
-    component: () => import('./ui/vendor-bills/pages/VendorBillsListPage.vue'),
-  },
-  {
-    path: 'vendor-bills/create',
-    name: 'VendorBillCreate',
-    component: () => import('./ui/vendor-bills/pages/VendorBillCreatePage.vue'),
-  },
-  {
-    path: 'vendor-bills/:id',
-    name: 'VendorBillDetail',
-    component: () => import('./ui/vendor-bills/pages/VendorBillDetailPage.vue'),
-    props: true,
+    meta: { title: 'Vendor Bills' },
+    component: () => import('@/shared/components/workspace/ModuleShell.vue'),
+    children: [
+      {
+        path: '',
+        name: 'VendorBillsList',
+        component: () => import('./ui/vendor-bills/pages/VendorBillsListPage.vue'),
+      },
+      {
+        path: 'create',
+        name: 'VendorBillCreate',
+        meta: { title: 'New Bill' },
+        component: () => import('./ui/vendor-bills/pages/VendorBillCreatePage.vue'),
+      },
+      {
+        path: ':id',
+        name: 'VendorBillDetail',
+        meta: { title: 'Detail' },
+        component: () => import('./ui/vendor-bills/pages/VendorBillDetailPage.vue'),
+        props: true,
+      },
+    ],
   },
 ] satisfies RouteRecordRaw[]
