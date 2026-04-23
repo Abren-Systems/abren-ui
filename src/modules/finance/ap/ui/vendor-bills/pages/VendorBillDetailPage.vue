@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AppButton, AppBadge } from '@/shared/components/primitives'
-import { ArrowLeft, MoreHorizontal, History, CheckCircle, FileText } from 'lucide-vue-next'
+import { AppBadge, AppButton } from '@/shared/components/primitives'
+import { PageHeader, WorkspacePanel } from '@/shared/components/workspace'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle,
+  FileText,
+  History,
+  MoreHorizontal,
+  Receipt,
+} from 'lucide-vue-next'
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu'
 import { useVendorBill } from '../../../application/composables/useVendorBill'
 import { useValidateVendorBill } from '../../../application/composables/useValidateVendorBill'
@@ -16,18 +25,6 @@ import { useRejectVendorBill } from '../../../application/composables/useRejectV
 import { usePermissions } from '@/shared/auth/usePermissions'
 import VendorBillTraceDrawer from '../components/VendorBillTraceDrawer.vue'
 import VendorBillRejectModal from '../components/VendorBillRejectModal.vue'
-
-/**
- * Stage 2: Focus Canvas — Vendor Bill Detail Page.
- *
- * Progressive Disclosure flow (UX_ARCHITECTURE.md §2):
- *   VendorBillsListPage → THIS PAGE → TraceDrawer / ActionModals
- *
- * Action Surface (3-tier hierarchy per UX_ARCHITECTURE.md §6):
- *   Primary:  Validate & Accrue (DRAFT), Create PR (VALIDATED)
- *   Secondary: View Trace
- *   Tertiary: Reject/Void (destructive, via overflow + RejectModal)
- */
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
@@ -37,17 +34,66 @@ const { bill, isLoading } = useVendorBill(props.id)
 const { validate, isValidating } = useValidateVendorBill(props.id)
 const { reject, isPending: isRejecting } = useRejectVendorBill(props.id)
 
-// Overlay state
 const isTraceOpen = ref(false)
 const isRejectModalOpen = ref(false)
 
 const isActionPending = computed(() => isValidating.value || isRejecting.value)
 
-const STATUS_VARIANT: Record<string, 'primary' | 'success' | 'neutral' | 'warning' | 'danger'> = {
-  DRAFT: 'neutral',
-  VALIDATED: 'success',
-  PAID: 'primary',
-}
+const statusVariant = computed<'neutral' | 'success' | 'primary' | 'warning' | 'danger' | 'info'>(
+  () => {
+    switch (bill.value?.status) {
+      case 'VALIDATED':
+        return 'success'
+      case 'PAID':
+        return 'primary'
+      default:
+        return 'neutral'
+    }
+  },
+)
+
+const summaryCards = computed(() => {
+  if (!bill.value) return []
+
+  return [
+    {
+      label: 'Total amount',
+      value: bill.value.totalAmount.format('en-ET'),
+      detail: 'Supplier invoice value captured for accrual and payment.',
+    },
+    {
+      label: 'Bill number',
+      value: bill.value.billNumber,
+      detail: 'Supplier-facing reference used during reconciliation.',
+    },
+    {
+      label: 'Issue date',
+      value: new Date(bill.value.issueDate).toLocaleDateString('en-ET'),
+      detail: 'When the invoice was issued by the supplier.',
+    },
+    {
+      label: 'Due date',
+      value: new Date(bill.value.dueDate).toLocaleDateString('en-ET'),
+      detail: 'When the liability is expected to be settled.',
+    },
+  ]
+})
+
+const focusGuidance = computed(() => {
+  if (!bill.value)
+    return 'Review the bill, validate it into the ledger, and use trace for upstream or downstream context.'
+
+  switch (bill.value.status) {
+    case 'DRAFT':
+      return 'Draft bills should be validated only after invoice details, accounts, and categories are trustworthy.'
+    case 'VALIDATED':
+      return 'Validated bills are ready to feed the payment-request flow without re-entering the source context.'
+    case 'PAID':
+      return 'Paid bills are resolved, but trace remains important for audit and supplier follow-up.'
+    default:
+      return 'Review the bill, validate it into the ledger, and use trace for upstream or downstream context.'
+  }
+})
 
 async function handleValidate() {
   await validate()
@@ -59,228 +105,225 @@ async function handleReject(reason: string) {
 }
 
 function handleCreatePR() {
-  void router.push({ name: 'PaymentRequestsList' }) // In real impl, would perhaps pass bill ID as query param
+  void router.push({ name: 'PaymentRequestsList' })
 }
 
 function goBack() {
-  router.push({ name: 'VendorBillsList' })
+  void router.push({ name: 'VendorBillsList' })
 }
 </script>
 
 <template>
-  <div v-if="isLoading && !bill" class="flex h-full items-center justify-center">
-    <p class="text-sm text-neutral-500">Loading vendor bill…</p>
+  <div v-if="isLoading && !bill" class="flex min-h-[50vh] items-center justify-center">
+    <p class="text-sm text-[var(--color-neutral-500)]">Loading vendor bill...</p>
   </div>
 
-  <div v-else-if="bill" class="flex h-full flex-col bg-[var(--app-canvas)]">
-    <!-- ── Header / Action Surface ──────────────────────────── -->
-    <div
-      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+  <div v-else-if="bill" class="space-y-6">
+    <PageHeader
+      eyebrow="Vendor Bill Focus"
+      title="Validate supplier invoice and downstream readiness"
+      :description="focusGuidance"
     >
-      <div class="flex items-center gap-4">
-        <AppButton variant="stealth" @click="goBack">
-          <ArrowLeft :size="18" />
-        </AppButton>
-        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
-          <FileText class="h-6 w-6 text-[var(--color-primary-600)]" />
-        </div>
-        <div>
-          <div class="flex items-center gap-3">
-            <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
-              Vendor Bill
-            </h1>
-            <AppBadge :variant="STATUS_VARIANT[bill.status] || 'neutral'">
-              {{ bill.status }}
-            </AppBadge>
-          </div>
-          <p class="mt-1 text-xs font-mono text-[var(--color-neutral-400)]">{{ bill.id }}</p>
-        </div>
-      </div>
+      <template #icon>
+        <Receipt class="h-6 w-6" />
+      </template>
 
-      <!-- Action Surface: 3-tier hierarchy -->
-      <div class="flex items-center gap-2">
-        <!-- Secondary: Trace -->
+      <template #actions>
+        <AppButton variant="outline" @click="goBack">
+          <template #start>
+            <ArrowLeft class="h-4 w-4" />
+          </template>
+          Back to queue
+        </AppButton>
+
         <AppButton variant="outline" @click="isTraceOpen = true">
-          <History :size="14" class="mr-2" />
+          <template #start>
+            <History class="h-4 w-4" />
+          </template>
           Trace
         </AppButton>
 
-        <!-- Primary: Validate (DRAFT → VALIDATED) -->
         <AppButton
           v-if="bill.status === 'DRAFT' && hasPermission('ap:post')"
           variant="primary"
           :disabled="isActionPending"
           @click="handleValidate"
         >
-          <CheckCircle :size="14" class="mr-2" />
+          <template #start>
+            <CheckCircle class="h-4 w-4" />
+          </template>
           Validate & Accrue
         </AppButton>
 
-        <!-- Primary: Create PR (VALIDATED → PR Flow) -->
         <AppButton
           v-if="bill.status === 'VALIDATED' && hasPermission('ap:create')"
           variant="primary"
           :disabled="isActionPending"
           @click="handleCreatePR"
         >
-          <FileText :size="14" class="mr-2" />
           Create Payment Request
         </AppButton>
 
-        <!-- Tertiary: Overflow for destructive actions -->
         <DropdownMenu v-if="bill.status === 'DRAFT' && hasPermission('ap:post')">
           <DropdownMenuTrigger as-child>
             <AppButton variant="stealth">
-              <MoreHorizontal :size="16" />
+              <template #start>
+                <MoreHorizontal class="h-4 w-4" />
+              </template>
             </AppButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="min-w-[160px]">
+          <DropdownMenuContent align="end">
             <DropdownMenuSeparator />
-            <DropdownMenuItem @click="isRejectModalOpen = true">
-              <span class="text-[var(--color-danger-600)]">Void Draft Bill</span>
+            <DropdownMenuItem
+              class="text-[var(--color-danger-700)]"
+              @click="isRejectModalOpen = true"
+            >
+              Void draft bill
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </template>
+    </PageHeader>
+
+    <div
+      class="flex flex-wrap items-center gap-3 rounded-2xl bg-[var(--color-neutral-50)] px-4 py-3"
+    >
+      <AppBadge :variant="statusVariant">{{ bill.status }}</AppBadge>
+      <p class="font-mono text-sm text-[var(--color-neutral-500)]">{{ bill.id }}</p>
+      <p class="text-sm text-[var(--color-neutral-600)]">
+        Vendor bills are the source surface. Keep supplier truth clean before triggering payment
+        work.
+      </p>
     </div>
 
-    <!-- ── Main Canvas: Bill Details ──────────────────────── -->
-    <div class="flex-1 overflow-y-auto p-8 space-y-8">
-      <div class="max-w-6xl mx-auto space-y-8">
-        <!-- Metadata summary -->
-        <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
-          <div class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        v-for="card in summaryCards"
+        :key="card.label"
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
+      >
+        <p class="text-sm font-medium text-[var(--color-neutral-500)]">{{ card.label }}</p>
+        <p class="mt-4 text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ card.value }}
+        </p>
+        <p class="mt-2 text-sm leading-6 text-[var(--color-neutral-600)]">{{ card.detail }}</p>
+      </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+      <WorkspacePanel
+        title="Invoice context"
+        description="Read the source narrative before validating, rejecting, or sending it into payment flow."
+      >
+        <template #icon>
+          <AlertTriangle class="h-5 w-5" />
+        </template>
+
+        <div class="space-y-5">
+          <div>
             <p
-              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+              class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
             >
-              Total Amount
+              Justification
             </p>
-            <p class="mt-2 text-2xl font-bold tabular-nums text-[var(--color-neutral-900)]">
-              {{ bill.totalAmount.format() }}
+            <p class="mt-3 text-sm leading-7 text-[var(--color-neutral-700)]">
+              {{ bill.justification }}
             </p>
           </div>
-          <div class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-            <p
-              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
-            >
-              Bill Number
-            </p>
-            <p class="mt-2 font-mono text-xl font-bold text-[var(--color-primary-700)]">
-              {{ bill.billNumber }}
-            </p>
-          </div>
-          <div class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-            <p
-              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
-            >
-              Date Issued
-            </p>
-            <p class="mt-2 text-lg font-bold text-[var(--color-neutral-900)]">
-              {{ bill.issueDate.toLocaleDateString() }}
-            </p>
-          </div>
-          <div class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-            <p
-              class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
-            >
-              Vendor ID
-            </p>
-            <code
-              class="mt-2 block text-xs font-mono text-[var(--color-neutral-700)] bg-[var(--color-neutral-50)] px-2 py-1 rounded-sm border border-[var(--color-neutral-100)] truncate"
-            >
-              {{ bill.vendorId }}
-            </code>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+              >
+                Vendor ID
+              </p>
+              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+                {{ bill.vendorId }}
+              </p>
+            </div>
+            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+              >
+                Currency
+              </p>
+              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+                {{ bill.currency }}
+              </p>
+            </div>
           </div>
         </div>
+      </WorkspacePanel>
 
-        <!-- Justification -->
-        <div class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm">
-          <p
-            class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)] mb-2"
-          >
-            Justification
-          </p>
-          <p class="text-sm leading-relaxed text-[var(--color-neutral-800)]">
-            {{ bill.justification }}
-          </p>
-        </div>
+      <WorkspacePanel
+        title="Expense lines"
+        description="Validate the accounting shape of the bill before it becomes a payment decision."
+        body-class="space-y-4"
+      >
+        <template #icon>
+          <FileText class="h-5 w-5" />
+        </template>
 
-        <!-- Expense Lines -->
-        <div class="space-y-4">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-500)]">
-            Expense Lines
-          </h2>
-          <div
-            class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm overflow-hidden"
-          >
-            <table class="w-full text-xs border-collapse">
-              <thead>
-                <tr class="bg-[var(--color-neutral-50)] border-b border-[var(--color-neutral-200)]">
+        <div class="overflow-hidden rounded-2xl border border-[color:var(--color-neutral-200)]">
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-[var(--color-neutral-50)]">
+                <tr>
                   <th
-                    class="px-4 py-3 text-left font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
                   >
                     Description
                   </th>
                   <th
-                    class="px-4 py-3 text-right font-bold uppercase tracking-widest text-[var(--color-neutral-500)] tabular-nums"
+                    class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
                   >
                     Amount
                   </th>
                   <th
-                    class="px-4 py-3 text-left font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
                   >
                     GL Account
                   </th>
                   <th
-                    class="px-4 py-3 text-left font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
                   >
                     Category
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[var(--color-neutral-100)]">
+              <tbody class="divide-y divide-[var(--color-neutral-200)] bg-white">
                 <tr
-                  v-for="line in bill.lines"
-                  :key="line.id || Math.random().toString()"
-                  class="hover:bg-[var(--color-neutral-50)]/50 transition-colors"
+                  v-for="(line, index) in bill.lines"
+                  :key="line.id ?? `${bill.id}-${index}`"
+                  class="transition-colors hover:bg-[var(--color-neutral-50)]"
                 >
-                  <td class="px-4 py-3 text-[var(--color-neutral-800)]">{{ line.description }}</td>
-                  <td
-                    class="px-4 py-3 text-right tabular-nums font-bold text-[var(--color-neutral-900)]"
-                  >
-                    {{ line.amount.format() }}
+                  <td class="px-4 py-3 text-[var(--color-neutral-700)]">{{ line.description }}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-[var(--color-neutral-900)]">
+                    {{ line.amount.format('en-ET') }}
                   </td>
-                  <td class="px-4 py-3 font-mono text-[var(--color-neutral-500)]">
-                    {{ line.accountId?.slice(0, 8) ?? '—' }}
+                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                    {{ line.accountId ?? 'Not assigned' }}
                   </td>
-                  <td class="px-4 py-3 font-mono text-[var(--color-neutral-500)]">
-                    {{ line.categoryId?.slice(0, 8) ?? '—' }}
+                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                    {{ line.categoryId ?? 'Not assigned' }}
                   </td>
                 </tr>
-              </tbody>
-              <tfoot>
-                <tr
-                  class="bg-[var(--color-neutral-50)]/30 border-t border-[var(--color-neutral-200)] font-bold"
-                >
-                  <td class="px-4 py-4 text-[var(--color-neutral-600)]">Total Bill Value</td>
-                  <td
-                    class="px-4 py-4 text-right tabular-nums text-lg text-[var(--color-primary-700)]"
-                  >
-                    {{ bill.totalAmount.format() }}
+                <tr class="bg-[var(--color-neutral-50)] font-semibold">
+                  <td class="px-4 py-4 text-[var(--color-neutral-700)]">Total</td>
+                  <td class="px-4 py-4 text-right text-[var(--color-primary-700)]">
+                    {{ bill.totalAmount.format('en-ET') }}
                   </td>
                   <td colspan="2" />
                 </tr>
-              </tfoot>
+              </tbody>
             </table>
           </div>
         </div>
-      </div>
-    </div>
+      </WorkspacePanel>
+    </section>
 
-    <!-- ── Stage 3: TraceDrawer ───────────────────────────────── -->
     <VendorBillTraceDrawer v-model:open="isTraceOpen" :bill="bill" />
-
-    <!-- ── Guard: Reject ActionModal (destructive) ────────────── -->
     <VendorBillRejectModal
       v-model:open="isRejectModalOpen"
       :is-pending="isRejecting"

@@ -1,32 +1,75 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import { AppButton } from '@/shared/components/primitives'
-import { Plus, Clock, CheckCircle2, AlertCircle, Wallet, Inbox } from 'lucide-vue-next'
+import { PageHeader, WorkspacePanel } from '@/shared/components/workspace'
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Inbox,
+  Plus,
+} from 'lucide-vue-next'
 import { paymentRequestColumns } from '../grids/payment-request.grid'
 import { usePaymentRequests } from '../../../application/composables/usePaymentRequests'
 import { usePaymentRequestStats } from '../../../application/composables/usePaymentRequestStats'
 import { usePermissions } from '@/shared/auth/usePermissions'
 import type { PaymentRequest } from '../../../domain/ap.types'
 
-/**
- * Stage 1: The Operational Inbox (Queue) — Payment Requests List Page.
- *
- * Density: Maximum (UX_ARCHITECTURE.md §2.4).
- * Flow: Queue (This Page) → Detail (router.push) → Trace (Drawer).
- */
-
 const router = useRouter()
 const { hasPermission } = usePermissions()
 
-// Doctrine Alignment: Sequential Progressive Disclosure
-// We avoid competitive panes (master-detail) to protect cognitive load.
 const { requests, isLoading: isTableLoading } = usePaymentRequests()
 const { stats, isLoading: isStatsLoading } = usePaymentRequestStats()
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
 
+const statCards = computed(() => [
+  {
+    label: 'Submitted',
+    value: stats.value?.submittedCount ?? 0,
+    description: 'Requests waiting for review before money moves.',
+    icon: Clock,
+    tone: 'text-[var(--color-warning-700)] bg-[var(--color-warning-50)]',
+  },
+  {
+    label: 'Approved',
+    value: stats.value?.approvedCount ?? 0,
+    description: 'Requests cleared for payment execution.',
+    icon: CheckCircle2,
+    tone: 'text-[var(--color-info-700)] bg-[var(--color-info-50)]',
+  },
+  {
+    label: 'Rejected',
+    value: stats.value?.rejectedCount ?? 0,
+    description: 'Requests that need correction or follow-up.',
+    icon: AlertCircle,
+    tone: 'text-[var(--color-danger-700)] bg-[var(--color-danger-50)]',
+  },
+  {
+    label: 'Paid',
+    value: stats.value?.paidCount ?? 0,
+    description: 'Requests fully resolved in the current flow.',
+    icon: CreditCard,
+    tone: 'text-[var(--color-success-700)] bg-[var(--color-success-50)]',
+  },
+])
+
+const queueSummary = computed(() => {
+  const totalCount = requests.value?.length ?? 0
+  const submittedCount = stats.value?.submittedCount ?? 0
+  const approvedCount = stats.value?.approvedCount ?? 0
+
+  return [
+    `${totalCount} total requests visible`,
+    `${submittedCount} awaiting review`,
+    `${approvedCount} ready for payout`,
+  ]
+})
+
 function handleRowClick(pr: PaymentRequest) {
-  // Linear Task Progression: Grid Click -> Detail Route
   void router.push({ name: 'PaymentRequestDetail', params: { id: pr.id } })
 }
 
@@ -36,112 +79,82 @@ function handleCreate() {
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
-    <!-- Page Header & Global Action -->
-    <div
-      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+  <div class="space-y-6">
+    <PageHeader
+      dense
+      eyebrow="Accounts Payable Workspace"
+      title="Payment Requests"
+      description="Scan outgoing payment work, identify blocked requests, and move approved items toward settlement."
     >
-      <div class="flex items-center gap-4">
-        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
-          <Inbox class="h-6 w-6 text-[var(--color-primary-600)]" />
-        </div>
-        <div>
-          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
-            Payment Requests
-          </h1>
-          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
-            Process outgoing payments and operational disbursements.
-          </p>
-        </div>
-      </div>
+      <template #icon>
+        <Inbox class="h-6 w-6" />
+      </template>
 
-      <div class="flex items-center gap-2">
+      <template #actions>
         <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
           <template #start>
             <Plus :size="14" />
           </template>
           New Request
         </AppButton>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
-    <!-- Operational Inlet (In-Queue Summary) -->
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-4 shrink-0 p-8 pb-4">
-      <div class="bg-white border border-[var(--color-neutral-200)] shadow-sm p-4 rounded-sm">
-        <div class="flex items-center gap-4">
-          <div class="rounded-sm bg-orange-50 p-2 text-orange-600 border border-orange-100">
-            <Clock :size="20" />
-          </div>
+    <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        v-for="card in statCards"
+        :key="card.label"
+        class="rounded-[20px] border border-[color:var(--color-neutral-200)] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.045)]"
+      >
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <p
-              class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
-            >
-              Submitted
+            <p class="text-sm font-medium text-[var(--color-neutral-500)]">{{ card.label }}</p>
+            <p class="mt-3 text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+              {{ isStatsLoading ? '...' : card.value }}
             </p>
-            <h3 class="text-2xl font-bold tabular-nums text-[var(--color-neutral-900)] mt-0.5">
-              {{ isStatsLoading ? '—' : (stats?.submittedCount ?? 0) }}
-            </h3>
+          </div>
+          <div :class="['flex h-10 w-10 items-center justify-center rounded-[16px]', card.tone]">
+            <component :is="card.icon" class="h-5 w-5" />
           </div>
         </div>
+        <p class="mt-2 text-sm leading-5 text-[var(--color-neutral-600)]">
+          {{ card.description }}
+        </p>
       </div>
+    </section>
 
-      <div class="bg-white border border-[var(--color-neutral-200)] shadow-sm p-4 rounded-sm">
-        <div class="flex items-center gap-4">
-          <div class="rounded-sm bg-blue-50 p-2 text-blue-600 border border-blue-100">
-            <CheckCircle2 :size="20" />
-          </div>
-          <div>
-            <p
-              class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
-            >
-              Approved
-            </p>
-            <h3 class="text-2xl font-bold tabular-nums text-[var(--color-neutral-900)] mt-0.5">
-              {{ isStatsLoading ? '—' : (stats?.approvedCount ?? 0) }}
-            </h3>
-          </div>
+    <WorkspacePanel
+      dense
+      title="Request queue"
+      description="This queue is for triage and movement. Click a row to enter focus mode for a specific request."
+      body-class="space-y-4"
+    >
+      <template #icon>
+        <Inbox class="h-5 w-5" />
+      </template>
+
+      <template #actions>
+        <div class="hidden items-center gap-3 text-sm text-[var(--color-neutral-500)] lg:flex">
+          <span v-for="item in queueSummary" :key="item">{{ item }}</span>
         </div>
+      </template>
+
+      <div
+        class="flex flex-wrap items-center gap-3 rounded-[18px] bg-[var(--color-neutral-50)] px-4 py-2.5"
+      >
+        <p class="text-sm text-[var(--color-neutral-700)]">
+          Queue doctrine: review in the workspace, execute on the detail page, trace on demand.
+        </p>
+        <RouterLink
+          v-if="hasPermission('workflows:view')"
+          :to="{ name: 'workflows.inbox' }"
+          class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary-700)]"
+        >
+          Open workflow inbox
+          <ArrowRight class="h-4 w-4" />
+        </RouterLink>
       </div>
 
-      <div class="bg-white border border-[var(--color-neutral-200)] shadow-sm p-4 rounded-sm">
-        <div class="flex items-center gap-4">
-          <div class="rounded-sm bg-red-50 p-2 text-red-600 border border-red-100">
-            <AlertCircle :size="20" />
-          </div>
-          <div>
-            <p
-              class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
-            >
-              Rejected
-            </p>
-            <h3 class="text-2xl font-bold tabular-nums text-[var(--color-neutral-900)] mt-0.5">
-              {{ isStatsLoading ? '—' : (stats?.rejectedCount ?? 0) }}
-            </h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white border border-[var(--color-neutral-200)] shadow-sm p-4 rounded-sm">
-        <div class="flex items-center gap-4">
-          <div class="rounded-sm bg-green-50 p-2 text-green-600 border border-green-100">
-            <Wallet :size="20" />
-          </div>
-          <div>
-            <p
-              class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)]"
-            >
-              Resolved
-            </p>
-            <h3 class="text-2xl font-bold tabular-nums text-[var(--color-neutral-900)] mt-0.5">
-              {{ isStatsLoading ? '—' : (stats?.paidCount ?? 0) }}
-            </h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Operational Queue (Max Density) -->
-    <div class="min-h-0 flex-1 px-8 pb-8">
       <DataGrid
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
@@ -150,14 +163,10 @@ function handleCreate() {
         :data="requests ?? []"
         :columns="paymentRequestColumns"
         :loading="isTableLoading"
-        placeholder="Search payment requests…"
+        placeholder="Search payment requests..."
         row-clickable
         @row-click="handleRowClick"
-      >
-        <template #toolbar>
-          <!-- Contextual grid actions -->
-        </template>
-      </DataGrid>
-    </div>
+      />
+    </WorkspacePanel>
   </div>
 </template>

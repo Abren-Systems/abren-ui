@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { AppButton, AppBadge } from '@/shared/components/primitives'
+import { computed, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { AppBadge, AppButton } from '@/shared/components/primitives'
+import { PageHeader, WorkspacePanel } from '@/shared/components/workspace'
 import {
+  AlertTriangle,
   ArrowLeft,
-  MoreHorizontal,
-  History,
   CheckCircle,
-  Send,
+  CreditCard,
   FileSpreadsheet,
+  History,
+  MoreHorizontal,
+  Send,
 } from 'lucide-vue-next'
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu'
 import { usePaymentRequest } from '../../../application/composables/usePaymentRequest'
 import { useSubmitPaymentRequest } from '../../../application/composables/useSubmitPaymentRequest'
@@ -27,18 +30,6 @@ import PaymentRequestTraceDrawer from '../components/PaymentRequestTraceDrawer.v
 import PaymentRequestRejectModal from '../components/PaymentRequestRejectModal.vue'
 import PaymentRequestPayModal from '../components/PaymentRequestPayModal.vue'
 
-/**
- * Stage 2: Focus Canvas — Payment Request Detail Page.
- *
- * Progressive Disclosure flow (UX_ARCHITECTURE.md §2):
- *   PaymentRequestsListPage → THIS PAGE → TraceDrawer / ActionModals
- *
- * Action Surface (3-tier hierarchy per UX_ARCHITECTURE.md §6):
- *   Primary:  Submit (DRAFT), Approve (SUBMITTED), Pay (APPROVED)
- *   Secondary: View Trace
- *   Tertiary: Reject (destructive, via overflow + RejectModal)
- */
-
 const props = defineProps<{ id: string }>()
 const router = useRouter()
 const { hasPermission } = usePermissions()
@@ -49,7 +40,6 @@ const { approve, isPending: isApproving } = useApprovePaymentRequest(props.id)
 const { reject, isPending: isRejecting } = useRejectPaymentRequest(props.id)
 const { pay, isPending: isPaying } = usePayPaymentRequest(props.id)
 
-// Overlay state
 const isTraceOpen = ref(false)
 const isRejectModalOpen = ref(false)
 const isPayModalOpen = ref(false)
@@ -58,13 +48,68 @@ const isActionPending = computed(
   () => isSubmitting.value || isApproving.value || isRejecting.value || isPaying.value,
 )
 
-const STATUS_VARIANT: Record<string, 'neutral' | 'info' | 'success' | 'danger'> = {
-  DRAFT: 'neutral',
-  SUBMITTED: 'info',
-  APPROVED: 'success',
-  REJECTED: 'danger',
-  PAID: 'success',
-}
+const statusVariant = computed<'neutral' | 'info' | 'success' | 'danger' | 'primary' | 'warning'>(
+  () => {
+    switch (request.value?.status) {
+      case 'SUBMITTED':
+        return 'info'
+      case 'APPROVED':
+        return 'success'
+      case 'REJECTED':
+        return 'danger'
+      case 'PAID':
+        return 'primary'
+      default:
+        return 'neutral'
+    }
+  },
+)
+
+const summaryCards = computed(() => {
+  if (!request.value) return []
+
+  return [
+    {
+      label: 'Total amount',
+      value: formatMoney(request.value.totalAmount),
+      detail: 'Value requested for disbursement.',
+    },
+    {
+      label: 'Currency',
+      value: request.value.currency,
+      detail: 'Transaction currency for all request lines.',
+    },
+    {
+      label: 'Approval step',
+      value: `Step ${request.value.currentApprovalStep}`,
+      detail: 'Current workflow stage before resolution.',
+    },
+    {
+      label: 'Line items',
+      value: String(request.value.lines.length),
+      detail: 'Line-level breakdown driving the request total.',
+    },
+  ]
+})
+
+const focusGuidance = computed(() => {
+  if (!request.value) return 'Review the request details and use trace for provenance when needed.'
+
+  switch (request.value.status) {
+    case 'DRAFT':
+      return 'Draft requests should be checked for completeness before entering workflow.'
+    case 'SUBMITTED':
+      return 'Submitted requests need an explicit approval or rejection decision.'
+    case 'APPROVED':
+      return 'Approved requests are ready for payment execution and final settlement.'
+    case 'REJECTED':
+      return 'Rejected requests should be traced back to the blocking issue before any retry.'
+    case 'PAID':
+      return 'Paid requests are resolved, but trace remains available for audit and provenance.'
+    default:
+      return 'Review the request details and use trace for provenance when needed.'
+  }
+})
 
 async function handleSubmit() {
   await submit()
@@ -85,56 +130,46 @@ async function handlePay(data: { payment_method: string; disbursement_reference:
 }
 
 function goBack() {
-  router.push({ name: 'PaymentRequestsList' })
+  void router.push({ name: 'PaymentRequestsList' })
 }
 
 function formatMoney(money: unknown) {
-  const m = money as { format: () => string } | null
-  if (!m || typeof m.format !== 'function') return '—'
-  return m.format()
+  const value = money as { format?: (locale?: string) => string } | null
+  if (!value?.format) return 'Awaiting amount'
+  return value.format('en-ET')
 }
 </script>
 
 <template>
-  <div v-if="isLoading && !request" class="flex h-full items-center justify-center">
-    <p class="text-sm text-neutral-500">Loading payment request…</p>
+  <div v-if="isLoading && !request" class="flex min-h-[50vh] items-center justify-center">
+    <p class="text-sm text-[var(--color-neutral-500)]">Loading payment request...</p>
   </div>
 
-  <div v-else-if="request" class="flex h-full flex-col">
-    <!-- ── Header / Action Surface ──────────────────────────── -->
-    <div
-      class="flex shrink-0 items-center justify-between border-b border-[var(--color-neutral-200)] px-6 py-4 bg-white"
+  <div v-else-if="request" class="space-y-6">
+    <PageHeader
+      eyebrow="Payment Request Focus"
+      title="Review and execute payment request"
+      :description="focusGuidance"
     >
-      <div class="flex items-center gap-4">
-        <AppButton variant="stealth" @click="goBack">
+      <template #icon>
+        <CreditCard class="h-6 w-6" />
+      </template>
+
+      <template #actions>
+        <AppButton variant="outline" @click="goBack">
           <template #start>
             <ArrowLeft class="h-4 w-4" />
           </template>
+          Back to queue
         </AppButton>
-        <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-lg font-semibold tracking-tight text-[var(--color-neutral-900)]">
-              Payment Request
-            </h1>
-            <AppBadge :variant="STATUS_VARIANT[request.status]">
-              {{ request.status }}
-            </AppBadge>
-          </div>
-          <p class="mt-0.5 font-mono text-xs text-[var(--color-neutral-400)]">{{ request.id }}</p>
-        </div>
-      </div>
 
-      <!-- Action Surface: 3-tier hierarchy -->
-      <div class="flex items-center gap-2">
-        <!-- Secondary: Trace -->
         <AppButton variant="outline" @click="isTraceOpen = true">
           <template #start>
-            <History class="h-3.5 w-3.5" />
+            <History class="h-4 w-4" />
           </template>
           Trace
         </AppButton>
 
-        <!-- Primary: Submit (DRAFT → SUBMITTED) -->
         <AppButton
           v-if="request.status === 'DRAFT' && hasPermission('ap:create')"
           variant="primary"
@@ -142,12 +177,11 @@ function formatMoney(money: unknown) {
           @click="handleSubmit"
         >
           <template #start>
-            <Send class="h-3.5 w-3.5" />
+            <Send class="h-4 w-4" />
           </template>
-          Submit for Approval
+          Submit
         </AppButton>
 
-        <!-- Primary: Approve (SUBMITTED → APPROVED) -->
         <AppButton
           v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
           variant="primary"
@@ -155,12 +189,11 @@ function formatMoney(money: unknown) {
           @click="handleApprove"
         >
           <template #start>
-            <CheckCircle class="h-3.5 w-3.5" />
+            <CheckCircle class="h-4 w-4" />
           </template>
           Approve
         </AppButton>
 
-        <!-- Primary: Pay (APPROVED → PAID) -->
         <AppButton
           v-if="request.status === 'APPROVED' && hasPermission('ap:post')"
           variant="primary"
@@ -170,7 +203,6 @@ function formatMoney(money: unknown) {
           Mark as Paid
         </AppButton>
 
-        <!-- Tertiary: Overflow for destructive/secondary actions -->
         <DropdownMenu v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')">
           <DropdownMenuTrigger as-child>
             <AppButton variant="stealth">
@@ -182,159 +214,169 @@ function formatMoney(money: unknown) {
           <DropdownMenuContent align="end">
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              class="text-[var(--color-danger-600)]"
+              class="text-[var(--color-danger-700)]"
               @click="isRejectModalOpen = true"
             >
-              Reject Request
+              Reject request
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </template>
+    </PageHeader>
+
+    <div
+      class="flex flex-wrap items-center gap-3 rounded-2xl bg-[var(--color-neutral-50)] px-4 py-3"
+    >
+      <AppBadge :variant="statusVariant">{{ request.status }}</AppBadge>
+      <p class="font-mono text-sm text-[var(--color-neutral-500)]">{{ request.id }}</p>
+      <p class="text-sm text-[var(--color-neutral-600)]">
+        Keep decisions explicit. Use trace when you need source, workflow, or impact context.
+      </p>
     </div>
 
-    <!-- ── Main Canvas: Request Details ──────────────────────── -->
-    <div class="flex-1 overflow-y-auto p-8 bg-[var(--app-canvas)] space-y-6">
-      <div class="max-w-5xl mx-auto">
-        <!-- Metadata summary -->
-        <div class="grid grid-cols-2 gap-6 md:grid-cols-4 mb-6">
-          <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-5 shadow-sm">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-400)]">
-              Total Amount
-            </p>
-            <p class="mt-2 text-xl font-bold tabular-nums text-[var(--color-neutral-900)]">
-              {{ formatMoney(request.totalAmount) }}
-            </p>
-          </div>
-          <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-5 shadow-sm">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-400)]">
-              Currency
-            </p>
-            <p class="mt-2 text-xl font-bold text-[var(--color-neutral-900)] font-mono">
-              {{ request.currency }}
-            </p>
-          </div>
-          <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-5 shadow-sm">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-400)]">
-              Approval Step
-            </p>
-            <p class="mt-2 text-xl font-bold text-[var(--color-neutral-900)]">
-              Step {{ request.currentApprovalStep }}
-            </p>
-          </div>
-          <div class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-5 shadow-sm">
-            <p class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-400)]">
-              Lines
-            </p>
-            <p class="mt-2 text-xl font-bold text-[var(--color-neutral-900)]">
-              {{ request.lines.length }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Justification -->
-        <div
-          class="bg-white rounded-sm border border-[var(--color-neutral-200)] p-5 shadow-sm mb-6"
-        >
-          <p
-            class="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-400)]"
-          >
-            Justification
-          </p>
-          <p class="text-[14px] leading-relaxed text-[var(--color-neutral-700)]">
-            {{ request.justification }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Line Items -->
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <div
-        class="max-w-5xl mx-auto bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm overflow-hidden"
+        v-for="card in summaryCards"
+        :key="card.label"
+        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
       >
-        <div
-          class="flex items-center justify-between px-4 py-3 border-b border-[var(--color-neutral-100)] bg-[var(--color-neutral-50)]"
-        >
-          <div class="flex items-center gap-2">
-            <FileSpreadsheet :size="16" class="text-[var(--color-neutral-500)]" />
-            <h2 class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)]">
-              Line Items
-            </h2>
+        <p class="text-sm font-medium text-[var(--color-neutral-500)]">{{ card.label }}</p>
+        <p class="mt-4 text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+          {{ card.value }}
+        </p>
+        <p class="mt-2 text-sm leading-6 text-[var(--color-neutral-600)]">{{ card.detail }}</p>
+      </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+      <WorkspacePanel
+        title="Request context"
+        description="The why behind the request should be readable before any state-changing action."
+      >
+        <template #icon>
+          <AlertTriangle class="h-5 w-5" />
+        </template>
+
+        <div class="space-y-5">
+          <div>
+            <p
+              class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+            >
+              Justification
+            </p>
+            <p class="mt-3 text-sm leading-7 text-[var(--color-neutral-700)]">
+              {{ request.justification }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+              >
+                Beneficiary
+              </p>
+              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+                {{ request.beneficiaryId }}
+              </p>
+            </div>
+            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
+              <p
+                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+              >
+                Requester
+              </p>
+              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+                {{ request.requesterId }}
+              </p>
+            </div>
+          </div>
+
+          <RouterLink
+            :to="{ name: 'PaymentRequestsList' }"
+            class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary-700)]"
+          >
+            Return to request workspace
+            <ArrowLeft class="h-4 w-4" />
+          </RouterLink>
+        </div>
+      </WorkspacePanel>
+
+      <WorkspacePanel
+        title="Line breakdown"
+        description="Use the line-level breakdown to verify account mapping, categories, and final amount."
+        body-class="space-y-4"
+      >
+        <template #icon>
+          <FileSpreadsheet class="h-5 w-5" />
+        </template>
+
+        <div class="overflow-hidden rounded-2xl border border-[color:var(--color-neutral-200)]">
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-[var(--color-neutral-50)]">
+                <tr>
+                  <th
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                  >
+                    Description
+                  </th>
+                  <th
+                    class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                  >
+                    Amount
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                  >
+                    GL Account
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                  >
+                    Category
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[var(--color-neutral-200)] bg-white">
+                <tr
+                  v-for="line in request.lines"
+                  :key="line.id"
+                  class="transition-colors hover:bg-[var(--color-neutral-50)]"
+                >
+                  <td class="px-4 py-3 text-[var(--color-neutral-700)]">{{ line.description }}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-[var(--color-neutral-900)]">
+                    {{ formatMoney(line.amount) }}
+                  </td>
+                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                    {{ line.accountId ?? 'Not assigned' }}
+                  </td>
+                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                    {{ line.categoryId ?? 'Not assigned' }}
+                  </td>
+                </tr>
+                <tr class="bg-[var(--color-neutral-50)] font-semibold">
+                  <td class="px-4 py-4 text-[var(--color-neutral-700)]">Total</td>
+                  <td class="px-4 py-4 text-right text-[var(--color-primary-700)]">
+                    {{ formatMoney(request.totalAmount) }}
+                  </td>
+                  <td colspan="2" />
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-[var(--color-neutral-50)]">
-              <tr>
-                <th
-                  class="px-4 py-3 text-left font-bold text-xs uppercase tracking-wider text-[var(--color-neutral-500)]"
-                >
-                  Description
-                </th>
-                <th
-                  class="px-4 py-3 text-right font-bold text-xs uppercase tracking-wider text-[var(--color-neutral-500)] tabular-nums"
-                >
-                  Amount
-                </th>
-                <th
-                  class="px-4 py-3 text-left font-bold text-xs uppercase tracking-wider text-[var(--color-neutral-500)]"
-                >
-                  GL Account
-                </th>
-                <th
-                  class="px-4 py-3 text-left font-bold text-xs uppercase tracking-wider text-[var(--color-neutral-500)]"
-                >
-                  Category
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--color-neutral-100)]">
-              <tr
-                v-for="line in request.lines"
-                :key="line.id"
-                class="transition-colors hover:bg-[var(--color-neutral-50)]"
-              >
-                <td class="px-4 py-3 text-[var(--color-neutral-700)]">{{ line.description }}</td>
-                <td
-                  class="px-4 py-3 text-right tabular-nums font-bold text-[var(--color-neutral-900)]"
-                >
-                  {{ formatMoney(line.amount) }}
-                </td>
-                <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
-                  {{ line.accountId?.slice(0, 8) ?? '—' }}
-                </td>
-                <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
-                  {{ line.categoryId?.slice(0, 8) ?? '—' }}
-                </td>
-              </tr>
-              <tr class="bg-[var(--color-neutral-50)]/50 font-bold">
-                <td class="px-4 py-4 text-[var(--color-neutral-600)]">Total Summary</td>
-                <td
-                  class="px-4 py-4 text-right tabular-nums text-lg text-[var(--color-primary-700)]"
-                >
-                  {{ formatMoney(request.totalAmount) }}
-                </td>
-                <td colspan="2" />
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+      </WorkspacePanel>
+    </section>
 
-    <!-- ── Stage 3: TraceDrawer ───────────────────────────────── -->
     <PaymentRequestTraceDrawer v-model:open="isTraceOpen" :request="request" />
-
-    <!-- ── Guard: Reject ActionModal (destructive) ────────────── -->
     <PaymentRequestRejectModal
       v-model:open="isRejectModalOpen"
       :is-pending="isRejecting"
       @confirm="handleReject"
     />
-
-    <!-- ── Guard: Pay ActionModal ─────────────────────────────── -->
     <PaymentRequestPayModal
-      v-slot:default
       v-model:open="isPayModalOpen"
-      :total-amount="formatMoney(request.totalAmount)"
       :is-pending="isPaying"
       @confirm="handlePay"
     />

@@ -2,7 +2,7 @@
 import { h, ref } from 'vue'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import { AppButton, AppBadge } from '@/shared/components/primitives'
-import { Shield, ShieldPlus, Lock, Key } from 'lucide-vue-next'
+import { Shield, ShieldPlus } from 'lucide-vue-next'
 import { useRoles } from '../../application/composables/useRoles'
 import type { Role } from '../../domain/user.types'
 import CreateRoleDialog from '../components/CreateRoleDialog.vue'
