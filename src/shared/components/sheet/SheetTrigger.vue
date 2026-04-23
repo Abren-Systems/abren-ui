@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DialogTrigger, type DialogTriggerProps, useForwardProps } from 'radix-vue'
+import { DialogTrigger, type DialogTriggerProps, useForwardProps } from 'reka-ui'
 
 const props = defineProps<DialogTriggerProps>()
 const forwarded = useForwardProps(props)

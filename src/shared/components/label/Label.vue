@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Label as RadixLabel, type LabelProps } from 'radix-vue'
+import { Label as RadixLabel, type LabelProps } from 'reka-ui'
 import { type HTMLAttributes, computed } from 'vue'
 import { cn } from '@/shared/lib'
 

@@ -6,7 +6,7 @@ import {
   DialogOverlay,
   DialogPortal,
   useForwardPropsEmits,
-} from 'radix-vue'
+} from 'reka-ui'
 import { cn } from '@/shared/lib'
 
 const props = defineProps<DialogContentProps & { class?: string }>()

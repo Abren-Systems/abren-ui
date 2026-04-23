@@ -7,7 +7,7 @@ import {
   DialogPortal,
   useForwardPropsEmits,
   DialogClose,
-} from 'radix-vue'
+} from 'reka-ui'
 import { X } from 'lucide-vue-next'
 import { cn } from '@/shared/lib/cn'
 
