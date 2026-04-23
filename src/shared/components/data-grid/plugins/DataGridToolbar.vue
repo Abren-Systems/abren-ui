@@ -38,9 +38,20 @@ function clear() {
 </script>
 
 <template>
-  <div class="toolbar">
-    <!-- Global search using AppInput -->
-    <div class="search-wrap">
+  <div class="toolbar" :class="{ 'toolbar--selection-mode': selectedCount && selectedCount > 0 }">
+    <!-- Selection mode indicator and message -->
+    <div
+      v-if="selectedCount && selectedCount > 0"
+      class="selection-info animate-in fade-in slide-in-from-left-2 duration-200"
+    >
+      <span class="selection-badge">
+        {{ selectedCount }}
+      </span>
+      <span class="selection-text">Records selected for bulk action</span>
+    </div>
+
+    <!-- Global search (hidden in selection mode to focus on actions) -->
+    <div v-else class="search-wrap">
       <AppInput
         :model-value="localValue"
         :placeholder="placeholder ?? 'Search…'"
@@ -58,11 +69,6 @@ function clear() {
       </AppInput>
     </div>
 
-    <!-- Selection count badge -->
-    <span v-if="selectedCount && selectedCount > 0" class="selection-badge">
-      {{ selectedCount }} selected
-    </span>
-
     <!-- Action buttons from parent -->
     <div class="toolbar-actions">
       <slot />
@@ -75,11 +81,19 @@ function clear() {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 40px; /* Higher density height */
+  height: 40px;
   padding: 0 12px;
   background: #ffffff;
   border-bottom: 1px solid var(--color-neutral-200);
   flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Command Mode Aesthetic */
+.toolbar--selection-mode {
+  background: var(--color-primary-900);
+  border-bottom-color: var(--color-primary-800);
+  color: #ffffff;
 }
 
 .search-wrap {
@@ -107,16 +121,31 @@ function clear() {
   color: var(--color-danger-600);
 }
 
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .selection-badge {
-  font-size: 10px;
-  font-bold: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-primary-700);
-  background: var(--color-primary-50);
-  padding: 2px 8px;
-  border-radius: 1px;
-  border: 1px solid var(--color-primary-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ffffff;
+  color: var(--color-primary-900);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.selection-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  opacity: 0.9;
 }
 
 .toolbar-actions {
@@ -124,5 +153,24 @@ function clear() {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Deep override for buttons in selection mode */
+.toolbar--selection-mode :deep(.app-button) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.toolbar--selection-mode :deep(.app-button--primary) {
+  background: #ffffff;
+  color: var(--color-primary-900);
+}
+
+.toolbar--selection-mode :deep(.app-button--stealth) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.toolbar--selection-mode :deep(.app-button--stealth:hover) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 </style>

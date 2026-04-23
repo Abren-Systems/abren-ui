@@ -1,95 +1,136 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
+import type { Table, Row } from '@tanstack/vue-table'
 import { AppButton } from '@/shared/components/primitives'
-import { PageHeader, WorkspacePanel, MetricCard } from '@/shared/components/workspace'
+import { PageHeader } from '@/shared/components/workspace'
+import { CheckCircle, XCircle, Plus } from 'lucide-vue-next'
 import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  CreditCard,
-  Inbox,
-  Plus,
-} from 'lucide-vue-next'
-import { paymentRequestColumns } from '../grids/payment-request.grid'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/components/dropdown-menu'
 import { usePaymentRequests } from '../../../application/composables/usePaymentRequests'
-import { usePaymentRequestStats } from '../../../application/composables/usePaymentRequestStats'
 import { usePermissions } from '@/shared/auth/usePermissions'
 import type { PaymentRequest } from '../../../domain/ap.types'
+import { h } from 'vue'
+import { MoneyCell, DateCell, BadgeCell, SelectionCell } from '@/shared/components/data-grid'
 
 const router = useRouter()
 const { hasPermission } = usePermissions()
-
-const { requests, isLoading: isTableLoading } = usePaymentRequests()
-const { stats, isLoading: isStatsLoading } = usePaymentRequestStats()
+const { requests, isLoading } = usePaymentRequests()
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
+const statusFilter = ref('all')
 
-const statCards = computed(() => [
-  {
-    label: 'Submitted',
-    value: stats.value?.submittedCount ?? 0,
-    description: 'Requests waiting for review before money moves.',
-    icon: Clock,
-    tone: 'text-[var(--color-warning-700)] bg-[var(--color-warning-50)]',
-  },
-  {
-    label: 'Approved',
-    value: stats.value?.approvedCount ?? 0,
-    description: 'Requests cleared for payment execution.',
-    icon: CheckCircle2,
-    tone: 'text-[var(--color-info-700)] bg-[var(--color-info-50)]',
-  },
-  {
-    label: 'Rejected',
-    value: stats.value?.rejectedCount ?? 0,
-    description: 'Requests that need correction or follow-up.',
-    icon: AlertCircle,
-    tone: 'text-[var(--color-danger-700)] bg-[var(--color-danger-50)]',
-  },
-  {
-    label: 'Paid',
-    value: stats.value?.paidCount ?? 0,
-    description: 'Requests fully resolved in the current flow.',
-    icon: CreditCard,
-    tone: 'text-[var(--color-success-700)] bg-[var(--color-success-50)]',
-  },
-])
+const selectedCount = computed(() => Object.keys(rowSelection.value).length)
 
-const queueSummary = computed(() => {
-  const totalCount = requests.value?.length ?? 0
-  const submittedCount = stats.value?.submittedCount ?? 0
-  const approvedCount = stats.value?.approvedCount ?? 0
-
-  return [
-    `${totalCount} total requests visible`,
-    `${submittedCount} awaiting review`,
-    `${approvedCount} ready for payout`,
-  ]
+const filteredRequests = computed(() => {
+  if (!requests.value) return []
+  let data = requests.value
+  if (statusFilter.value !== 'all') {
+    data = data.filter((r) => r.status === statusFilter.value)
+  }
+  return data
 })
 
-function handleRowClick(pr: PaymentRequest) {
+const statusOptions = [
+  { label: 'All Statuses', value: 'all' },
+  { label: 'Submitted', value: 'SUBMITTED' },
+  { label: 'Approved', value: 'APPROVED' },
+  { label: 'Paid', value: 'PAID' },
+  { label: 'Rejected', value: 'REJECTED' },
+]
+
+const columns = [
+  {
+    id: 'select',
+    header: ({ table }: { table: Table<PaymentRequest> }) =>
+      h(SelectionCell, {
+        checked: table.getIsAllPageRowsSelected(),
+        indeterminate: table.getIsSomePageRowsSelected(),
+        'onUpdate:checked': (value: boolean) => table.toggleAllPageRowsSelected(!!value),
+      }),
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h(SelectionCell, {
+        checked: row.getIsSelected(),
+        'onUpdate:checked': (value: boolean) => row.toggleSelected(!!value),
+      }),
+    size: 40,
+  },
+  {
+    accessorKey: 'id',
+    header: 'Request #',
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h(
+        'code',
+        { class: 'text-xs font-mono uppercase text-neutral-500' },
+        row.original.id.slice(0, 8),
+      ),
+  },
+  {
+    accessorKey: 'beneficiaryId',
+    header: 'Vendor',
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h('span', { class: 'font-medium' }, row.original.beneficiaryId.slice(0, 8)),
+  },
+  {
+    accessorKey: 'totalAmount',
+    header: () => h('div', { class: 'text-right' }, 'Amount'),
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h(MoneyCell, { amount: row.original.totalAmount, class: 'justify-end' }),
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h(BadgeCell, {
+        status: row.original.status,
+        variant:
+          row.original.status === 'PAID'
+            ? 'success'
+            : row.original.status === 'REJECTED'
+              ? 'danger'
+              : 'warning',
+      }),
+  },
+  {
+    accessorKey: 'requesterId',
+    header: 'Requested By',
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h('span', { class: 'text-neutral-500 text-xs' }, row.original.requesterId.slice(0, 8)),
+  },
+  {
+    accessorKey: 'submittedAt',
+    header: 'Date',
+    cell: ({ row }: { row: Row<PaymentRequest> }) =>
+      h(DateCell, { date: row.original.submittedAt }),
+  },
+]
+
+function goToDetail(pr: PaymentRequest) {
   void router.push({ name: 'PaymentRequestDetail', params: { id: pr.id } })
 }
 
 function handleCreate() {
   void router.push({ name: 'PaymentRequestCreate' })
 }
+
+function handleBulkApprove() {
+  console.log('Bulk approve:', Object.keys(rowSelection.value))
+}
+
+function handleBulkReject() {
+  console.log('Bulk reject:', Object.keys(rowSelection.value))
+}
 </script>
 
 <template>
-  <div class="space-y-6">
-    <PageHeader
-      dense
-      eyebrow="Accounts Payable Workspace"
-      title="Payment Requests"
-      description="Scan outgoing payment work, identify blocked requests, and move approved items toward settlement."
-    >
-      <template #icon>
-        <Inbox class="h-6 w-6" />
-      </template>
-
+  <div class="space-y-4">
+    <PageHeader title="Payment Requests" description="All pending and processed payments">
       <template #actions>
         <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
           <template #start>
@@ -100,67 +141,50 @@ function handleCreate() {
       </template>
     </PageHeader>
 
-    <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <MetricCard
-        v-for="card in statCards"
-        :key="card.label"
-        :label="card.label"
-        :value="card.value"
-        :description="card.description"
-        :loading="isStatsLoading"
-      >
-        <template #icon>
-          <div :class="['flex h-10 w-10 items-center justify-center rounded-xl', card.tone]">
-            <component :is="card.icon" class="h-5 w-5" />
-          </div>
-        </template>
-      </MetricCard>
-    </section>
-
-    <WorkspacePanel
-      dense
-      title="Request queue"
-      description="This queue is for triage and movement. Click a row to enter focus mode for a specific request."
-      body-class="space-y-4"
+    <div
+      class="rounded-xl border border-[var(--color-neutral-200)] bg-white shadow-sm overflow-hidden"
     >
-      <template #icon>
-        <Inbox class="h-5 w-5" />
-      </template>
-
-      <template #actions>
-        <div class="hidden items-center gap-3 text-sm text-[var(--color-neutral-500)] lg:flex">
-          <span v-for="item in queueSummary" :key="item">{{ item }}</span>
-        </div>
-      </template>
-
-      <div
-        class="flex flex-wrap items-center gap-3 rounded-xl bg-[var(--color-neutral-50)] px-4 py-2.5"
-      >
-        <p class="text-[13px] text-[var(--color-neutral-700)]">
-          Queue doctrine: review in the workspace, execute on the detail page, trace on demand.
-        </p>
-        <RouterLink
-          v-if="hasPermission('workflows:view')"
-          :to="{ name: 'workflows.inbox' }"
-          class="inline-flex items-center gap-2 text-[13px] font-medium text-[var(--color-primary-700)]"
-        >
-          Open workflow inbox
-          <ArrowRight class="h-4 w-4" />
-        </RouterLink>
-      </div>
-
       <DataGrid
         v-model:sorting="sorting"
         v-model:row-selection="rowSelection"
         v-model:column-visibility="columnVisibility"
         v-model:global-filter="globalFilter"
-        :data="requests ?? []"
-        :columns="paymentRequestColumns"
-        :loading="isTableLoading"
-        placeholder="Search payment requests..."
+        :data="filteredRequests"
+        :columns="columns"
+        :loading="isLoading"
+        placeholder="Search requests..."
         row-clickable
-        @row-click="handleRowClick"
-      />
-    </WorkspacePanel>
+        @row-click="goToDetail"
+      >
+        <template #toolbar>
+          <div v-if="selectedCount > 0" class="flex items-center gap-2">
+            <AppButton variant="stealth" size="sm" @click="handleBulkReject">
+              <template #start><XCircle :size="14" /></template>
+              Reject Selected
+            </AppButton>
+            <AppButton variant="primary" size="sm" @click="handleBulkApprove">
+              <template #start><CheckCircle :size="14" /></template>
+              Approve Selected
+            </AppButton>
+          </div>
+
+          <div v-else class="flex items-center gap-1.5 ml-2">
+            <button
+              v-for="opt in statusOptions"
+              :key="opt.value"
+              class="h-7 px-3 text-[11px] font-semibold rounded-full border transition-all"
+              :class="[
+                statusFilter === opt.value
+                  ? 'bg-neutral-900 border-neutral-900 text-white'
+                  : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300',
+              ]"
+              @click="statusFilter = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </template>
+      </DataGrid>
+    </div>
   </div>
 </template>

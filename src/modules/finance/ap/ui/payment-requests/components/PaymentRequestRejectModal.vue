@@ -41,14 +41,19 @@ function handleCancel() {
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent class="sm:max-w-[425px] rounded-2xl p-0 overflow-hidden border border-[color:var(--color-neutral-200)] shadow-2xl">
-      <DialogHeader class="p-6 bg-[var(--color-neutral-50)]/50 border-b border-[color:var(--color-neutral-100)]">
+    <DialogContent
+      class="sm:max-w-[425px] rounded-2xl p-0 overflow-hidden border border-[color:var(--color-neutral-200)] shadow-2xl"
+    >
+      <DialogHeader
+        class="p-6 bg-[var(--color-neutral-50)]/50 border-b border-[color:var(--color-neutral-100)]"
+      >
         <DialogTitle
           class="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-danger-600)]"
           >Reject Payment Request</DialogTitle
         >
         <DialogDescription class="text-sm text-[var(--color-neutral-600)] mt-2">
-          This action cannot be undone. The requester will be notified and this rejection will be logged in the audit trail.
+          This action cannot be undone. The requester will be notified and this rejection will be
+          logged in the audit trail.
         </DialogDescription>
       </DialogHeader>
 
@@ -63,7 +68,9 @@ function handleCancel() {
         />
       </div>
 
-      <DialogFooter class="p-6 bg-[var(--color-neutral-50)]/50 border-t border-[color:var(--color-neutral-100)]">
+      <DialogFooter
+        class="p-6 bg-[var(--color-neutral-50)]/50 border-t border-[color:var(--color-neutral-100)]"
+      >
         <AppButton variant="outline" @click="handleCancel">Cancel</AppButton>
         <AppButton
           variant="danger"

@@ -56,28 +56,52 @@ const emit = defineEmits<{
         <div class="space-y-2">
           <div
             v-for="(step, index) in [
-              { status: 'DRAFT', label: 'Created', sub: `Requested by ${request.requesterId}`, variant: 'neutral' },
-              { status: 'SUBMITTED', label: 'Submitted for Approval', sub: request.submittedAt ?? 'Date unavailable', variant: 'info' },
-              { status: 'APPROVED', label: 'Approved', sub: `Approved by ${request.assignedApproverId ?? 'approver'}`, variant: 'success' },
+              {
+                status: 'DRAFT',
+                label: 'Created',
+                sub: `Requested by ${request.requesterId}`,
+                variant: 'neutral',
+              },
+              {
+                status: 'SUBMITTED',
+                label: 'Submitted for Approval',
+                sub: request.submittedAt ?? 'Date unavailable',
+                variant: 'info',
+              },
+              {
+                status: 'APPROVED',
+                label: 'Approved',
+                sub: `Approved by ${request.assignedApproverId ?? 'approver'}`,
+                variant: 'success',
+              },
               { status: 'REJECTED', label: 'Rejected', sub: 'Action required', variant: 'danger' },
-              { status: 'PAID', label: 'Payment Recorded', sub: request.paidAt ?? 'Date unavailable', variant: 'success' }
-            ].filter(s => {
-              if (s.status === 'DRAFT') return true;
-              if (s.status === 'SUBMITTED') return ['SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'].includes(request.status);
-              if (s.status === 'APPROVED') return ['APPROVED', 'PAID'].includes(request.status);
-              if (s.status === 'REJECTED') return request.status === 'REJECTED';
-              if (s.status === 'PAID') return request.status === 'PAID';
-              return false;
+              {
+                status: 'PAID',
+                label: 'Payment Recorded',
+                sub: request.paidAt ?? 'Date unavailable',
+                variant: 'success',
+              },
+            ].filter((s) => {
+              if (s.status === 'DRAFT') return true
+              if (s.status === 'SUBMITTED')
+                return ['SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'].includes(request.status)
+              if (s.status === 'APPROVED') return ['APPROVED', 'PAID'].includes(request.status)
+              if (s.status === 'REJECTED') return request.status === 'REJECTED'
+              if (s.status === 'PAID') return request.status === 'PAID'
+              return false
             })"
             :key="index"
             class="flex items-start gap-4 p-3.5 bg-white rounded-xl border border-[var(--color-neutral-200)] shadow-sm"
           >
-            <div class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" :class="[
-              step.variant === 'neutral' ? 'bg-[var(--color-neutral-400)]' : '',
-              step.variant === 'info' ? 'bg-[var(--color-primary-500)]' : '',
-              step.variant === 'success' ? 'bg-[var(--color-success-500)]' : '',
-              step.variant === 'danger' ? 'bg-[var(--color-danger-500)]' : '',
-            ]" />
+            <div
+              class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+              :class="[
+                step.variant === 'neutral' ? 'bg-[var(--color-neutral-400)]' : '',
+                step.variant === 'info' ? 'bg-[var(--color-primary-500)]' : '',
+                step.variant === 'success' ? 'bg-[var(--color-success-500)]' : '',
+                step.variant === 'danger' ? 'bg-[var(--color-danger-500)]' : '',
+              ]"
+            />
             <div class="flex-1">
               <p class="text-xs font-bold text-[var(--color-neutral-900)]">{{ step.label }}</p>
               <p class="text-[10px] text-[var(--color-neutral-500)] mt-0.5">{{ step.sub }}</p>

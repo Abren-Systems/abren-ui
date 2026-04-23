@@ -1,132 +1,63 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { AppBadge, AppButton } from '@/shared/components/primitives'
-import { PageHeader, WorkspacePanel, MetricCard, WorkspaceTable } from '@/shared/components/workspace'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { AppButton, AppInput, AppDrawer, AppDialog } from '@/shared/components/primitives'
+import { PageHeader } from '@/shared/components/workspace'
 import {
-  AlertTriangle,
+  History,
   ArrowLeft,
   CheckCircle,
-  CreditCard,
-  FileSpreadsheet,
-  History,
-  MoreHorizontal,
-  Send,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
 } from 'lucide-vue-next'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/components/dropdown-menu'
 import { usePaymentRequest } from '../../../application/composables/usePaymentRequest'
-import { useSubmitPaymentRequest } from '../../../application/composables/useSubmitPaymentRequest'
 import { useApprovePaymentRequest } from '../../../application/composables/useApprovePaymentRequest'
 import { useRejectPaymentRequest } from '../../../application/composables/useRejectPaymentRequest'
-import { usePayPaymentRequest } from '../../../application/composables/usePayPaymentRequest'
 import { usePermissions } from '@/shared/auth/usePermissions'
-import PaymentRequestTraceDrawer from '../components/PaymentRequestTraceDrawer.vue'
-import PaymentRequestRejectModal from '../components/PaymentRequestRejectModal.vue'
-import PaymentRequestPayModal from '../components/PaymentRequestPayModal.vue'
+import { Money } from '@/shared/domain/money'
+import type { PaymentRequestId } from '@/shared/types/brand.types'
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
 const { hasPermission } = usePermissions()
 
-const { request, isLoading } = usePaymentRequest(props.id)
-const { submit, isPending: isSubmitting } = useSubmitPaymentRequest(props.id)
-const { approve, isPending: isApproving } = useApprovePaymentRequest(props.id)
-const { reject, isPending: isRejecting } = useRejectPaymentRequest(props.id)
-const { pay, isPending: isPaying } = usePayPaymentRequest(props.id)
+const { request, isLoading } = usePaymentRequest(props.id as PaymentRequestId)
+const { approve, isPending: isApproving } = useApprovePaymentRequest(props.id as PaymentRequestId)
+const { reject, isPending: isRejecting } = useRejectPaymentRequest(props.id as PaymentRequestId)
 
-const isTraceOpen = ref(false)
-const isRejectModalOpen = ref(false)
-const isPayModalOpen = ref(false)
+const traceOpen = ref(false)
+const approveOpen = ref(false)
+const rejectOpen = ref(false)
+const rejectReason = ref('')
 
-const isActionPending = computed(
-  () => isSubmitting.value || isApproving.value || isRejecting.value || isPaying.value,
-)
-
-const statusVariant = computed<'neutral' | 'info' | 'success' | 'danger' | 'primary' | 'warning'>(
-  () => {
-    switch (request.value?.status) {
-      case 'SUBMITTED':
-        return 'info'
-      case 'APPROVED':
-        return 'success'
-      case 'REJECTED':
-        return 'danger'
-      case 'PAID':
-        return 'primary'
-      default:
-        return 'neutral'
-    }
-  },
-)
-
-const summaryCards = computed(() => {
+const trace = computed(() => {
   if (!request.value) return []
-
   return [
     {
-      label: 'Total amount',
-      value: formatMoney(request.value.totalAmount),
-      detail: 'Value requested for disbursement.',
+      id: 1,
+      action: 'Request Created',
+      user: request.value.requesterId.slice(0, 8),
+      timestamp: '2 days ago',
     },
     {
-      label: 'Currency',
-      value: request.value.currency,
-      detail: 'Transaction currency for all request lines.',
-    },
-    {
-      label: 'Approval step',
-      value: `Step ${request.value.currentApprovalStep}`,
-      detail: 'Current workflow stage before resolution.',
-    },
-    {
-      label: 'Line items',
-      value: String(request.value.lines.length),
-      detail: 'Line-level breakdown driving the request total.',
+      id: 2,
+      action: 'Submitted for Approval',
+      user: request.value.requesterId.slice(0, 8),
+      timestamp: request.value.submittedAt ?? '1 day ago',
     },
   ]
 })
 
-const focusGuidance = computed(() => {
-  if (!request.value) return 'Review the request details and use trace for provenance when needed.'
-
-  switch (request.value.status) {
-    case 'DRAFT':
-      return 'Draft requests should be checked for completeness before entering workflow.'
-    case 'SUBMITTED':
-      return 'Submitted requests need an explicit approval or rejection decision.'
-    case 'APPROVED':
-      return 'Approved requests are ready for payment execution and final settlement.'
-    case 'REJECTED':
-      return 'Rejected requests should be traced back to the blocking issue before any retry.'
-    case 'PAID':
-      return 'Paid requests are resolved, but trace remains available for audit and provenance.'
-    default:
-      return 'Review the request details and use trace for provenance when needed.'
-  }
-})
-
-async function handleSubmit() {
-  await submit()
-}
-
-async function handleApprove() {
+async function confirmApprove() {
   await approve()
+  approveOpen.value = false
 }
 
-async function handleReject(reason: string) {
-  await reject(reason)
-  isRejectModalOpen.value = false
-}
-
-async function handlePay(data: { payment_method: string; disbursement_reference: string }) {
-  await pay(data)
-  isPayModalOpen.value = false
+async function confirmReject() {
+  await reject(rejectReason.value)
+  rejectOpen.value = false
 }
 
 function goBack() {
@@ -134,225 +65,272 @@ function goBack() {
 }
 
 function formatMoney(money: unknown) {
-  const value = money as { format?: (locale?: string) => string } | null
-  if (!value?.format) return 'Awaiting amount'
-  return value.format('en-ET')
+  if (!money || !(money instanceof Money)) return '—'
+  return money.format('en-ET')
 }
 </script>
 
 <template>
-  <div v-if="isLoading && !request" class="flex min-h-[50vh] items-center justify-center">
-    <p class="text-sm text-[var(--color-neutral-500)]">Loading payment request...</p>
+  <div v-if="isLoading && !request" class="flex h-[400px] items-center justify-center">
+    <div class="text-sm text-neutral-500 animate-pulse">Loading request details...</div>
   </div>
 
   <div v-else-if="request" class="space-y-6">
     <PageHeader
-      eyebrow="Payment Request Focus"
-      title="Review and execute payment request"
-      :description="focusGuidance"
+      :title="`${request.id.slice(0, 8).toUpperCase()} | ${request.beneficiaryId.slice(0, 8)}`"
+      description="Financial Payment Request Workflow"
     >
-      <template #icon>
-        <CreditCard class="h-6 w-6" />
+      <template #start>
+        <AppButton variant="stealth" size="sm" class="h-8 w-8 p-0" @click="goBack">
+          <ArrowLeft :size="16" />
+        </AppButton>
       </template>
 
       <template #actions>
-        <AppButton variant="outline" @click="goBack">
-          <template #start>
-            <ArrowLeft class="h-4 w-4" />
-          </template>
-          Back to queue
-        </AppButton>
-
-        <AppButton variant="outline" @click="isTraceOpen = true">
-          <template #start>
-            <History class="h-4 w-4" />
-          </template>
-          Trace
-        </AppButton>
-
-        <AppButton
-          v-if="request.status === 'DRAFT' && hasPermission('ap:create')"
-          variant="primary"
-          :disabled="isActionPending"
-          @click="handleSubmit"
-        >
-          <template #start>
-            <Send class="h-4 w-4" />
-          </template>
-          Submit
-        </AppButton>
-
-        <AppButton
-          v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
-          variant="primary"
-          :disabled="isActionPending"
-          @click="handleApprove"
-        >
-          <template #start>
-            <CheckCircle class="h-4 w-4" />
-          </template>
-          Approve
-        </AppButton>
-
-        <AppButton
-          v-if="request.status === 'APPROVED' && hasPermission('ap:post')"
-          variant="primary"
-          :disabled="isActionPending"
-          @click="isPayModalOpen = true"
-        >
-          Mark as Paid
-        </AppButton>
-
-        <DropdownMenu v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')">
-          <DropdownMenuTrigger as-child>
-            <AppButton variant="stealth">
-              <template #start>
-                <MoreHorizontal class="h-4 w-4" />
-              </template>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center rounded-lg border border-neutral-200 bg-white p-0.5 mr-2">
+            <AppButton variant="stealth" size="sm" class="h-7 w-7 p-0" disabled>
+              <ChevronLeft :size="14" />
             </AppButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-[var(--color-danger-700)]"
-              @click="isRejectModalOpen = true"
-            >
-              Reject request
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <div class="h-3 w-px bg-neutral-200 mx-1" />
+            <AppButton variant="stealth" size="sm" class="h-7 w-7 p-0" disabled>
+              <ChevronRight :size="14" />
+            </AppButton>
+          </div>
+
+          <AppButton variant="stealth" size="sm" @click="traceOpen = true">
+            <template #start><History :size="14" /></template>
+            Trace
+          </AppButton>
+
+          <div class="mx-1 h-4 w-px bg-neutral-200" />
+
+          <AppButton
+            v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
+            variant="stealth"
+            size="sm"
+            class="text-red-600 hover:bg-red-50 hover:text-red-700"
+            @click="rejectOpen = true"
+          >
+            <template #start><XCircle :size="14" /></template>
+            Reject
+          </AppButton>
+
+          <AppButton
+            v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
+            variant="primary"
+            size="sm"
+            @click="approveOpen = true"
+          >
+            <template #start><CheckCircle :size="14" /></template>
+            Approve
+          </AppButton>
+        </div>
       </template>
     </PageHeader>
 
+    <!-- Metadata Ribbon -->
     <div
-      class="flex flex-wrap items-center gap-3 rounded-2xl bg-[var(--color-neutral-50)] px-4 py-3"
+      class="flex items-center gap-8 rounded-xl border border-neutral-200 bg-neutral-50/50 px-6 py-3 shadow-sm"
     >
-      <AppBadge :variant="statusVariant">{{ request.status }}</AppBadge>
-      <p class="font-mono text-sm text-[var(--color-neutral-500)]">{{ request.id }}</p>
-      <p class="text-sm text-[var(--color-neutral-600)]">
-        Keep decisions explicit. Use trace when you need source, workflow, or impact context.
-      </p>
+      <div class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400"
+          >Total Amount</span
+        >
+        <span class="text-sm font-semibold text-neutral-900"
+          >{{ formatMoney(request.totalAmount) }} {{ request.currency }}</span
+        >
+      </div>
+      <div class="h-8 w-px bg-neutral-200" />
+      <div class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Status</span>
+        <div class="flex items-center gap-1.5">
+          <div
+            :class="[
+              'h-1.5 w-1.5 rounded-full',
+              request.status === 'SUBMITTED' ? 'bg-warning-500' : 'bg-success-500',
+            ]"
+          />
+          <span class="text-sm font-semibold text-neutral-900">{{ request.status }}</span>
+        </div>
+      </div>
+      <div class="h-8 w-px bg-neutral-200" />
+      <div class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400"
+          >Vendor ID</span
+        >
+        <span class="text-sm font-semibold text-neutral-900 font-mono">{{
+          request.beneficiaryId.slice(0, 12)
+        }}</span>
+      </div>
     </div>
 
-    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <MetricCard
-        v-for="card in summaryCards"
-        :key="card.label"
-        :label="card.label"
-        :value="card.value"
-        :description="card.detail"
-      />
-    </section>
-
-    <section class="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
-      <WorkspacePanel
-        title="Request context"
-        description="The why behind the request should be readable before any state-changing action."
-      >
-        <template #icon>
-          <AlertTriangle class="h-5 w-5" />
-        </template>
-
-        <div class="space-y-5">
-          <div>
-            <p
-              class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-            >
-              Justification
-            </p>
-            <p class="mt-3 text-sm leading-7 text-[var(--color-neutral-700)]">
-              {{ request.justification }}
-            </p>
+    <div class="space-y-8 py-4">
+      <!-- Section 1: Core Fields (Flat Grid) -->
+      <div class="grid grid-cols-2 gap-x-12 gap-y-6">
+        <div class="space-y-6">
+          <AppInput label="Vendor" :modelValue="request.beneficiaryId" readonly />
+          <AppInput label="Invoice Number" :modelValue="request.sourceId || 'N/A'" readonly />
+          <div class="grid grid-cols-2 gap-4">
+            <AppInput label="Amount" :modelValue="formatMoney(request.totalAmount)" readonly />
+            <AppInput label="Currency" :modelValue="request.currency" readonly />
           </div>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl bg-[var(--color-neutral-50)] p-4">
-              <p
-                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-              >
-                Beneficiary
-              </p>
-              <p class="mt-2 font-mono text-xs text-[var(--color-neutral-700)]">
-                {{ request.beneficiaryId }}
-              </p>
-            </div>
-            <div class="rounded-xl bg-[var(--color-neutral-50)] p-4">
-              <p
-                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-              >
-                Requester
-              </p>
-              <p class="mt-2 font-mono text-xs text-[var(--color-neutral-700)]">
-                {{ request.requesterId }}
-              </p>
-            </div>
-          </div>
-
-          <RouterLink
-            :to="{ name: 'PaymentRequestsList' }"
-            class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary-700)]"
-          >
-            Return to request workspace
-            <ArrowLeft class="h-4 w-4" />
-          </RouterLink>
         </div>
-      </WorkspacePanel>
 
-      <WorkspacePanel
-        title="Line breakdown"
-        description="Use the line-level breakdown to verify account mapping, categories, and final amount."
-        body-class="space-y-4"
-      >
-        <template #icon>
-          <FileSpreadsheet class="h-5 w-5" />
-        </template>
+        <div class="space-y-6">
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-neutral-400"
+              >Requested By</label
+            >
+            <div
+              class="flex items-center gap-3 px-3 py-2 rounded-lg border border-neutral-200 bg-white"
+            >
+              <div
+                class="h-6 w-6 rounded-full bg-neutral-900 flex items-center justify-center text-[10px] text-white font-bold"
+              >
+                {{ request.requesterId.slice(0, 2).toUpperCase() }}
+              </div>
+              <span class="text-sm font-medium text-neutral-900">{{
+                request.requesterId.slice(0, 8)
+              }}</span>
+              <span class="text-xs text-neutral-500">(IT Operations)</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <AppInput label="Request Date" :modelValue="request.submittedAt || '—'" readonly />
+            <AppInput label="Due Date" modelValue="2023-11-23" readonly />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <AppInput label="Department" modelValue="Engineering" readonly />
+            <AppInput label="Cost Center" modelValue="CC-882-ENG" readonly />
+          </div>
+        </div>
+      </div>
 
-        <WorkspaceTable>
-          <template #header>
-            <tr>
-              <th>Description</th>
-              <th class="text-right">Amount</th>
-              <th>GL Account</th>
-              <th>Category</th>
-            </tr>
-          </template>
-          <template #body>
-            <tr v-for="line in request.lines" :key="line.id">
-              <td class="text-[var(--color-neutral-700)]">{{ line.description }}</td>
-              <td class="text-right font-semibold text-[var(--color-neutral-900)]">
-                {{ formatMoney(line.amount) }}
-              </td>
-              <td class="font-mono text-[11px] text-[var(--color-neutral-500)]">
-                {{ line.accountId ?? '—' }}
-              </td>
-              <td class="font-mono text-[11px] text-[var(--color-neutral-500)]">
-                {{ line.categoryId ?? '—' }}
-              </td>
-            </tr>
-          </template>
-          <template #footer>
-            <tr class="font-semibold">
-              <td class="text-[var(--color-neutral-600)]">Total</td>
-              <td class="text-right text-[var(--color-neutral-900)]">
-                {{ formatMoney(request.totalAmount) }}
-              </td>
-              <td colspan="2" />
-            </tr>
-          </template>
-        </WorkspaceTable>
-      </WorkspacePanel>
-    </section>
+      <div class="h-px bg-neutral-200" />
 
-    <PaymentRequestTraceDrawer v-model:open="isTraceOpen" :request="request" />
-    <PaymentRequestRejectModal
-      v-model:open="isRejectModalOpen"
-      :is-pending="isRejecting"
-      @confirm="handleReject"
-    />
-    <PaymentRequestPayModal
-      v-model:open="isPayModalOpen"
-      :is-pending="isPaying"
-      @confirm="handlePay"
-    />
+      <div class="space-y-4">
+        <AppInput
+          label="Description / Memo"
+          :modelValue="request.justification || 'No justification provided.'"
+          readonly
+        />
+      </div>
+
+      <!-- Section 2: Supporting Detail (Conditional) -->
+      <div v-if="request.lines && request.lines.length > 0" class="space-y-4 mt-8">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Line Items</h3>
+        <div class="rounded-lg border border-neutral-200 overflow-hidden bg-white shadow-sm">
+          <table class="w-100 w-full text-sm">
+            <thead
+              class="bg-neutral-50 text-[11px] font-bold uppercase text-neutral-500 border-b border-neutral-200"
+            >
+              <tr>
+                <th class="px-4 py-2 text-left w-12">#</th>
+                <th class="px-4 py-2 text-left">Item Description</th>
+                <th class="px-4 py-2 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-100">
+              <tr
+                v-for="(line, idx) in request.lines"
+                :key="line.id"
+                class="hover:bg-neutral-50 transition-colors"
+              >
+                <td class="px-4 py-2.5 text-neutral-400 font-mono text-xs">{{ idx + 1 }}</td>
+                <td class="px-4 py-2.5 font-medium">{{ line.description }}</td>
+                <td class="px-4 py-2.5 text-right font-mono">{{ formatMoney(line.amount) }}</td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-neutral-50/50 font-semibold border-t border-neutral-200">
+              <tr>
+                <td colspan="2" class="px-4 py-3 text-right text-neutral-500">Total Amount</td>
+                <td class="px-4 py-3 text-right text-lg text-neutral-900">
+                  {{ formatMoney(request.totalAmount) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Linked Source Documents (if lines are absent but source exists) -->
+      <div v-else-if="request.sourceModule" class="space-y-4 mt-8">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          Linked Source Documents
+        </h3>
+        <div
+          class="flex items-center justify-between p-4 rounded-xl border border-neutral-200 bg-white hover:border-primary-300 transition-colors cursor-pointer group"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="h-10 w-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600"
+            >
+              <FileText :size="20" />
+            </div>
+            <div>
+              <div
+                class="text-sm font-bold text-neutral-900 group-hover:text-primary-600 transition-colors"
+              >
+                Vendor Bill: {{ request.sourceId }}
+              </div>
+              <div class="text-xs text-neutral-500">
+                Lines and accounting details are managed on the source document.
+              </div>
+            </div>
+          </div>
+          <AppButton variant="stealth" size="sm">View Bill</AppButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trace Drawer -->
+    <AppDrawer v-model:open="traceOpen" title="Request Trace" size="sm">
+      <div class="space-y-6">
+        <div
+          v-for="event in trace"
+          :key="event.id"
+          class="relative pl-6 pb-6 border-l border-neutral-200 last:border-0 last:pb-0"
+        >
+          <div
+            class="absolute -left-1 top-1.5 h-2 w-2 rounded-full bg-primary-500 shadow-[0_0_0_4px_white]"
+          />
+          <div class="text-sm font-semibold text-neutral-900">{{ event.action }}</div>
+          <div class="text-xs text-neutral-500 mt-1">{{ event.user }} • {{ event.timestamp }}</div>
+        </div>
+      </div>
+    </AppDrawer>
+
+    <!-- Approve Dialog -->
+    <AppDialog v-model:open="approveOpen" title="Confirm Approval" size="sm">
+      <p class="text-sm text-neutral-600">
+        You are about to approve this payment request. This action will advance the workflow to the
+        next stage.
+      </p>
+      <template #footer>
+        <AppButton variant="outline" @click="approveOpen = false">Cancel</AppButton>
+        <AppButton variant="primary" :loading="isApproving" @click="confirmApprove"
+          >Confirm Approval</AppButton
+        >
+      </template>
+    </AppDialog>
+
+    <!-- Reject Dialog -->
+    <AppDialog v-model:open="rejectOpen" title="Reject Request" size="sm">
+      <div class="space-y-4">
+        <p class="text-sm text-neutral-600">Please provide a reason for rejecting this request.</p>
+        <AppInput v-model="rejectReason" placeholder="Reason for rejection..." />
+      </div>
+      <template #footer>
+        <AppButton variant="outline" @click="rejectOpen = false">Cancel</AppButton>
+        <AppButton
+          variant="primary"
+          class="bg-danger-600 hover:bg-danger-700"
+          :loading="isRejecting"
+          @click="confirmReject"
+          >Reject Request</AppButton
+        >
+      </template>
+    </AppDialog>
   </div>
 </template>

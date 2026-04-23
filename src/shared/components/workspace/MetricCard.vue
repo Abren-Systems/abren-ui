@@ -24,7 +24,9 @@ defineProps<Props>()
         <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-neutral-400)]">
           {{ label }}
         </p>
-        <p class="mt-4 truncate text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
+        <p
+          class="mt-4 truncate text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]"
+        >
           <template v-if="loading">...</template>
           <template v-else>{{ value }}</template>
         </p>
