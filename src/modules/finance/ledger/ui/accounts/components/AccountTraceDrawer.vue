@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppDrawer } from '@/shared/components/primitives'
+import { AppSidePane } from '@/shared/components/primitives'
 import { Info } from 'lucide-vue-next'
 import type { Account } from '../../../domain/account.types'
 
@@ -21,7 +21,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     :title="`Trace: ${account.code} — ${account.name}`"
     description="Journal entries posted to this account."
@@ -103,5 +103,5 @@ const emit = defineEmits<{
         </div>
       </section>
     </div>
-  </AppDrawer>
+  </AppSidePane>
 </template>

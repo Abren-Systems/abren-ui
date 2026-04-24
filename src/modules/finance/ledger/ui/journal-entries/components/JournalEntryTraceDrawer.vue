@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppBadge, AppDrawer } from '@/shared/components/primitives'
+import { AppBadge, AppSidePane } from '@/shared/components/primitives'
 import { History, Search, FileText, Globe, Clock, User } from 'lucide-vue-next'
 import type { JournalEntry } from '../../../domain/journal-entry.types'
 
@@ -22,7 +22,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     :title="`Trace: ${entry.entryNumber}`"
     description="Audit trail, FX rates, and source document lineage."
@@ -161,5 +161,5 @@ const emit = defineEmits<{
         </div>
       </section>
     </div>
-  </AppDrawer>
+  </AppSidePane>
 </template>

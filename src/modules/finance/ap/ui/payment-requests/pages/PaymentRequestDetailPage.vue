@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { AppButton, AppInput, AppDrawer, AppDialog } from '@/shared/components/primitives'
+import { AppButton, AppInput, AppSidePane, AppDialog } from '@/shared/components/primitives'
 import { PageHeader } from '@/shared/components/workspace'
 import {
   History,
@@ -19,6 +19,7 @@ import { usePermissions } from '@/shared/auth/usePermissions'
 import { Money } from '@/shared/domain/money'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
+import BadgeCell from '@/shared/components/data-grid/cells/BadgeCell.vue'
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
@@ -196,33 +197,42 @@ function formatMoney(money: unknown) {
 
         <!-- Section 2: Supporting Detail (Conditional) -->
         <div v-if="request.lines && request.lines.length > 0" class="space-y-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Line Items</h3>
-          <div class="rounded-lg border border-neutral-200 overflow-hidden bg-white shadow-sm">
-            <table class="w-100 w-full text-sm">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            Line Items
+          </h3>
+          <div class="rounded-xl border border-neutral-200 overflow-hidden bg-white shadow-sm">
+            <table class="w-full text-sm">
               <thead
-                class="bg-neutral-50 text-[11px] font-bold uppercase text-neutral-500 border-b border-neutral-200"
+                class="bg-neutral-50/50 text-[10px] font-bold uppercase tracking-wider text-neutral-500 border-b border-neutral-200"
               >
                 <tr>
-                  <th class="px-4 py-2 text-left w-12">#</th>
-                  <th class="px-4 py-2 text-left">Item Description</th>
-                  <th class="px-4 py-2 text-right">Amount</th>
+                  <th class="px-6 py-3 text-left w-12">#</th>
+                  <th class="px-6 py-3 text-left">Item Description</th>
+                  <th class="px-6 py-3 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-neutral-100">
                 <tr
                   v-for="(line, idx) in request.lines"
                   :key="line.id"
-                  class="hover:bg-neutral-50 transition-colors"
+                  class="hover:bg-neutral-50/30 transition-colors"
                 >
-                  <td class="px-4 py-2.5 text-neutral-400 font-mono text-xs">{{ idx + 1 }}</td>
-                  <td class="px-4 py-2.5 font-medium">{{ line.description }}</td>
-                  <td class="px-4 py-2.5 text-right font-mono">{{ formatMoney(line.amount) }}</td>
+                  <td class="px-6 py-3 text-neutral-400 font-mono text-xs">{{ idx + 1 }}</td>
+                  <td class="px-6 py-3 font-medium text-neutral-900">{{ line.description }}</td>
+                  <td class="px-6 py-3 text-right font-mono text-neutral-900">
+                    {{ formatMoney(line.amount) }}
+                  </td>
                 </tr>
               </tbody>
-              <tfoot class="bg-neutral-50/50 font-semibold border-t border-neutral-200">
+              <tfoot class="bg-neutral-50/50 font-bold border-t border-neutral-200">
                 <tr>
-                  <td colspan="2" class="px-4 py-3 text-right text-neutral-500">Total Amount</td>
-                  <td class="px-4 py-3 text-right text-lg text-neutral-900">
+                  <td
+                    colspan="2"
+                    class="px-6 py-4 text-right text-[10px] uppercase text-neutral-500"
+                  >
+                    Grand Total
+                  </td>
+                  <td class="px-6 py-4 text-right text-base text-neutral-900 tabular-nums">
                     {{ formatMoney(request.totalAmount) }}
                   </td>
                 </tr>
@@ -232,31 +242,42 @@ function formatMoney(money: unknown) {
         </div>
 
         <!-- Linked Source Documents -->
-        <div v-else-if="request.sourceModule" class="space-y-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-400">
-            Linked Source Documents
+        <div v-if="request.sourceId" class="space-y-4">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            Provenance & Relationships
           </h3>
           <div
-            class="flex items-center justify-between p-4 rounded-xl border border-neutral-200 bg-white hover:border-primary-300 transition-colors cursor-pointer group"
+            class="group flex items-center justify-between p-4 rounded-xl border border-neutral-200 bg-white hover:border-primary-300 hover:shadow-md transition-all cursor-pointer"
+            @click="
+              request.sourceModule === 'VENDOR_BILL' &&
+              router.push({ name: 'VendorBillDetail', params: { id: request.sourceId } })
+            "
           >
             <div class="flex items-center gap-4">
               <div
-                class="h-10 w-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600"
+                class="h-10 w-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 transition-colors group-hover:bg-primary-600 group-hover:text-white"
               >
                 <FileText :size="20" />
               </div>
               <div>
-                <div
-                  class="text-sm font-bold text-neutral-900 group-hover:text-primary-600 transition-colors"
-                >
-                  Vendor Bill: {{ request.sourceId }}
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-bold text-neutral-900">Origin Document</span>
+                  <BadgeCell
+                    :status="request.sourceModule || 'INTERNAL'"
+                    class="scale-75 origin-left"
+                  />
                 </div>
-                <div class="text-xs text-neutral-500">
-                  Lines and accounting details are managed on the source document.
-                </div>
+                <p class="text-xs text-neutral-500 mt-0.5">
+                  ID: {{ request.sourceId }} • Source: {{ request.sourceModule }}
+                </p>
               </div>
             </div>
-            <AppButton variant="stealth" size="sm">View Bill</AppButton>
+            <div
+              class="flex items-center gap-2 text-primary-600 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0"
+            >
+              <span class="text-[10px] font-bold uppercase">View Original</span>
+              <ChevronRight :size="14" />
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AppButton, AppInput, AppSelect, AppDrawer } from '@/shared/components/primitives'
+import { AppButton, AppInput, AppSelect, AppSidePane } from '@/shared/components/primitives'
 import { useLedgerAccounts } from '../../../application/composables/useLedgerAccounts'
 import { AccountType } from '../../../domain/account.types'
 
@@ -71,7 +71,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     title="New GL Account"
     description="Create a new account in the Chart of Accounts to organize transactions."
@@ -127,5 +127,5 @@ async function handleSubmit() {
         Save Account
       </AppButton>
     </template>
-  </AppDrawer>
+  </AppSidePane>
 </template>

@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { AppDrawer, AppButton, AppInput, AppSelect, AppBadge } from '@/shared/components/primitives'
+import {
+  AppSidePane,
+  AppButton,
+  AppInput,
+  AppSelect,
+  AppBadge,
+} from '@/shared/components/primitives'
 import { X, Plus } from 'lucide-vue-next'
 import { useCreateTaxGroup, useActiveTaxRules } from '../../../application/useTaxRules'
 import type { TaxGroupCreateDTO } from '../../../infrastructure/api.types'
@@ -72,7 +78,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="props.open"
     title="New Tax Group"
     description="Combine multiple tax rules into a single group for complex calculations."
@@ -148,5 +154,5 @@ async function handleSubmit() {
       <AppButton variant="secondary" @click="emit('update:open', false)"> Cancel </AppButton>
       <AppButton :loading="isPending" @click="handleSubmit"> Create Group </AppButton>
     </template>
-  </AppDrawer>
+  </AppSidePane>
 </template>

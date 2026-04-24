@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { AppDrawer, AppButton, AppInput, AppSelect } from '@/shared/components/primitives'
+import { AppSidePane, AppButton, AppInput, AppSelect } from '@/shared/components/primitives'
 import { useCreateTaxRule } from '../../../application/useTaxRules'
 import type { TaxRuleCreateDTO } from '../../../infrastructure/api.types'
 
@@ -64,7 +64,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="props.open"
     title="New Tax Rule"
     description="Configure a new tax rate for the system."
@@ -110,5 +110,5 @@ async function handleSubmit() {
       <AppButton variant="secondary" @click="emit('update:open', false)"> Cancel </AppButton>
       <AppButton :loading="isPending" @click="handleSubmit"> Create Rule </AppButton>
     </template>
-  </AppDrawer>
+  </AppSidePane>
 </template>

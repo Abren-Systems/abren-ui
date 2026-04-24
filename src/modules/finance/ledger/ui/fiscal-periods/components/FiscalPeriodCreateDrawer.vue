@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { AppButton, AppInput, AppDrawer } from '@/shared/components/primitives'
+import { AppButton, AppInput, AppSidePane } from '@/shared/components/primitives'
 import { useFiscalPeriods } from '../../../application/composables/useFiscalPeriods'
 import { computed } from 'vue'
 
@@ -41,7 +41,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     title="New Fiscal Period"
     description="Define a new timeframe for financial postings and ledger locking."
@@ -64,5 +64,5 @@ async function handleSubmit() {
         </AppButton>
       </div>
     </form>
-  </AppDrawer>
+  </AppSidePane>
 </template>

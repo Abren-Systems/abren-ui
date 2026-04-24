@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppBadge, AppDrawer } from '@/shared/components/primitives'
+import { AppBadge, AppSidePane } from '@/shared/components/primitives'
 import { History, FileText, Banknote } from 'lucide-vue-next'
 import PaymentRequestTimeline from './PaymentRequestTimeline.vue'
 import type { PaymentRequest } from '../../../domain/ap.types'
@@ -22,7 +22,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     title="Trace: Payment Request"
     description="Workflow history and financial impact of this request."
@@ -112,5 +112,5 @@ const emit = defineEmits<{
         </div>
       </section>
     </div>
-  </AppDrawer>
+  </AppSidePane>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppBadge, AppDrawer } from '@/shared/components/primitives'
+import { AppBadge, AppSidePane } from '@/shared/components/primitives'
 import { History, Clock } from 'lucide-vue-next'
 import type { VendorBill } from '../../../domain/ap.types'
 
@@ -20,7 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AppDrawer
+  <AppSidePane
     :open="open"
     title="Trace: Vendor Bill"
     description="Workflow history and financial impact of this bill."
@@ -86,5 +86,5 @@ const emit = defineEmits<{
         </div>
       </section>
     </div>
-  </AppDrawer>
+  </AppSidePane>
 </template>
