@@ -60,7 +60,7 @@ function formatMoney(money: unknown) {
 
   <div v-else-if="request" class="space-y-6">
     <PageHeader
-      :title="`${request.id.slice(0, 8).toUpperCase()} | ${request.beneficiaryId.slice(0, 8)}`"
+      :title="`${request.requestNumber} | ${request.beneficiaryId.slice(0, 8)}`"
       description="Financial Payment Request Workflow"
     >
       <template #start>

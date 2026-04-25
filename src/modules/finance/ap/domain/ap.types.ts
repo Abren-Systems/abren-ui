@@ -68,6 +68,7 @@ export interface PaymentRequest {
   assignedApproverId: UserId | null
   sourceModule: string | null
   sourceId: string | null
+  requestNumber: string
 }
 
 // --- Vendor Bill Types ---

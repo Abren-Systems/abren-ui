@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AppBadge, AppButton } from '@/shared/components/primitives'
-import { PageHeader, WorkspacePanel } from '@/shared/components/workspace'
+import { PageHeader, WorkspacePanel, MetricCard } from '@/shared/components/workspace'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -23,7 +23,7 @@ import { useVendorBill } from '../../../application/composables/useVendorBill'
 import { useValidateVendorBill } from '../../../application/composables/useValidateVendorBill'
 import { useRejectVendorBill } from '../../../application/composables/useRejectVendorBill'
 import { usePermissions } from '@/shared/auth/usePermissions'
-import VendorBillTraceDrawer from '../components/VendorBillTraceDrawer.vue'
+import VendorBillTraceSidePane from '../components/VendorBillTraceSidePane.vue'
 import VendorBillRejectModal from '../components/VendorBillRejectModal.vue'
 
 const props = defineProps<{ id: string }>()
@@ -115,7 +115,7 @@ function goBack() {
 
 <template>
   <div v-if="isLoading && !bill" class="flex min-h-[50vh] items-center justify-center">
-    <p class="text-sm text-[var(--color-neutral-500)]">Loading vendor bill...</p>
+    <p class="text-sm text-neutral-500">Loading vendor bill...</p>
   </div>
 
   <div v-else-if="bill" class="space-y-6">
@@ -174,10 +174,7 @@ function goBack() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-[var(--color-danger-700)]"
-              @click="isRejectModalOpen = true"
-            >
+            <DropdownMenuItem class="text-red-700" @click="isRejectModalOpen = true">
               Void draft bill
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -185,29 +182,23 @@ function goBack() {
       </template>
     </PageHeader>
 
-    <div
-      class="flex flex-wrap items-center gap-3 rounded-2xl bg-[var(--color-neutral-50)] px-4 py-3"
-    >
+    <div class="flex flex-wrap items-center gap-3 rounded-xl bg-neutral-50 px-4 py-3">
       <AppBadge :variant="statusVariant">{{ bill.status }}</AppBadge>
-      <p class="font-mono text-sm text-[var(--color-neutral-500)]">{{ bill.id }}</p>
-      <p class="text-sm text-[var(--color-neutral-600)]">
+      <p class="font-mono text-sm text-neutral-500">{{ bill.id }}</p>
+      <p class="text-sm text-neutral-600">
         Vendor bills are the source surface. Keep supplier truth clean before triggering payment
         work.
       </p>
     </div>
 
     <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <div
+      <MetricCard
         v-for="card in summaryCards"
         :key="card.label"
-        class="rounded-[24px] border border-[color:var(--color-neutral-200)] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]"
-      >
-        <p class="text-sm font-medium text-[var(--color-neutral-500)]">{{ card.label }}</p>
-        <p class="mt-4 text-2xl font-semibold tracking-tight text-[var(--color-neutral-900)]">
-          {{ card.value }}
-        </p>
-        <p class="mt-2 text-sm leading-6 text-[var(--color-neutral-600)]">{{ card.detail }}</p>
-      </div>
+        :title="card.label"
+        :value="card.value"
+        :subtitle="card.detail"
+      />
     </section>
 
     <section class="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
@@ -221,34 +212,28 @@ function goBack() {
 
         <div class="space-y-5">
           <div>
-            <p
-              class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-            >
+            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
               Justification
             </p>
-            <p class="mt-3 text-sm leading-7 text-[var(--color-neutral-700)]">
+            <p class="mt-3 text-sm leading-7 text-neutral-700">
               {{ bill.justification }}
             </p>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
-            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
-              <p
-                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-              >
+            <div class="rounded-xl bg-neutral-50 p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
                 Vendor ID
               </p>
-              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+              <p class="mt-2 font-mono text-sm text-neutral-700">
                 {{ bill.vendorId }}
               </p>
             </div>
-            <div class="rounded-2xl bg-[var(--color-neutral-50)] p-4">
-              <p
-                class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
-              >
+            <div class="rounded-xl bg-neutral-50 p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
                 Currency
               </p>
-              <p class="mt-2 font-mono text-sm text-[var(--color-neutral-700)]">
+              <p class="mt-2 font-mono text-sm text-neutral-700">
                 {{ bill.currency }}
               </p>
             </div>
@@ -265,28 +250,28 @@ function goBack() {
           <FileText class="h-5 w-5" />
         </template>
 
-        <div class="overflow-hidden rounded-2xl border border-[color:var(--color-neutral-200)]">
+        <div class="overflow-hidden rounded-xl border border-neutral-200">
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-              <thead class="bg-[var(--color-neutral-50)]">
+              <thead class="bg-neutral-50">
                 <tr>
                   <th
-                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500"
                   >
                     Description
                   </th>
                   <th
-                    class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500"
                   >
                     Amount
                   </th>
                   <th
-                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500"
                   >
                     GL Account
                   </th>
                   <th
-                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-neutral-500)]"
+                    class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500"
                   >
                     Category
                   </th>
@@ -296,22 +281,22 @@ function goBack() {
                 <tr
                   v-for="(line, index) in bill.lines"
                   :key="line.id ?? `${bill.id}-${index}`"
-                  class="transition-colors hover:bg-[var(--color-neutral-50)]"
+                  class="transition-colors hover:bg-neutral-50"
                 >
-                  <td class="px-4 py-3 text-[var(--color-neutral-700)]">{{ line.description }}</td>
-                  <td class="px-4 py-3 text-right font-semibold text-[var(--color-neutral-900)]">
+                  <td class="px-4 py-3 text-neutral-700">{{ line.description }}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-neutral-900">
                     {{ line.amount.format('en-ET') }}
                   </td>
-                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                  <td class="px-4 py-3 font-mono text-xs text-neutral-500">
                     {{ line.accountId ?? 'Not assigned' }}
                   </td>
-                  <td class="px-4 py-3 font-mono text-xs text-[var(--color-neutral-500)]">
+                  <td class="px-4 py-3 font-mono text-xs text-neutral-500">
                     {{ line.categoryId ?? 'Not assigned' }}
                   </td>
                 </tr>
-                <tr class="bg-[var(--color-neutral-50)] font-semibold">
-                  <td class="px-4 py-4 text-[var(--color-neutral-700)]">Total</td>
-                  <td class="px-4 py-4 text-right text-[var(--color-primary-700)]">
+                <tr class="bg-neutral-50 font-semibold">
+                  <td class="px-4 py-4 text-neutral-700">Total</td>
+                  <td class="px-4 py-4 text-right text-primary-700">
                     {{ bill.totalAmount.format('en-ET') }}
                   </td>
                   <td colspan="2" />
@@ -323,7 +308,7 @@ function goBack() {
       </WorkspacePanel>
     </section>
 
-    <VendorBillTraceDrawer v-model:open="isTraceOpen" :bill="bill" />
+    <VendorBillTraceSidePane v-model:open="isTraceOpen" :bill="bill" />
     <VendorBillRejectModal
       v-model:open="isRejectModalOpen"
       :is-pending="isRejecting"

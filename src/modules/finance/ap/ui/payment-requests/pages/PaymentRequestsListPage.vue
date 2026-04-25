@@ -59,13 +59,13 @@ const columns = [
     size: 40,
   },
   {
-    accessorKey: 'id',
+    accessorKey: 'requestNumber',
     header: 'Request #',
     cell: ({ row }: { row: Row<PaymentRequest> }) =>
       h(
         'code',
-        { class: 'text-xs font-mono uppercase text-neutral-500' },
-        row.original.id.slice(0, 8),
+        { class: 'text-xs font-bold font-mono uppercase text-neutral-900' },
+        row.original.requestNumber,
       ),
   },
   {
@@ -240,7 +240,7 @@ function handleBulkReject() {
       <!-- Contextual Sidebar (Audit Trail) -->
       <AppSidePane
         v-model:open="isTraceOpen"
-        :title="`Trace: ${traceTarget?.id.slice(0, 8)}`"
+        :title="`Trace: ${traceTarget?.requestNumber}`"
         mode="docked"
         width="320px"
       >

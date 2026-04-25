@@ -7,7 +7,8 @@ import type { ComboboxOption } from '@/shared/components/combobox/DebouncedCombo
 import FileUploadZone from '@/shared/components/dropzone/FileUploadZone.vue'
 import { useCreateVendorBill } from '../../../application/composables/useCreateVendorBill'
 import { useFormPersistence } from '@/shared/composables/useFormPersistence'
-import { Trash2, Plus, AlertCircle, Eye, EyeOff, ArrowLeft, ClipboardEdit } from 'lucide-vue-next'
+import { Trash2, Plus, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next'
+import { PageHeader } from '@/shared/components/workspace'
 
 /**
  * VendorBillCreatePage — Dedicated creation form.
@@ -71,29 +72,19 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-[var(--app-canvas)]">
+  <div class="flex h-full flex-col bg-neutral-50/50">
     <!-- Header -->
-    <div
-      class="flex shrink-0 items-center justify-between px-8 py-6 bg-white border-b border-[var(--color-neutral-200)]"
+    <PageHeader
+      title="Register Vendor Bill"
+      description="Record a supplier invoice to generate an AP accrual."
     >
-      <div class="flex items-center gap-4">
-        <AppButton variant="stealth" @click="goBack">
-          <ArrowLeft :size="18" />
+      <template #start>
+        <AppButton variant="stealth" size="sm" class="h-8 w-8 p-0 -ml-2" @click="goBack">
+          <ArrowLeft :size="16" />
         </AppButton>
-        <div class="p-2 bg-[var(--color-primary-50)] rounded-sm">
-          <ClipboardEdit class="h-6 w-6 text-[var(--color-primary-600)]" />
-        </div>
-        <div>
-          <h1 class="m-0 text-xl font-bold tracking-tight text-[var(--color-neutral-900)]">
-            Register Vendor Bill
-          </h1>
-          <p class="mt-1 text-sm text-[var(--color-neutral-500)]">
-            Record a supplier invoice to generate an AP accrual.
-          </p>
-        </div>
-      </div>
+      </template>
 
-      <div class="flex items-center gap-2">
+      <template #actions>
         <AppButton variant="outline" @click="showSourceDoc = !showSourceDoc">
           <Eye v-if="!showSourceDoc" :size="14" class="mr-2" />
           <EyeOff v-else :size="14" class="mr-2" />
@@ -108,21 +99,23 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
             {{ state.isSubmitting ? 'Registering...' : 'Register Bill' }}
           </AppButton>
         </form.Subscribe>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Layout Container -->
     <div class="flex-1 overflow-hidden flex min-h-0">
       <!-- Source Document Split View (Left) -->
       <aside
         v-if="showSourceDoc"
-        class="w-[450px] border-r border-[var(--color-neutral-200)] bg-[var(--color-neutral-50)] flex flex-col h-full overflow-hidden"
+        class="w-[450px] border-r border-neutral-200 bg-neutral-50 flex flex-col h-full overflow-hidden"
       >
-        <div class="p-4 border-b bg-white flex items-center justify-between shrink-0">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)]">
+        <div
+          class="p-4 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0"
+        >
+          <h2 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
             Source Invoice
           </h2>
-          <span v-if="sourceFile" class="text-[10px] font-mono text-[var(--color-neutral-500)]">{{
+          <span v-if="sourceFile" class="text-[10px] font-mono text-neutral-500">{{
             sourceFile.name
           }}</span>
         </div>
@@ -139,12 +132,12 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
             <iframe
               v-if="sourceFile.type === 'application/pdf'"
               :src="sourceFileUrl"
-              class="w-full h-full rounded-sm shadow-sm border border-[var(--color-neutral-200)]"
+              class="w-full h-full rounded-xl shadow-sm border border-neutral-200"
             ></iframe>
             <img
               v-else
               :src="sourceFileUrl"
-              class="max-w-full rounded-sm shadow-sm border border-[var(--color-neutral-200)]"
+              class="max-w-full rounded-xl shadow-sm border border-neutral-200"
               alt="Source Document"
             />
           </template>
@@ -158,21 +151,19 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
       </aside>
 
       <!-- Data Entry Form (Right / Center) -->
-      <div class="flex-1 overflow-y-auto p-8 bg-[var(--app-canvas)]">
+      <div class="flex-1 overflow-y-auto p-6 bg-neutral-50/50">
         <div class="max-w-4xl mx-auto space-y-8">
           <!-- Submission Error -->
           <div
             v-if="submissionError"
-            class="bg-[var(--color-danger-50)] border border-[var(--color-danger-200)] p-4 rounded-sm flex items-start gap-3 shadow-sm"
+            class="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start gap-3 shadow-sm mb-6"
           >
-            <AlertCircle class="h-5 w-5 text-[var(--color-danger-600)] shrink-0" />
+            <AlertCircle class="h-5 w-5 text-red-600 shrink-0" />
             <div>
-              <h3
-                class="text-xs font-bold uppercase tracking-widest text-[var(--color-danger-700)]"
-              >
+              <h3 class="text-[10px] font-bold uppercase tracking-widest text-red-700">
                 Error registering bill
               </h3>
-              <p class="text-xs text-[var(--color-danger-600)] mt-1">
+              <p class="text-xs text-red-600 mt-1">
                 {{ submissionError.detail ?? 'An unexpected error occurred.' }}
               </p>
             </div>
@@ -188,11 +179,9 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
             "
           >
             <!-- Bill Metadata -->
-            <div
-              class="bg-white p-6 rounded-sm border border-[var(--color-neutral-200)] shadow-sm space-y-6"
-            >
+            <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
               <h2
-                class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)] border-b pb-4 -mx-6 px-6"
+                class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 border-b border-neutral-100 pb-4 -mx-6 px-6"
               >
                 Bill Metadata
               </h2>
@@ -201,7 +190,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                   <template #default="{ field, state }">
                     <div class="space-y-1.5">
                       <label
-                        class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                        class="text-[10px] font-bold uppercase tracking-widest text-neutral-500"
                         >Vendor *</label
                       >
                       <DebouncedCombobox
@@ -210,10 +199,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                         placeholder="Search vendors..."
                         @update:model-value="(val) => field.handleChange(val as string)"
                       />
-                      <p
-                        v-if="state.meta.errors.length"
-                        class="text-[10px] text-[var(--color-danger-600)]"
-                      >
+                      <p v-if="state.meta.errors.length" class="text-[10px] text-red-600">
                         {{ state.meta.errors[0] }}
                       </p>
                     </div>
@@ -291,15 +277,11 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
             </div>
 
             <!-- Line Items -->
-            <div
-              class="bg-white rounded-sm border border-[var(--color-neutral-200)] shadow-sm space-y-6 overflow-hidden"
-            >
+            <div class="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
               <div
-                class="flex items-center justify-between px-6 py-4 border-b bg-[var(--color-neutral-50)]/30"
+                class="flex items-center justify-between px-6 py-3 border-b border-neutral-200 bg-neutral-50/50"
               >
-                <h3
-                  class="text-xs font-bold uppercase tracking-widest text-[var(--color-neutral-600)]"
-                >
+                <h3 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                   Expense Lines
                 </h3>
                 <form.Field name="lines">
@@ -328,18 +310,18 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                     <div
                       v-for="(_, idx) in field.state.value"
                       :key="idx"
-                      class="space-y-6 relative border-b border-[var(--color-neutral-100)] pb-6 last:border-0 last:pb-0 pt-6"
+                      class="space-y-6 relative border-b border-neutral-100 pb-6 last:border-0 last:pb-0 pt-6"
                     >
                       <div class="flex items-center justify-between">
                         <span
-                          class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-400)] bg-[var(--color-neutral-50)] px-2 py-0.5 rounded-sm"
+                          class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 bg-neutral-50 px-2 py-0.5 rounded-sm"
                         >
                           Line #{{ (idx as number) + 1 }}
                         </span>
                         <AppButton
                           variant="stealth"
                           type="button"
-                          class="h-7 w-7 text-[var(--color-neutral-400)] hover:text-[var(--color-danger-600)]"
+                          class="h-7 w-7 text-neutral-400 hover:text-red-600"
                           :disabled="field.state.value.length === 1"
                           @click="field.removeValue(idx)"
                         >
@@ -384,7 +366,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                           <template #default="{ field: lf, state: ls }">
                             <div class="col-span-4 space-y-1.5">
                               <label
-                                class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                                class="text-[10px] font-bold uppercase tracking-widest text-neutral-500"
                                 >GL Account</label
                               >
                               <DebouncedCombobox
@@ -393,10 +375,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                                 placeholder="Search accounts..."
                                 @update:model-value="(val) => lf.handleChange(val as string)"
                               />
-                              <p
-                                v-if="ls.meta.errors.length"
-                                class="text-[10px] text-[var(--color-danger-600)]"
-                              >
+                              <p v-if="ls.meta.errors.length" class="text-[10px] text-red-600">
                                 {{ ls.meta.errors[0] }}
                               </p>
                             </div>
@@ -407,7 +386,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                           <template #default="{ field: lf, state: ls }">
                             <div class="col-span-4 space-y-1.5">
                               <label
-                                class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-neutral-500)]"
+                                class="text-[10px] font-bold uppercase tracking-widest text-neutral-500"
                                 >Category</label
                               >
                               <DebouncedCombobox
@@ -428,9 +407,7 @@ const searchCategories = async (q: string): Promise<ComboboxOption[]> => {
                                   }
                                 "
                               />
-                              <p
-                                class="text-[9px] text-[var(--color-neutral-400)] mt-1 uppercase tracking-tight"
-                              >
+                              <p class="text-[9px] text-neutral-400 mt-1 uppercase tracking-tight">
                                 Press Enter to add line
                               </p>
                             </div>

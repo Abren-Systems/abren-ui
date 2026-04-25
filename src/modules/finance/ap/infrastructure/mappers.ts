@@ -85,6 +85,7 @@ export class APMapper {
       assignedApproverId: null,
       sourceModule: null,
       sourceId: null,
+      requestNumber: `PR-${dto.id.slice(0, 4).toUpperCase()}`,
     }
   }
 
