@@ -1,7 +1,6 @@
 import { useApiMutation } from '@/shared/composables/useApiMutation'
 import { useQueryClient } from '@tanstack/vue-query'
 import { type MaybeRefOrGetter, toValue } from 'vue'
-import type { PaymentRequestPayDTO } from '../../infrastructure/api.types'
 import { apAdapter } from '../../infrastructure/ap_adapter'
 import { apKeys } from '../keys'
 import type { ApiError } from '@/shared/api/http-client'
@@ -9,28 +8,26 @@ import type { PaymentRequestId } from '@/shared/types/brand.types'
 import type { PaymentRequest } from '../../domain/ap.types'
 
 /**
- * Use Case: Record Payment for a Payment Request.
+ * Use Case: Authorize a Payment Request.
  *
- * Marks an approved payment request as paid, providing bank/ledger details.
+ * Transitions an approved payment request to AUTHORIZED state.
  * Supports reactive IDs.
  *
  * @param id - The unique identifier (or Ref/Getter) of the payment request.
- * @returns Reactive payment state and mutate function.
- * @example
- * const { pay, isPending } = usePayPaymentRequest(() => selectedId.value)
+ * @returns Reactive authorize state and mutate function.
  */
-export function usePayPaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) {
+export function useAuthorizePaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) {
   const queryClient = useQueryClient()
 
   const {
-    mutateAsync: pay,
+    mutateAsync: authorize,
     isPending,
     error,
-  } = useApiMutation<PaymentRequest, ApiError, PaymentRequestPayDTO>(
-    async (dto: PaymentRequestPayDTO) => {
+  } = useApiMutation<PaymentRequest, ApiError, void>(
+    async () => {
       const unwrappedId = toValue(id)
       if (!unwrappedId) throw new Error('Missing Payment Request ID')
-      return await apAdapter.payRequest(unwrappedId, dto)
+      return await apAdapter.authorizeRequest(unwrappedId)
     },
     {
       onSuccess: () => {
@@ -45,5 +42,5 @@ export function usePayPaymentRequest(id: MaybeRefOrGetter<PaymentRequestId>) {
     },
   )
 
-  return { pay, isPending, error }
+  return { authorize, isPending, error }
 }

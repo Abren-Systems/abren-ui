@@ -41,19 +41,21 @@ const steps: TimelineStep[] = [
   },
   { status: 'REJECTED', label: 'Rejected', sub: 'Action required', variant: 'danger' },
   {
-    status: 'PAID',
-    label: 'Payment Recorded',
-    sub: props.request.paidAt ?? 'Date unavailable',
+    status: 'AUTHORIZED',
+    label: 'Authorized',
+    sub: `Authorized by ${props.request.authorizedBy?.slice(0, 8) ?? 'authorizer'} on ${props.request.authorizedAt ?? 'unavailable'}`,
     variant: 'success',
   },
+  { status: 'CANCELLED', label: 'Cancelled', sub: 'Request abandoned', variant: 'danger' },
 ].filter((s) => {
   const status = props.request.status
   if (s.status === 'DRAFT') return true
   if (s.status === 'SUBMITTED')
-    return ['SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'].includes(status)
-  if (s.status === 'APPROVED') return ['APPROVED', 'PAID'].includes(status)
+    return ['SUBMITTED', 'APPROVED', 'REJECTED', 'AUTHORIZED', 'CANCELLED'].includes(status)
+  if (s.status === 'APPROVED') return ['APPROVED', 'AUTHORIZED'].includes(status)
   if (s.status === 'REJECTED') return status === 'REJECTED'
-  if (s.status === 'PAID') return status === 'PAID'
+  if (s.status === 'CANCELLED') return status === 'CANCELLED'
+  if (s.status === 'AUTHORIZED') return status === 'AUTHORIZED'
   return false
 }) as TimelineStep[]
 </script>

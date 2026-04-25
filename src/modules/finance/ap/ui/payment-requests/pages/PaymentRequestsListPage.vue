@@ -50,8 +50,9 @@ const statusOptions = [
   { label: 'All Statuses', value: 'all' },
   { label: 'Submitted', value: 'SUBMITTED' },
   { label: 'Approved', value: 'APPROVED' },
-  { label: 'Paid', value: 'PAID' },
+  { label: 'Authorized', value: 'AUTHORIZED' },
   { label: 'Rejected', value: 'REJECTED' },
+  { label: 'Cancelled', value: 'CANCELLED' },
 ]
 
 const columns = [

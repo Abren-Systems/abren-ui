@@ -15,6 +15,8 @@ import {
 import { usePaymentRequest } from '../../../application/composables/usePaymentRequest'
 import { useApprovePaymentRequest } from '../../../application/composables/useApprovePaymentRequest'
 import { useRejectPaymentRequest } from '../../../application/composables/useRejectPaymentRequest'
+import { useAuthorizePaymentRequest } from '../../../application/composables/useAuthorizePaymentRequest'
+import { useCancelPaymentRequest } from '../../../application/composables/useCancelPaymentRequest'
 import { usePermissions } from '@/shared/auth/usePermissions'
 import { Money } from '@/shared/domain/money'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
@@ -30,6 +32,10 @@ const { users } = useUsers()
 const { request, isLoading } = usePaymentRequest(props.id as PaymentRequestId)
 const { approve, isPending: isApproving } = useApprovePaymentRequest(props.id as PaymentRequestId)
 const { reject, isPending: isRejecting } = useRejectPaymentRequest(props.id as PaymentRequestId)
+const { authorize, isPending: isAuthorizing } = useAuthorizePaymentRequest(
+  props.id as PaymentRequestId,
+)
+const { cancel, isPending: isCancelling } = useCancelPaymentRequest(props.id as PaymentRequestId)
 
 const requesterName = computed(() => {
   if (!request.value || !users.value) return '—'
@@ -39,7 +45,10 @@ const requesterName = computed(() => {
 
 const approveOpen = ref(false)
 const rejectOpen = ref(false)
+const authorizeOpen = ref(false)
+const cancelOpen = ref(false)
 const rejectReason = ref('')
+const cancelReason = ref('')
 
 async function confirmApprove() {
   await approve()
@@ -49,6 +58,16 @@ async function confirmApprove() {
 async function confirmReject() {
   await reject(rejectReason.value)
   rejectOpen.value = false
+}
+
+async function confirmAuthorize() {
+  await authorize()
+  authorizeOpen.value = false
+}
+
+async function confirmCancel() {
+  await cancel(cancelReason.value)
+  cancelOpen.value = false
 }
 
 function goBack() {
@@ -90,6 +109,20 @@ function formatMoney(money: unknown) {
           </div>
 
           <AppButton
+            v-if="
+              (request.status === 'DRAFT' || request.status === 'SUBMITTED') &&
+              hasPermission('ap:edit')
+            "
+            variant="stealth"
+            size="sm"
+            class="text-neutral-500 hover:bg-neutral-100"
+            @click="cancelOpen = true"
+          >
+            <template #start><XCircle :size="14" /></template>
+            Cancel
+          </AppButton>
+
+          <AppButton
             v-if="request.status === 'SUBMITTED' && hasPermission('ap:approve')"
             variant="stealth"
             size="sm"
@@ -108,6 +141,16 @@ function formatMoney(money: unknown) {
           >
             <template #start><CheckCircle :size="14" /></template>
             Approve
+          </AppButton>
+
+          <AppButton
+            v-if="request.status === 'APPROVED' && hasPermission('ap:post')"
+            variant="primary"
+            size="sm"
+            @click="authorizeOpen = true"
+          >
+            <template #start><CheckCircle :size="14" /></template>
+            Authorize Payment
           </AppButton>
         </div>
       </template>
@@ -355,6 +398,40 @@ function formatMoney(money: unknown) {
           :loading="isRejecting"
           @click="confirmReject"
           >Reject Request</AppButton
+        >
+      </template>
+    </AppDialog>
+
+    <!-- Authorize Dialog -->
+    <AppDialog v-model:open="authorizeOpen" title="Confirm Authorization" size="sm">
+      <p class="text-sm text-neutral-600">
+        You are about to authorize this payment request for disbursement. This action is final and
+        cleared for accounting.
+      </p>
+      <template #footer>
+        <AppButton variant="outline" @click="authorizeOpen = false">Back</AppButton>
+        <AppButton variant="primary" :loading="isAuthorizing" @click="confirmAuthorize"
+          >Authorize Now</AppButton
+        >
+      </template>
+    </AppDialog>
+
+    <!-- Cancel Dialog -->
+    <AppDialog v-model:open="cancelOpen" title="Cancel Request" size="sm">
+      <div class="space-y-4">
+        <p class="text-sm text-neutral-600">
+          Are you sure you want to cancel this request? This action cannot be undone.
+        </p>
+        <AppInput v-model="cancelReason" placeholder="Reason for cancellation..." />
+      </div>
+      <template #footer>
+        <AppButton variant="outline" @click="cancelOpen = false">Keep Request</AppButton>
+        <AppButton
+          variant="primary"
+          class="bg-danger-600 hover:bg-danger-700"
+          :loading="isCancelling"
+          @click="confirmCancel"
+          >Cancel Permanently</AppButton
         >
       </template>
     </AppDialog>

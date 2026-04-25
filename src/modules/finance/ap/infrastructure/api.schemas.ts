@@ -9,8 +9,9 @@ export const PaymentRequestStatusSchema = z.enum([
   'DRAFT',
   'SUBMITTED',
   'APPROVED',
+  'AUTHORIZED',
   'REJECTED',
-  'PAID',
+  'CANCELLED',
 ])
 
 export const PaymentRequestLineSchema = z.object({
@@ -34,11 +35,13 @@ export const PaymentRequestSchema = z.object({
   bank_account_id: z.string().uuid().nullable().optional(),
   target_liability_account_id: z.string().uuid().nullable().optional(),
   submitted_at: z.string().nullable().optional(), // Loosen datetime validation to avoid hard crashes
-  paid_at: z.string().nullable().optional(),
+  authorized_at: z.string().nullable().optional(),
+  authorized_by: z.string().uuid().nullable().optional(),
   current_approval_step: z.number().int().nonnegative().nullable().optional(),
   assigned_approver_id: z.string().uuid().nullable().optional(),
   source_module: z.string().nullable().optional(),
   source_id: z.string().uuid().nullable().optional(),
+  request_number: z.string().nullable().optional(),
 })
 
 export const PaymentRequestStatsSchema = z.object({
@@ -48,7 +51,8 @@ export const PaymentRequestStatsSchema = z.object({
   submitted_count: z.number().int(),
   approved_count: z.number().int(),
   rejected_count: z.number().int(),
-  paid_count: z.number().int(),
+  authorized_count: z.number().int(),
+  cancelled_count: z.number().int(),
   total_amount: z.coerce.string(),
 })
 

@@ -2,7 +2,6 @@ import { apiGet, apiPost } from '@/shared/api/http-client'
 import { PaymentRequestSchema, PaymentRequestStatsSchema, VendorBillSchema } from './api.schemas'
 import type {
   PaymentRequestCreateDTO,
-  PaymentRequestPayDTO,
   PaymentRequestRejectDTO,
   VendorBillCreateDTO,
 } from './api.types'
@@ -49,7 +48,8 @@ export const apAdapter = {
       submittedCount: parsed.submitted_count,
       approvedCount: parsed.approved_count,
       rejectedCount: parsed.rejected_count,
-      paidCount: parsed.paid_count,
+      authorizedCount: parsed.authorized_count,
+      cancelledCount: parsed.cancelled_count,
       totalAmount: Money.from(Number(parsed.total_amount), 'ETB'),
     } as PaymentRequestStats
   },
@@ -87,10 +87,18 @@ export const apAdapter = {
   },
 
   /**
-   * Records a payment for an approved Payment Request.
+   * Authorizes an approved Payment Request.
    */
-  async payRequest(id: string, dto: PaymentRequestPayDTO): Promise<PaymentRequest> {
-    const raw = await apiPost<unknown>(`${REQUESTS_BASE}/${id}/pay`, dto)
+  async authorizeRequest(id: string): Promise<PaymentRequest> {
+    const raw = await apiPost<unknown>(`${REQUESTS_BASE}/${id}/authorize`)
+    return APMapper.toPaymentRequest(PaymentRequestSchema.parse(raw))
+  },
+
+  /**
+   * Cancels a Payment Request with a reason.
+   */
+  async cancelRequest(id: string, reason: string): Promise<PaymentRequest> {
+    const raw = await apiPost<unknown>(`${REQUESTS_BASE}/${id}/cancel`, { reason })
     return APMapper.toPaymentRequest(PaymentRequestSchema.parse(raw))
   },
 

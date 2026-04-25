@@ -20,9 +20,11 @@ import type { components } from '@/shared/api/generated.types'
 export type PaymentRequestStatus = components['schemas']['PaymentRequestStatus']
 
 export const PaymentRequestStatus = {
-  isFinal: (status: PaymentRequestStatus): boolean => status === 'PAID' || status === 'REJECTED',
+  isFinal: (status: PaymentRequestStatus): boolean =>
+    status === 'AUTHORIZED' || status === 'REJECTED' || status === 'CANCELLED',
 
-  isApproved: (status: PaymentRequestStatus): boolean => status === 'APPROVED' || status === 'PAID',
+  isApproved: (status: PaymentRequestStatus): boolean =>
+    status === 'APPROVED' || status === 'AUTHORIZED',
 
   isEditable: (status: PaymentRequestStatus): boolean => status === 'DRAFT',
 
@@ -31,11 +33,12 @@ export const PaymentRequestStatus = {
     if (PaymentRequestStatus.isFinal(current)) return false
 
     const transitions: Record<PaymentRequestStatus, PaymentRequestStatus[]> = {
-      DRAFT: ['SUBMITTED'],
-      SUBMITTED: ['APPROVED', 'REJECTED'],
-      APPROVED: ['PAID', 'REJECTED'],
+      DRAFT: ['SUBMITTED', 'CANCELLED'],
+      SUBMITTED: ['APPROVED', 'REJECTED', 'CANCELLED'],
+      APPROVED: ['AUTHORIZED', 'REJECTED'],
+      AUTHORIZED: [],
       REJECTED: [],
-      PAID: [],
+      CANCELLED: [],
     }
 
     return transitions[current].includes(target)
@@ -63,7 +66,8 @@ export interface PaymentRequest {
   bankAccountId: BankAccountId | null
   targetLiabilityAccountId: AccountId | null
   submittedAt: IsoDate | null
-  paidAt: IsoDate | null
+  authorizedAt: IsoDate | null
+  authorizedBy: UserId | null
   currentApprovalStep: number
   assignedApproverId: UserId | null
   sourceModule: string | null
@@ -123,6 +127,7 @@ export interface PaymentRequestStats {
   submittedCount: number
   approvedCount: number
   rejectedCount: number
-  paidCount: number
+  authorizedCount: number
+  cancelledCount: number
   totalAmount: Money
 }

@@ -27,11 +27,13 @@ describe('APMapper', () => {
         bank_account_id: 'bank-1',
         target_liability_account_id: 'acc-2',
         submitted_at: '2026-04-01T10:00:00Z',
-        paid_at: null,
+        authorized_at: null,
+        authorized_by: null,
         current_approval_step: 1,
         assigned_approver_id: 'approver-1',
         source_module: null,
         source_id: null,
+        request_number: 'PR-2026-001',
       }
 
       const model = APMapper.toPaymentRequest(dto)
