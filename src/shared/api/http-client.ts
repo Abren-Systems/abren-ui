@@ -67,8 +67,20 @@ const httpClient = axios.create({
 
 // ── Request Interceptor: Auth + Tenant + Idempotency ──
 httpClient.interceptors.request.use((config) => {
-  // Authentication is now managed transparently by the browser via HttpOnly cookies
+  // ── Multi-Tenancy ──
+  const storedTenant = sessionStorage.getItem(TENANT_KEY)
+  if (storedTenant) {
+    try {
+      const tenant = JSON.parse(storedTenant)
+      if (tenant?.id) {
+        config.headers['X-Tenant-ID'] = tenant.id
+      }
+    } catch {
+      // Ignore parse errors, let backend handle missing tenant
+    }
+  }
 
+  // ── Idempotency ──
   // Idempotency key for mutating requests
   const method = config.method?.toUpperCase()
   if (method && ['POST', 'PUT', 'PATCH'].includes(method)) {

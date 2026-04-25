@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { AppButton, AppInput, AppSidePane, AppDialog } from '@/shared/components/primitives'
+import { AppButton, AppInput, AppDialog } from '@/shared/components/primitives'
 import { PageHeader } from '@/shared/components/workspace'
 import {
-  History,
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -20,33 +19,29 @@ import { useRejectPaymentRequest } from '../../../application/composables/useRej
 import { useAuthorizePaymentRequest } from '../../../application/composables/useAuthorizePaymentRequest'
 import { useCancelPaymentRequest } from '../../../application/composables/useCancelPaymentRequest'
 import { usePermissions } from '@/shared/auth/usePermissions'
-import { Money } from '@/shared/domain/money'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
 import BadgeCell from '@/shared/components/data-grid/cells/BadgeCell.vue'
 import { useUsers } from '@/modules/core/application/composables/useUsers'
-import { useMoney } from '@/shared/composables/useMoney'
 import { BusinessDate } from '@/shared/domain/business-date'
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
 const { hasPermission } = usePermissions()
 const { users } = useUsers()
-const { formatMoney } = useMoney()
-
-const { request, isLoading } = usePaymentRequest(props.id as PaymentRequestId)
+const { request, isLoading, error } = usePaymentRequest(props.id as PaymentRequestId)
 
 const requesterName = computed(() => {
   if (!request.value) return '…'
   const user = users.value?.find((u) => u.id === request.value?.requesterId)
-  if (!user) return request.value.requesterId.slice(0, 8)
+  if (!user) return request.value.requesterId?.slice(0, 8) ?? 'Unknown'
   return user.email || request.value.requesterId.slice(0, 8)
 })
 
 const beneficiaryName = computed(() => {
   if (!request.value) return '…'
   const user = users.value?.find((u) => u.id === request.value?.beneficiaryId)
-  if (!user) return request.value.beneficiaryId.slice(0, 8)
+  if (!user) return request.value.beneficiaryId?.slice(0, 8) ?? 'Unknown'
   return user.email || request.value.beneficiaryId.slice(0, 8)
 })
 
@@ -90,10 +85,40 @@ function goBack() {
 </script>
 
 <template>
-  <div v-if="isLoading && !request" class="flex h-[400px] items-center justify-center">
-    <div class="text-sm text-neutral-500 animate-pulse">Loading request details...</div>
+  <!-- 1. Error State (Prioritize showing errors over loading) -->
+  <div v-if="error" class="flex h-[400px] flex-col items-center justify-center gap-6 text-center">
+    <div
+      class="flex h-16 w-16 items-center justify-center rounded-full bg-danger-50 text-danger-600"
+    >
+      <XCircle :size="32" />
+    </div>
+    <div class="space-y-2">
+      <h3 class="text-lg font-bold text-neutral-900">Failed to load request</h3>
+      <p class="max-w-xs text-sm text-neutral-500">
+        {{
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred while fetching the data.'
+        }}
+      </p>
+    </div>
+    <div class="flex gap-3">
+      <AppButton variant="outline" @click="goBack">Go Back</AppButton>
+      <AppButton variant="primary" @click="router.go(0)">Retry</AppButton>
+    </div>
   </div>
 
+  <!-- 2. Loading State -->
+  <div v-else-if="isLoading && !request" class="flex h-[400px] items-center justify-center">
+    <div class="flex flex-col items-center gap-4">
+      <div
+        class="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
+      />
+      <div class="text-sm text-neutral-500 animate-pulse">Loading request details...</div>
+    </div>
+  </div>
+
+  <!-- 3. Success State -->
   <div v-else-if="request" class="space-y-6">
     <PageHeader
       :title="`${request.requestNumber} | ${request.beneficiaryId.slice(0, 8)}`"
@@ -195,7 +220,7 @@ function goBack() {
           >Total Amount</span
         >
         <span class="text-sm font-semibold text-neutral-900">{{
-          formatMoney(request.totalAmount)
+          request.totalAmount.format()
         }}</span>
       </div>
       <div class="h-8 w-px bg-neutral-200" />
@@ -306,7 +331,7 @@ function goBack() {
                   >Request Date</label
                 >
                 <div class="text-sm font-medium text-neutral-900">
-                  {{ request.submittedAt || '—' }}
+                  {{ request.submittedAt ? BusinessDate.format(request.submittedAt) : 'Pending' }}
                 </div>
               </div>
             </div>
@@ -351,7 +376,7 @@ function goBack() {
                   <td class="px-6 py-3 text-neutral-400 font-mono text-xs">{{ idx + 1 }}</td>
                   <td class="px-6 py-3 font-medium text-neutral-900">{{ line.description }}</td>
                   <td class="px-6 py-3 text-right font-mono text-neutral-900">
-                    {{ formatMoney(line.amount) }}
+                    {{ line.amount.format() }}
                   </td>
                 </tr>
               </tbody>
@@ -364,7 +389,7 @@ function goBack() {
                     Grand Total
                   </td>
                   <td class="px-6 py-4 text-right text-base text-neutral-900 tabular-nums">
-                    {{ formatMoney(request.totalAmount) }}
+                    {{ request.totalAmount.format() }}
                   </td>
                 </tr>
               </tfoot>

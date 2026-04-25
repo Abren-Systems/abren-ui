@@ -11,7 +11,7 @@ import { usePermissions } from '@/shared/auth/usePermissions'
 import type { PaymentRequest } from '../../../domain/ap.types'
 import { h } from 'vue'
 import { MoneyCell, DateCell, BadgeCell, SelectionCell } from '@/shared/components/data-grid'
-import { History, X } from 'lucide-vue-next'
+import { History, X, ListFilter, Calendar } from 'lucide-vue-next'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
 import { paymentRequestColumns } from '../grids/payment-request.grid'
 import { useUsers } from '@/modules/core/application/composables/useUsers'
@@ -23,6 +23,38 @@ const { requests, isLoading } = usePaymentRequests()
 const { users } = useUsers()
 const { sorting, rowSelection, columnVisibility, globalFilter } = useDataGrid()
 const statusFilter = ref('all')
+const isFilterOpen = ref(false)
+const filterState = ref({
+  statuses: [] as string[],
+  dateFrom: '',
+  dateTo: '',
+})
+
+const smartTabs = computed(() => [
+  {
+    id: 'all',
+    label: 'ALL',
+    subLabel: `Total: ${requests.value?.length || 0}`,
+    count: requests.value?.length || 0,
+    isActive: statusFilter.value === 'all',
+  },
+  {
+    id: 'needs_attention',
+    label: 'NEEDS ATTENTION',
+    subLabel: `Rejected: ${requests.value?.filter((r) => r.status === 'REJECTED').length || 0}`,
+    count: requests.value?.filter((r) => ['DRAFT', 'REJECTED'].includes(r.status)).length || 0,
+    isActive: statusFilter.value === 'needs_attention',
+  },
+  {
+    id: 'in_review',
+    label: 'IN REVIEW',
+    subLabel: `Pending: ${requests.value?.filter((r) => ['SUBMITTED', 'APPROVED'].includes(r.status)).length || 0}`,
+    count:
+      requests.value?.filter((r) => ['SUBMITTED', 'APPROVED', 'AUTHORIZED'].includes(r.status))
+        .length || 0,
+    isActive: statusFilter.value === 'in_review',
+  },
+])
 
 const isTraceOpen = ref(false)
 const traceTarget = ref<PaymentRequest | null>(null)
@@ -33,11 +65,19 @@ const filteredRequests = computed(() => {
   if (!requests.value) return []
   let data = requests.value
 
-  if (statusFilter.value !== 'all') {
-    data = data.filter((r) => r.status === statusFilter.value)
+  // 1. Bucket Filtering (Tabs)
+  if (statusFilter.value === 'needs_attention') {
+    data = data.filter((r) => ['DRAFT', 'REJECTED'].includes(r.status))
+  } else if (statusFilter.value === 'in_review') {
+    data = data.filter((r) => ['SUBMITTED', 'APPROVED', 'AUTHORIZED'].includes(r.status))
   }
 
-  // Hydrate names
+  // 2. Fine-grained Filtering (Drawer)
+  if (filterState.value.statuses.length > 0) {
+    data = data.filter((r) => filterState.value.statuses.includes(r.status))
+  }
+
+  // Hydrate names and add action logic
   return data.map((r) => {
     const requester = users.value?.find((u) => u.id === r.requesterId)
     const beneficiary = users.value?.find((u) => u.id === r.beneficiaryId)
@@ -47,16 +87,31 @@ const filteredRequests = computed(() => {
       return user.email || id?.slice(0, 8)
     }
 
+    const getActionRequired = (status: string) => {
+      switch (status) {
+        case 'REJECTED':
+          return { label: 'Edit & Resubmit', icon: XCircle, color: 'text-danger-600' }
+        case 'DRAFT':
+          return { label: 'Submit for Approval', icon: Plus, color: 'text-neutral-600' }
+        case 'SUBMITTED':
+          return { label: 'Review & Approve', icon: CheckCircle, color: 'text-warning-600' }
+        case 'APPROVED':
+          return { label: 'Authorize Payment', icon: CheckCircle, color: 'text-info-600' }
+        default:
+          return null
+      }
+    }
+
     return {
       ...r,
       requesterName: formatName(requester, r.requesterId),
       beneficiaryName: formatName(beneficiary, r.beneficiaryId),
+      actionRequired: getActionRequired(r.status),
     }
   })
 })
 
 const statusOptions = [
-  { label: 'All', value: 'all' },
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Submitted', value: 'SUBMITTED' },
   { label: 'Approved', value: 'APPROVED' },
@@ -82,6 +137,19 @@ const columns = [
     size: 40,
   },
   ...paymentRequestColumns,
+  {
+    id: 'action_required',
+    header: 'ACTION REQUIRED?',
+    cell: ({ row }: { row: Row<PaymentRequest> }) => {
+      const action = row.original.actionRequired
+      if (!action) return null
+      return h('div', { class: ['flex items-center gap-1.5 font-medium', action.color] }, [
+        h(action.icon, { size: 14 }),
+        h('span', { class: 'text-[11px]' }, action.label),
+      ])
+    },
+    size: 160,
+  },
   {
     id: 'actions',
     header: '',
@@ -192,39 +260,141 @@ function handleBulkReject() {
                 </AppButton>
               </div>
 
-              <div v-else class="flex items-center gap-1.5 ml-2">
-                <button
-                  v-for="opt in statusOptions"
-                  :key="opt.value"
-                  class="h-7 pl-3 pr-2 flex items-center gap-1.5 text-[11px] font-semibold rounded-full border transition-all"
-                  :class="[
-                    statusFilter === opt.value
-                      ? 'bg-neutral-900 border-neutral-900 text-white'
-                      : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50',
-                  ]"
-                  @click="statusFilter = opt.value"
-                >
-                  <span>{{ opt.label }}</span>
-                  <span
-                    class="flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] px-1 font-mono transition-colors"
-                    :class="[
-                      statusFilter === opt.value
-                        ? 'bg-neutral-800 text-neutral-300'
-                        : 'bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200',
-                    ]"
+              <div v-else class="flex items-center justify-between w-full pr-2">
+                <div class="flex items-center gap-4">
+                  <button
+                    v-for="tab in smartTabs"
+                    :key="tab.id"
+                    class="group flex flex-col items-start px-4 py-2 border-r border-neutral-100 last:border-0 transition-all"
+                    @click="statusFilter = tab.id"
                   >
-                    {{
-                      opt.value === 'all'
-                        ? requests?.length || 0
-                        : requests?.filter((r) => r.status === opt.value).length || 0
-                    }}
-                  </span>
-                </button>
+                    <span
+                      class="text-[10px] font-bold tracking-wider uppercase transition-colors"
+                      :class="
+                        tab.isActive
+                          ? 'text-primary-600'
+                          : 'text-neutral-400 group-hover:text-neutral-600'
+                      "
+                    >
+                      {{ tab.label }}
+                    </span>
+                    <span
+                      class="text-xs font-semibold mt-0.5"
+                      :class="tab.isActive ? 'text-neutral-900' : 'text-neutral-500'"
+                    >
+                      {{ tab.subLabel }}
+                    </span>
+                    <div
+                      class="h-0.5 w-full mt-2 rounded-full transition-all"
+                      :class="tab.isActive ? 'bg-primary-600' : 'bg-transparent'"
+                    />
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <AppButton variant="outline" size="sm" @click="isFilterOpen = true">
+                    <template #start><ListFilter :size="14" /></template>
+                    Filter
+                  </AppButton>
+                </div>
               </div>
             </template>
           </DataGrid>
         </div>
       </div>
+
+      <!-- Filter Drawer -->
+      <AppSidePane v-model:open="isFilterOpen" title="Filter Requests" width="320px">
+        <template #icon>
+          <div class="h-6 w-6 rounded-md bg-neutral-100 flex items-center justify-center">
+            <ListFilter class="h-3.5 w-3.5 text-neutral-600" />
+          </div>
+        </template>
+
+        <div class="space-y-6">
+          <!-- Status Multi-Select -->
+          <div class="space-y-3">
+            <h4 class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Status</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                v-for="opt in statusOptions"
+                :key="opt.value"
+                class="flex items-center gap-2 p-2 rounded-lg border border-neutral-100 cursor-pointer hover:bg-neutral-50 transition-colors"
+                :class="{
+                  'bg-primary-50 border-primary-200': filterState.statuses.includes(opt.value),
+                }"
+              >
+                <input
+                  v-model="filterState.statuses"
+                  type="checkbox"
+                  :value="opt.value"
+                  class="hidden"
+                />
+                <div
+                  class="h-3.5 w-3.5 rounded border flex items-center justify-center"
+                  :class="
+                    filterState.statuses.includes(opt.value)
+                      ? 'bg-primary-600 border-primary-600'
+                      : 'bg-white border-neutral-300'
+                  "
+                >
+                  <CheckCircle
+                    v-if="filterState.statuses.includes(opt.value)"
+                    :size="10"
+                    class="text-white"
+                  />
+                </div>
+                <span class="text-xs font-medium text-neutral-700">{{ opt.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Date Range -->
+          <div class="space-y-3">
+            <h4 class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+              Date Range
+            </h4>
+            <div class="space-y-2">
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                  <Calendar :size="12" />
+                </span>
+                <input
+                  v-model="filterState.dateFrom"
+                  type="date"
+                  class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-neutral-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                  <Calendar :size="12" />
+                </span>
+                <input
+                  v-model="filterState.dateTo"
+                  type="date"
+                  class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-neutral-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <template #footer>
+          <div class="flex gap-2">
+            <AppButton
+              variant="outline"
+              size="sm"
+              class="flex-1"
+              @click="filterState = { statuses: [], dateFrom: '', dateTo: '' }"
+            >
+              Reset
+            </AppButton>
+            <AppButton variant="primary" size="sm" class="flex-1" @click="isFilterOpen = false">
+              Apply
+            </AppButton>
+          </div>
+        </template>
+      </AppSidePane>
 
       <!-- Contextual Sidebar (Audit Trail) -->
       <!-- Contextual Sidebar (Audit Trail) -->
