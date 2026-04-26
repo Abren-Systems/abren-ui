@@ -115,5 +115,43 @@ export function useCreatePaymentRequest() {
     },
   })
 
-  return { form, isSubmitting, error }
+  const runningTotal = form.useStore(
+    (state) => state.values.lines?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0,
+  )
+
+  const validationState = form.useStore((state) => {
+    const isValid = state.canSubmit
+    let formErrors: string[] = []
+
+    if (state.errorMap?.onChange) {
+      if (typeof state.errorMap.onChange === 'string') {
+        formErrors = [state.errorMap.onChange]
+      } else if (Array.isArray(state.errorMap.onChange)) {
+        formErrors = state.errorMap.onChange.map((e) =>
+          typeof e === 'string' ? e : (e as { message?: string })?.message || 'Validation error',
+        )
+      } else {
+        formErrors = ['Form validation failed']
+      }
+    }
+
+    const fieldErrors = Object.values(state.fieldMeta)
+      .flatMap((m) => m?.errors || [])
+      .filter(Boolean)
+
+    const allErrors = [...formErrors, ...fieldErrors] as string[]
+    return {
+      isValid,
+      errors: allErrors,
+      errorCount: allErrors.length,
+    }
+  })
+
+  const saveDraft = async () => {
+    // In a full implementation, this would call a specific draft endpoint
+    // For now, we rely on the local persistence and simulate a successful save
+    console.log('Draft saved:', form.state.values)
+  }
+
+  return { form, isSubmitting, error, runningTotal, validationState, saveDraft }
 }
