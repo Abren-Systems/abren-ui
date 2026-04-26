@@ -19,6 +19,7 @@ Forms are the **primary interaction surface** in an ERP. Every financial transac
 1. **Headless Logic:** TanStack Form manages state, validation lifecycles, and submission — the UI is decoupled.
 2. **Schema-Driven Validation:** Zod schemas define validation rules as pure data. No imperative `if/else` in templates.
 3. **Native Standard Schema Isolation:** Zod schemas are used directly via the [Standard Schema](https://github.com/standard-schema/standard-schema) interface, removing the need for intermediary adapter packages.
+4. **Action Mirroring ("Where decisions happen, actions must exist"):** Complex macro-forms (like Payment Requests) must display an `AppSummaryPanel` containing a mirrored contextual primary action (e.g., `Submit`). This creates a zero-friction loop (evaluate total → see validation state → click submit) without forcing users to travel to the global bottom sticky bar.
 
 ---
 
