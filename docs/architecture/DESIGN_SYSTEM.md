@@ -159,6 +159,8 @@ Elevation is used to create visual hierarchy. In an ERP, excessive drop shadows 
 
 Instead of relying solely on heavy shadows, we use **layered surfaces**—especially critical in Dark Mode.
 
+> **Implementation Status:** Dark Mode is **PLANNED — Phase 2**. The dark-mode token values listed below are design targets. The current SOT is light mode only. No `prefers-color-scheme` media queries, `data-theme` attribute, or dark token set currently exist in `main.css`. Do not attempt to implement dark mode piecemeal; it requires a coordinated pass across all components.
+
 - **Base (Level 0)**: The application background (`--color-neutral-50` / `#0d1117` dark).
 - **Elevated (Level 1)**: Cards, Sidebars, and Drawers (`#ffffff` / `#161d28` dark).
 - **Floating (Level 2)**: Modals and Dropdowns (`#ffffff` / `#1e293b` dark + shadow).
@@ -183,6 +185,8 @@ Shadows have a dual-layer softness and are applied only to elevated/floating lay
 ## 6. ERP Interaction Patterns
 
 ### 6.1 Command Palette & Omni-Search (⌘K)
+
+> **Implementation Status:** **Phase 2**. The `⌘K` trigger button exists in `AuthenticatedLayout.vue` as a visual shell. Functional search indexing, semantic intent parsing, and context-aware bulk actions are not yet implemented. Do not reference ⌘K as a working feature in module UX until Phase 2 is executed.
 
 A global Command Palette is required. It provides power users instant keyboard access to jump to any module or initiate global actions.
 
@@ -245,6 +249,8 @@ To maintain high operational density and avoid the pitfalls of generalized "cons
 - **🚫 Hidden Contextual Commands ("..." Menus)**: Primary grid actions (Edit, Delete, Export) must not be buried inside overflow ellipses menus just to make the UI look "cleaner." Use native Right-Click context menus or expose icons on hover.
 - **🚫 "Wizard" Flows for Basic Entry**: Power users despise paginated wizards because they break flow state. Use single-view Drawers or inline grid editors. Save wizards exclusively for rare, complex configurations (e.g., Year-End Close).
 - **🚫 Blinding `#FFFFFF` Backgrounds**: Staring at pure white canvases for 8 hours causes optical fatigue. Always use the neutral canvas token (`--color-neutral-50`) as the base application background.
+- **🚫 Inline Grid Cell Editing for Financial Data**: Editing monetary amounts, dates, or status fields directly in a grid cell bypasses domain validation, state machine enforcement, and audit trail recording. All mutations must flow through the Focus Canvas (Detail Page) or a sanctioned Drawer form. This is a **financial control**, not a UX limitation. Sage Intacct, NetSuite, and SAP all enforce this. Do not implement inline grid editing for any field that affects accounting state.
+- **🚫 Tri-Pane / Simultaneous Master-Detail on the Same Route**: Rendering the list grid and the full detail form side-by-side on the same route violates Sequential Progressive Disclosure and creates split-focus fatigue. The sanctioned alternative is the **Quick Triage docked pane** (audit trail only, read-only) on the list route, combined with a separate Focus route for full record editing.
 
 ---
 

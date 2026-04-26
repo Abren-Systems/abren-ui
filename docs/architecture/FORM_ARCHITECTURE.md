@@ -108,9 +108,8 @@ Pages import the form composable and bind fields declaratively using the design 
 ```vue
 <script setup lang="ts">
 import { usePaymentRequestForm } from '../../application/composables/usePaymentRequestForm'
-import { Input } from '@/shared/components/input'
-import { Label } from '@/shared/components/label'
-import { Button } from '@/shared/components/button'
+import { AppInput } from '@/shared/components/primitives'
+import { AppButton } from '@/shared/components/primitives'
 
 const { form, isPending } = usePaymentRequestForm()
 </script>

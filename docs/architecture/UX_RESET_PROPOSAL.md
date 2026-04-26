@@ -7,7 +7,23 @@ tags: [frontend, architecture, ux]
 
 # Abren ERP - UX Reset Proposal
 
-> **Update:** This proposal captured the turning point before the primitive clean sweep. The repo has since removed Fluent-backed shared primitives, but the reasoning below remains the basis for that decision.
+> [!IMPORTANT]
+> **Status: HISTORICAL.** This document captured the UX turning point in early 2026. The majority of its proposed phases have since been executed. It is preserved as an architectural record and decision log. For the **current authoritative UX and design standards**, see:
+>
+> - [UX_ARCHITECTURE.md](./UX_ARCHITECTURE.md) — interaction philosophy and flow grammar
+> - [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) — visual tokens, density, and anti-patterns
+> - [UI_COMPONENTS.md](./UI_COMPONENTS.md) — component inventory and page-kit layer
+>
+> | Phase   | Description                                             | Status         |
+> | :------ | :------------------------------------------------------ | :------------- |
+> | Phase 0 | Reset doctrine, update SKILL.md and UX docs             | ✅ Done        |
+> | Phase 1 | Rebuild `AuthenticatedLayout.vue` shell                 | ✅ Done        |
+> | Phase 2 | Replace fake dashboard with Workboard                   | ✅ Partial     |
+> | Phase 3 | Page-kit layer (`PageHeader`, `DataGrid`, `EmptyState`) | ✅ Done        |
+> | Phase 4 | Apply grammar to AP, Ledger modules                     | ✅ In progress |
+> | Phase 5 | Primitive rationalization (Fluent removed)              | ✅ Done        |
+
+> **Original context note:** This proposal captured the turning point before the primitive clean sweep. The repo has since removed Fluent-backed shared primitives, but the reasoning below remains the basis for that decision.
 
 ## 1. Executive Recommendation
 

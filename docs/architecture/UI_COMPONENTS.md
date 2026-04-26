@@ -53,16 +53,17 @@ Use primitives for atomic interactions:
 - `AppBadge`
 - `AppDrawer`
 - `AppDialog`
+- `AppSidePane` — contextual overlay and docked side surfaces (`mode="overlay"` for filters, `mode="docked"` for Quick Triage trace panes)
 
 ### 4.2 Page-Kit Layer
 
 Use composition components for repeatable page structure:
 
-- `PageHeader`
+- `PageHeader` — with dynamic operational subtitle (live record count + aggregate amount)
 - `WorkspacePanel`
-- `MetricStrip`
+- `MetricStrip` — _(PLANNED — not yet implemented)_
 - `EmptyState`
-- `TraceSection`
+- `TraceSection` — _(PLANNED — not yet implemented)_
 
 Pages should not reinvent these layouts ad hoc.
 
@@ -77,6 +78,16 @@ Default expectations:
 - low-ceremony page chrome
 - tables should claim viewport priority on list pages
 - whitespace must earn its keep by improving scan speed or reducing errors
+
+### DataGrid Footer
+
+Every financial Workspace list page must populate the `DataGrid` `#footer` slot with:
+
+- **Row count:** `Showing X of Y rows`
+- **Financial aggregate:** `Total: ETB X,XXX.XX` (sum of the primary amount column)
+- **Selection count** (shown only when `selectedCount > 0`): `Selected: N`
+
+This is not optional chrome — it is operational data that finance users need at a glance without scrolling.
 
 ## 6. Styling Rules
 

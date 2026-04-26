@@ -55,14 +55,20 @@ Instead, we use a **Router-Driven Progressive Disclosure** flow. Each stage is a
 
 ### 2.2. Component Interaction Contract
 
+The primary flow for transactional operations:
+
 ```text
-┌───────────────────────────┐
-│ [Domain]ListPage.vue      │
-│  - Filters, DataGrid      │
-│  - Navigates to Detail    │
-└─────────────┬─────────────┘
-              │ router.push()
-              ▼
+┌────────────────────────────────────────────────────────┐
+│ [Domain]ListPage.vue                                   │
+│  - Smart Filter Bucket Tabs + DataGrid                 │
+│  - DataGrid footer: row count, total, selection count  │
+│  - Bulk Action bar (appears when selectedCount > 0)    │
+│  - Quick Triage: docked AppSidePane (mode="docked")    │
+│      Shows audit timeline for selected row             │
+│      Does NOT mutate; navigates to Detail for editing  │
+└─────────────────────────┬──────────────────────────────┘
+                          │ router.push() — explicit navigation
+                          ▼
 ┌───────────────────────────┐
 │ [Domain]DetailPage.vue    │
 │  - Entity form/grid       │
@@ -80,6 +86,8 @@ Instead, we use a **Router-Driven Progressive Disclosure** flow. Each stage is a
 └─────────────┘   └────────────────┘
 ```
 
+> **Rule:** The Quick Triage docked pane is read-only. It shows the audit trail for context. Any mutation (approve, edit, reject) must navigate the user to the Detail route. This preserves the state isolation guarantee of Sequential Progressive Disclosure.
+
 ### 2.3. The 3 Stages of Operational Focus
 
 1. **The Active Queue (The Inbox)**: A clean, full-screen DataGrid filtering for exactly what needs attention (e.g., `Status: PENDING_APPROVAL`). Clicking a row performs a `router.push()` — no inline entity mutation from the queue.
@@ -90,7 +98,12 @@ Instead, we use a **Router-Driven Progressive Disclosure** flow. Each stage is a
 
 Each stage has an explicit density contract:
 
-| **ActionModal** | Minimal — interruptive clarity | Destructive actions demand singular, undistracted confirmation |
+| Stage              | Density                                   | Rationale                                                      |
+| :----------------- | :---------------------------------------- | :------------------------------------------------------------- |
+| **Queue (List)**   | Maximum — compact rows, minimal chrome    | Scanning speed is paramount                                    |
+| **Detail (Focus)** | Moderate — readable forms, clear sections | Accuracy over speed                                            |
+| **Trace (Drawer)** | Compact — dense timeline, minimal padding | Supporting context, not primary work                           |
+| **ActionModal**    | Minimal — interruptive clarity            | Destructive actions demand singular, undistracted confirmation |
 
 ### 2.5. Layered Context & Tiered Contrast (Dynamics 365 Standard)
 
@@ -168,6 +181,9 @@ To prevent button clutter and decision paralysis, actions are strictly tiered:
 1. **Primary Actions (State-Advancing)**: Always visible and prominent (e.g., "Approve", "Pay", "Submit"). _Mapping: `<AppButton variant="primary" />`._
 2. **Secondary Actions (Supporting)**: Visible but visually subdued (e.g., "Edit", "Attach Document", "Print"). _Mapping: `<AppButton variant="secondary" />` or `variant="outline"`._
 3. **Tertiary Actions (Rare / Destructive)**: Hidden in overflow menus (`...`) and require `ActionModal` confirmation (e.g., "Void", "Reject", "Delete"). _Mapping: `variant="stealth"` within an overflow context._
+4. **Bulk Actions (Multi-Selection Context)**: A floating action bar anchored to the bottom of the grid surface. Appears via `<Transition>` when `selectedCount > 0`. Dismissed when selection is cleared. Contains only state-advancing and utility actions applicable to the entire selection. Never a modal — the bar must remain visible alongside the selected rows.
+
+> **Rule:** No module may expose a destructive bulk action (e.g., bulk delete) without a preceding `ActionModal` confirmation that lists the affected record count.
 
 ---
 
