@@ -22,7 +22,7 @@ withDefaults(defineProps<Props>(), {
     :class="
       cn(
         'relative overflow-hidden border border-[color:var(--color-neutral-200)] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.06)]',
-        dense ? 'rounded-[22px] px-5 py-4 sm:px-6' : 'rounded-[28px] px-6 py-6 sm:px-8',
+        dense ? 'rounded-[22px] px-5 py-4 sm:px-6' : 'rounded-[24px] px-6 py-5 sm:px-7',
         $props.class,
       )
     "
@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
     <div
       :class="[
         'pointer-events-none absolute inset-x-0 top-0 bg-[linear-gradient(135deg,rgba(99,102,241,0.12),rgba(59,130,246,0.04),transparent)]',
-        dense ? 'h-16' : 'h-24',
+        dense ? 'h-16' : 'h-20',
       ]"
     />
 
@@ -71,7 +71,7 @@ withDefaults(defineProps<Props>(), {
               v-if="description"
               :class="[
                 'max-w-3xl text-sm text-[var(--color-neutral-600)]',
-                dense ? 'mt-1.5 leading-5' : 'mt-2 leading-6',
+                dense ? 'mt-1 leading-5' : 'mt-1 leading-6',
               ]"
             >
               {{ description }}

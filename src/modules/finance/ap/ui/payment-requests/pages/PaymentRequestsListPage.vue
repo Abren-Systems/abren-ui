@@ -60,13 +60,13 @@ const smartTabs = computed(() => [
 const headerDescription = computed(() => {
   if (isLoading.value || !requests.value) return 'Loading operational metrics...'
 
-  const pending = requests.value.filter((r) =>
-    ['SUBMITTED', 'APPROVED', 'AUTHORIZED'].includes(r.status),
+  const active = requests.value.filter((r) =>
+    ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'AUTHORIZED'].includes(r.status),
   )
-  const count = pending.length
-  const total = pending.reduce((acc, r) => acc.add(r.totalAmount), Money.zero())
+  const count = active.length
+  const total = active.reduce((acc, r) => acc.add(r.totalAmount), Money.zero())
 
-  return `${count} Pending • ${total.format()} Total`
+  return `${count} Active • ${total.format()} Total`
 })
 
 const isTraceOpen = ref(false)
