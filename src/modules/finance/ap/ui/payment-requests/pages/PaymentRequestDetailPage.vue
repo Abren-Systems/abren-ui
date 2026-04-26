@@ -35,15 +35,22 @@ const requesterName = computed(() => {
   if (!request.value) return '…'
   const user = users.value?.find((u) => u.id === request.value?.requesterId)
   if (!user) return request.value.requesterId?.slice(0, 8) ?? 'Unknown'
-  return user.email || request.value.requesterId.slice(0, 8)
+  return user.email
 })
 
 const beneficiaryName = computed(() => {
   if (!request.value) return '…'
   const user = users.value?.find((u) => u.id === request.value?.beneficiaryId)
-  if (!user) return request.value.beneficiaryId?.slice(0, 8) ?? 'Unknown'
-  return user.email || request.value.beneficiaryId.slice(0, 8)
+  if (!user) return `Vendor: ${request.value.beneficiaryId?.slice(0, 8) ?? 'Unknown'}`
+  return user.email
 })
+
+const getInitials = (name: string) => {
+  if (!name || name === '…') return '??'
+  if (name.includes('@')) return name.slice(0, 2).toUpperCase()
+  if (name.startsWith('Vendor:')) return 'VN'
+  return name.slice(0, 2).toUpperCase()
+}
 
 const { approve, isPending: isApproving } = useApprovePaymentRequest(props.id as PaymentRequestId)
 const { reject, isPending: isRejecting } = useRejectPaymentRequest(props.id as PaymentRequestId)
@@ -319,7 +326,7 @@ function goBack() {
                 <div
                   class="h-6 w-6 rounded-full bg-neutral-900 flex items-center justify-center text-[10px] text-white font-bold"
                 >
-                  {{ requesterName.slice(0, 2).toUpperCase() }}
+                  {{ getInitials(requesterName) }}
                 </div>
                 <span class="text-sm font-medium text-neutral-900">{{ requesterName }}</span>
               </div>

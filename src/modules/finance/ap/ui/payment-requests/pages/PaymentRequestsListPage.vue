@@ -299,6 +299,19 @@ function handleBulkReject() {
                 </div>
               </div>
             </template>
+            <template #empty-action>
+              <AppButton
+                variant="outline"
+                size="sm"
+                @click="
+                  ;((statusFilter = 'all'),
+                    (filterState = { statuses: [], dateFrom: '', dateTo: '' }),
+                    (globalFilter = ''))
+                "
+              >
+                Clear all filters
+              </AppButton>
+            </template>
           </DataGrid>
         </div>
       </div>
