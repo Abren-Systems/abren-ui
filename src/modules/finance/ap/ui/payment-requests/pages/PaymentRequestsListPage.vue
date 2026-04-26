@@ -73,6 +73,9 @@ const isTraceOpen = ref(false)
 const traceTarget = ref<PaymentRequest | null>(null)
 
 const selectedCount = computed(() => Object.keys(rowSelection.value).length)
+const totalFilteredAmount = computed(() => {
+  return filteredRequests.value.reduce((acc, r) => acc.add(r.totalAmount), Money.zero())
+})
 
 const filteredRequests = computed(() => {
   if (!requests.value) return []
@@ -261,29 +264,7 @@ function handleBulkReject() {
             @row-click="goToDetail"
           >
             <template #toolbar>
-              <div v-if="selectedCount > 0" class="flex items-center gap-2">
-                <AppButton
-                  v-if="selectedCount === 1"
-                  variant="stealth"
-                  size="sm"
-                  @click="handleTrace(filteredRequests.find((r) => rowSelection[r.id])!)"
-                >
-                  <template #start><History :size="14" /></template>
-                  Trace
-                </AppButton>
-                <div v-if="selectedCount === 1" class="h-4 w-px bg-neutral-200 mx-1" />
-
-                <AppButton variant="stealth" size="sm" @click="handleBulkReject">
-                  <template #start><XCircle :size="14" /></template>
-                  Reject Selected
-                </AppButton>
-                <AppButton variant="primary" size="sm" @click="handleBulkApprove">
-                  <template #start><CheckCircle :size="14" /></template>
-                  Approve Selected
-                </AppButton>
-              </div>
-
-              <div v-else class="flex items-center justify-between w-full pr-2">
+              <div class="flex items-center justify-between w-full pr-2">
                 <div class="flex items-center gap-4">
                   <button
                     v-for="tab in smartTabs"
@@ -335,7 +316,69 @@ function handleBulkReject() {
                 Clear all filters
               </AppButton>
             </template>
+
+            <!-- DataGrid Smart Footer -->
+            <template #footer>
+              <div
+                class="flex justify-between items-center w-full px-4 text-[13px] font-medium text-neutral-600 bg-neutral-50 h-10 border-t border-neutral-200"
+              >
+                <div class="flex items-center gap-4">
+                  <span>Showing {{ filteredRequests.length }} rows</span>
+                  <span v-if="selectedCount > 0" class="text-primary-600 font-semibold"
+                    >Selected: {{ selectedCount }}</span
+                  >
+                </div>
+                <div class="text-neutral-900 tabular-nums">
+                  Total: {{ totalFilteredAmount.format() }}
+                </div>
+              </div>
+            </template>
           </DataGrid>
+
+          <!-- Floating Bulk Action Bar -->
+          <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 translate-y-4"
+          >
+            <div
+              v-if="selectedCount > 0"
+              class="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-2xl bg-neutral-900 px-4 py-3 shadow-[0_20px_40px_rgba(15,23,42,0.2)] text-white z-10 border border-neutral-700"
+            >
+              <span class="text-sm font-semibold mr-2">{{ selectedCount }} selected</span>
+              <AppButton
+                variant="stealth"
+                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
+                size="sm"
+                @click="handleBulkApprove"
+              >
+                <template #start><CheckCircle :size="14" /></template>
+                Approve
+              </AppButton>
+              <AppButton
+                variant="stealth"
+                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
+                size="sm"
+                @click="handleBulkReject"
+              >
+                <template #start><XCircle :size="14" /></template>
+                Reject
+              </AppButton>
+              <div class="w-px h-4 bg-neutral-700 mx-1"></div>
+              <AppButton
+                variant="stealth"
+                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
+                size="sm"
+                @click="handleExport"
+              >
+                <template #start><Download :size="14" /></template>
+                Export
+              </AppButton>
+            </div>
+          </Transition>
         </div>
       </div>
 
