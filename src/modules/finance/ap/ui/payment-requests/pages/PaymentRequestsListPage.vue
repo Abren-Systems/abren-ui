@@ -11,11 +11,12 @@ import { usePermissions } from '@/shared/auth/usePermissions'
 import type { PaymentRequest } from '../../../domain/ap.types'
 import { h } from 'vue'
 import { MoneyCell, DateCell, BadgeCell, SelectionCell } from '@/shared/components/data-grid'
-import { History, X, ListFilter, Calendar } from 'lucide-vue-next'
+import { History, X, ListFilter, Calendar, Download } from 'lucide-vue-next'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
 import { paymentRequestColumns } from '../grids/payment-request.grid'
 import { useUsers } from '@/modules/core/application/composables/useUsers'
 import type { User } from '@/modules/core/domain/user.types'
+import { Money } from '@/shared/domain/money'
 
 const router = useRouter()
 const { hasPermission } = usePermissions()
@@ -55,6 +56,18 @@ const smartTabs = computed(() => [
     isActive: statusFilter.value === 'in_review',
   },
 ])
+
+const headerDescription = computed(() => {
+  if (isLoading.value || !requests.value) return 'Loading operational metrics...'
+
+  const pending = requests.value.filter((r) =>
+    ['SUBMITTED', 'APPROVED', 'AUTHORIZED'].includes(r.status),
+  )
+  const count = pending.length
+  const total = pending.reduce((acc, r) => acc.add(r.totalAmount), Money.zero())
+
+  return `${count} Pending • ${total.format()} Total`
+})
 
 const isTraceOpen = ref(false)
 const traceTarget = ref<PaymentRequest | null>(null)
@@ -199,6 +212,10 @@ function handleBulkApprove() {
   console.log('Bulk approve:', Object.keys(rowSelection.value))
 }
 
+function handleExport() {
+  console.log('Export to CSV...')
+}
+
 function handleBulkReject() {
   console.log('Bulk reject:', Object.keys(rowSelection.value))
 }
@@ -206,8 +223,14 @@ function handleBulkReject() {
 
 <template>
   <div class="flex flex-col gap-4 h-full">
-    <PageHeader title="Payment Requests" description="All pending and processed payments">
+    <PageHeader title="Payment Requests" :description="headerDescription">
       <template #actions>
+        <AppButton variant="outline" size="sm" @click="handleExport">
+          <template #start>
+            <Download :size="14" />
+          </template>
+          Export
+        </AppButton>
         <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
           <template #start>
             <Plus :size="14" />

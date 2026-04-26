@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { ChevronRight, Home } from 'lucide-vue-next'
+import {} from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -27,17 +27,8 @@ const breadcrumbs = computed(() => {
 <template>
   <nav aria-label="Breadcrumb">
     <ol class="flex items-center gap-2 text-[13px] text-[var(--color-neutral-500)]">
-      <li class="flex items-center gap-2">
-        <RouterLink
-          to="/app"
-          class="inline-flex items-center text-[var(--color-neutral-500)] transition-colors hover:text-[var(--color-primary-600)]"
-        >
-          <Home :size="14" />
-        </RouterLink>
-      </li>
-
-      <li v-for="crumb in breadcrumbs" :key="crumb.path" class="flex items-center gap-2">
-        <ChevronRight :size="14" class="text-[var(--color-neutral-400)]" />
+      <li v-for="(crumb, index) in breadcrumbs" :key="crumb.path" class="flex items-center gap-2">
+        <span v-if="index > 0" class="text-[var(--color-neutral-300)] font-medium">/</span>
         <RouterLink
           v-if="!crumb.active"
           :to="crumb.path"
