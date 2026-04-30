@@ -62,6 +62,18 @@ For high-volume review workflows, the extended grammar is:
 
 `Workspace (+ Quick Triage pane) -> Focus -> Confirmed Action`
 
+## Component Architecture
+
+Avoid the **SFC God-Component** anti-pattern. While Vue Single-File Components are powerful, pages should not become dumping grounds for multiple layout regions, complex dialogs, and heavy orchestrations.
+
+1. **Size Limits**: An SFC should ideally remain under 200 lines. If a component exceeds 300-400 lines, it is almost certainly doing too much.
+2. **Separation of Concerns**: A page component should act as an orchestrator, not an implementer.
+3. **Extraction Triggers**: Extract the following into dedicated child components:
+   - Floating action bars and their associated confirmation dialogs (e.g., `BulkActionBar.vue`).
+   - Complex side panes (e.g., `FilterPane.vue`, `TracePane.vue`).
+   - Domain-heavy data grids, if they require extensive custom cell formatting.
+4. **State Delegation**: The parent page holds the core data (`requests`, `selectedIds`) and passes them down as props, listening for events (`@approve`, `@reject`) from the extracted children.
+
 ## Shared UI Expectations
 
 Prefer shared page composition over one-off page markup. Reuse or introduce shared patterns such as:

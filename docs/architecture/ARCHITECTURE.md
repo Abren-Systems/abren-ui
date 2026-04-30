@@ -125,6 +125,18 @@ graph TD
 | **Infrastructure** | ACL, Mapping, Adapters      | `infrastructure/adapter.ts` | Domain, Core API     | **DTOs** (input)   |
 | **UI**             | Presentation & Formatting   | `ui/pages/`, `ui/utils/`    | Application, Core UI | Presentation       |
 
+### 2.4 Component Sizing and Separation of Concerns
+
+Vue Single-File Components (SFCs) must not become dumping grounds for multiple layout regions, complex dialogs, and heavy orchestration. The architecture explicitly bans the **SFC God-Component** anti-pattern.
+
+- **Size Limits**: An SFC should ideally remain under 200 lines. If a component exceeds 300-400 lines, it is almost certainly doing too much.
+- **Separation of Concerns**: A page component should act as an orchestrator, not an implementer.
+- **Extraction Triggers**: Extract the following into dedicated child components:
+  - Floating action bars and their associated confirmation dialogs (e.g., `BulkActionBar.vue`).
+  - Complex side panes (e.g., `FilterPane.vue`, `TracePane.vue`).
+  - Domain-heavy data grids that require extensive custom cell formatting.
+- **State Delegation**: The parent page holds the core data (`requests`, `selectedIds`) and passes them down as props, listening for events (`@approve`, `@reject`) from extracted children.
+
 ---
 
 ## 3. Technology Stack
@@ -528,6 +540,7 @@ The UI is strictly **stateless and tenant-scoped**. It relies on the backend to 
 | **Raw HTML tables**                  | No sorting, pagination, virtual scroll  | `shared/components` DataGrid (TanStack Table) |
 | **Bypassing design system**          | UI inconsistency                        | Always use `shared/components` components     |
 | **`console.log`**                    | Leaks debug data, litters production    | Use high-level error boundaries or logging    |
+| **SFC God-Component**                | Page files >400 lines, unmaintainable   | Extract action bars, panes, and dialogs       |
 
 ---
 
