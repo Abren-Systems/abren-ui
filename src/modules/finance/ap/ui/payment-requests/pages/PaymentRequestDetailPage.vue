@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Edit3,
   Send,
 } from 'lucide-vue-next'
 import { usePaymentRequest } from '../../../application/composables/usePaymentRequest'
@@ -18,6 +17,7 @@ import { useApprovePaymentRequest } from '../../../application/composables/useAp
 import { useRejectPaymentRequest } from '../../../application/composables/useRejectPaymentRequest'
 import { useAuthorizePaymentRequest } from '../../../application/composables/useAuthorizePaymentRequest'
 import { useCancelPaymentRequest } from '../../../application/composables/useCancelPaymentRequest'
+import { useSubmitPaymentRequest } from '../../../application/composables/useSubmitPaymentRequest'
 import { usePermissions } from '@/shared/auth/usePermissions'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
@@ -58,11 +58,13 @@ const { authorize, isPending: isAuthorizing } = useAuthorizePaymentRequest(
   props.id as PaymentRequestId,
 )
 const { cancel, isPending: isCancelling } = useCancelPaymentRequest(props.id as PaymentRequestId)
+const { submit, isPending: isSubmitting } = useSubmitPaymentRequest(props.id as PaymentRequestId)
 
 const approveOpen = ref(false)
 const rejectOpen = ref(false)
 const authorizeOpen = ref(false)
 const cancelOpen = ref(false)
+const submitOpen = ref(false)
 const rejectReason = ref('')
 const cancelReason = ref('')
 
@@ -84,6 +86,11 @@ async function confirmAuthorize() {
 async function confirmCancel() {
   await cancel(cancelReason.value)
   cancelOpen.value = false
+}
+
+async function confirmSubmit() {
+  await submit()
+  submitOpen.value = false
 }
 
 function goBack() {
@@ -174,22 +181,11 @@ function goBack() {
             Reject
           </AppButton>
 
-          <!-- Action: Edit (for DRAFT or REJECTED) -->
-          <AppButton
-            v-if="request.status === 'DRAFT' || request.status === 'REJECTED'"
-            variant="outline"
-            size="sm"
-            @click="router.push({ name: 'PaymentRequestEdit', params: { id: request.id } })"
-          >
-            <template #start><Edit3 :size="14" /></template>
-            Edit Request
-          </AppButton>
-
           <AppButton
             v-if="request.status === 'DRAFT' || request.status === 'REJECTED'"
             variant="primary"
             size="sm"
-            @click="approveOpen = true"
+            @click="submitOpen = true"
           >
             <template #start><Send :size="14" /></template>
             Submit for Approval
@@ -452,6 +448,20 @@ function goBack() {
         </div>
       </aside>
     </div>
+
+    <!-- Submit Dialog -->
+    <AppDialog v-model:open="submitOpen" title="Submit for Approval" size="sm">
+      <p class="text-sm text-neutral-600">
+        You are about to submit this payment request for review. Once submitted, it will enter the
+        approval workflow and can no longer be edited.
+      </p>
+      <template #footer>
+        <AppButton variant="outline" @click="submitOpen = false">Cancel</AppButton>
+        <AppButton variant="primary" :loading="isSubmitting" @click="confirmSubmit"
+          >Submit Now</AppButton
+        >
+      </template>
+    </AppDialog>
 
     <!-- Approve Dialog -->
     <AppDialog v-model:open="approveOpen" title="Confirm Approval" size="sm">
