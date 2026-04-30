@@ -44,10 +44,10 @@ function handleApply() {
 
 <template>
   <AppSidePane
-    :model-value="open"
+    :open="open"
     title="Filter Requests"
     width="320px"
-    @update:model-value="emit('update:open', $event)"
+    @update:open="emit('update:open', $event)"
   >
     <template #icon>
       <div class="h-6 w-6 rounded-md bg-neutral-100 flex items-center justify-center">

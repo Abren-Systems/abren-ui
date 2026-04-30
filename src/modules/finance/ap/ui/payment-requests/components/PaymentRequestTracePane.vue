@@ -17,11 +17,11 @@ const emit = defineEmits<{
 
 <template>
   <AppSidePane
-    :model-value="open"
+    :open="open"
     :title="request ? `Trace: ${request.requestNumber}` : 'Trace'"
     mode="docked"
     width="320px"
-    @update:model-value="emit('update:open', $event)"
+    @update:open="emit('update:open', $event)"
   >
     <template #icon>
       <div class="h-6 w-6 rounded-md bg-primary-50 flex items-center justify-center">
