@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { AppButton, AppSidePane } from '@/shared/components/primitives'
 import { History } from 'lucide-vue-next'
-import { BadgeCell } from '@/shared/components/data-grid'
 import PaymentRequestTimeline from './PaymentRequestTimeline.vue'
 import type { PaymentRequest } from '../../../domain/ap.types'
 
@@ -31,15 +30,7 @@ const emit = defineEmits<{
     </template>
 
     <div v-if="request" class="space-y-6">
-      <PaymentRequestTimeline :request="request" density="compact" />
-
-      <!-- Mini Stats -->
-      <div class="pt-5 border-t border-neutral-100 space-y-3">
-        <div class="flex justify-between items-center text-[10px]">
-          <span class="text-neutral-500 font-medium uppercase tracking-tight">Status</span>
-          <BadgeCell :status="request.status" class="scale-90 origin-right" />
-        </div>
-      </div>
+      <PaymentRequestTimeline :request="request" density="compact" hide-header />
     </div>
 
     <template #footer>
