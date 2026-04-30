@@ -6,12 +6,14 @@ import { Users as UsersIcon, UserPlus, ShieldAlert } from 'lucide-vue-next'
 import { useUsers } from '../../application/composables/useUsers'
 import type { User } from '../../domain/user.types'
 import UserRoleAssignmentDialog from '../components/UserRoleAssignmentDialog.vue'
+import InviteUserDialog from '../components/InviteUserDialog.vue'
 
 const { users, isPending } = useUsers()
 const gridState = useDataGrid()
 
 const isAssignmentOpen = ref(false)
 const selectedUser = ref<User | null>(null)
+const isInviteOpen = ref(false)
 
 const userColumns = [
   {
@@ -87,7 +89,7 @@ function handleRowClick(user: User) {
       </div>
 
       <div class="flex items-center gap-2">
-        <AppButton variant="primary" @click="console.log('Invite User')">
+        <AppButton variant="primary" @click="isInviteOpen = true">
           <UserPlus :size="14" class="mr-2" />
           Invite User
         </AppButton>
@@ -105,7 +107,7 @@ function handleRowClick(user: User) {
         @row-click="handleRowClick"
       >
         <template #empty-action>
-          <AppButton class="mt-4" @click="console.log('Invite User')">
+          <AppButton class="mt-4" @click="isInviteOpen = true">
             <UserPlus :size="14" class="mr-2" />
             Invite First User
           </AppButton>
@@ -114,5 +116,6 @@ function handleRowClick(user: User) {
     </div>
 
     <UserRoleAssignmentDialog v-model:open="isAssignmentOpen" :user="selectedUser" />
+    <InviteUserDialog v-model:open="isInviteOpen" />
   </div>
 </template>

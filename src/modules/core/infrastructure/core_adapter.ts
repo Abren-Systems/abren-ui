@@ -5,6 +5,7 @@ import type {
   RoleDTO,
   PermissionDTO,
   RoleCreateDTO,
+  UserCreateDTO,
   UserRoleAssignmentDTO,
   TenantSettingDTO,
 } from './api.types'
@@ -47,6 +48,11 @@ export const coreAdapter = {
     return apiPost<void>(`/core/users/${dto.user_id}/roles`, {
       role_id: dto.role_id,
     })
+  },
+
+  async createUser(dto: UserCreateDTO): Promise<UserDTO> {
+    const data = await apiPost<unknown>('/core/users', dto)
+    return UserSchema.parse(data) as UserDTO
   },
 
   async getSettings(): Promise<TenantSettingDTO[]> {

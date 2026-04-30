@@ -42,6 +42,11 @@ export interface UserRoleAssignmentDTO {
   role_id: string
 }
 
+export interface UserCreateDTO {
+  email: string
+  password: string
+}
+
 export interface TenantSettingDTO {
   key: string
   value: string | null

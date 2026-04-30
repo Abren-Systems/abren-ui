@@ -3,7 +3,7 @@ import { coreAdapter } from '../../infrastructure/core_adapter'
 import { IdentityMapper } from '../../infrastructure/mappers'
 import { coreKeys } from '../keys'
 import type { User } from '../../domain/user.types'
-import type { UserRoleAssignmentDTO } from '../../infrastructure/api.types'
+import type { UserRoleAssignmentDTO, UserCreateDTO } from '../../infrastructure/api.types'
 
 /**
  * Use Case: Manage Users and Assignments
@@ -34,6 +34,15 @@ export function useUsers() {
     },
   })
 
+  const { mutateAsync: createUser, isPending: isCreating } = useMutation({
+    mutationFn: async (payload: UserCreateDTO) => {
+      return await coreAdapter.createUser(payload)
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: coreKeys.users() })
+    },
+  })
+
   return {
     users,
     isPending,
@@ -41,5 +50,7 @@ export function useUsers() {
     refetch,
     assignRole,
     isAssigning,
+    createUser,
+    isCreating,
   }
 }
