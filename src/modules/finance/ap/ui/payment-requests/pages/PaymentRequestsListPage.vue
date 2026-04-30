@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import type { Table, Row } from '@tanstack/vue-table'
-import { AppButton, AppSidePane } from '@/shared/components/primitives'
+import { AppButton, AppSidePane, AppDialog, AppInput } from '@/shared/components/primitives'
 import { PageHeader } from '@/shared/components/workspace'
 import { CheckCircle, XCircle, Plus } from 'lucide-vue-next'
 import { usePaymentRequests } from '../../../application/composables/usePaymentRequests'
@@ -13,7 +13,9 @@ import { h } from 'vue'
 import { MoneyCell, DateCell, BadgeCell, SelectionCell } from '@/shared/components/data-grid'
 import { History, X, ListFilter, Calendar, Download } from 'lucide-vue-next'
 import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
+import PaymentRequestBulkActionBar from '../components/PaymentRequestBulkActionBar.vue'
 import { paymentRequestColumns } from '../grids/payment-request.grid'
+import type { PaymentRequestId } from '@/shared/types/brand.types'
 import { useUsers } from '@/modules/core/application/composables/useUsers'
 import type { User } from '@/modules/core/domain/user.types'
 import { Money } from '@/shared/domain/money'
@@ -211,16 +213,8 @@ function handleCreate() {
   void router.push({ name: 'PaymentRequestCreate' })
 }
 
-function handleBulkApprove() {
-  console.log('Bulk approve:', Object.keys(rowSelection.value))
-}
-
-function handleExport() {
-  console.log('Export to CSV...')
-}
-
-function handleBulkReject() {
-  console.log('Bulk reject:', Object.keys(rowSelection.value))
+function getSelectedIds(): PaymentRequestId[] {
+  return Object.keys(rowSelection.value) as PaymentRequestId[]
 }
 </script>
 
@@ -335,50 +329,12 @@ function handleBulkReject() {
             </template>
           </DataGrid>
 
-          <!-- Floating Bulk Action Bar -->
-          <Transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 translate-y-4"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 translate-y-4"
-          >
-            <div
-              v-if="selectedCount > 0"
-              class="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-2xl bg-neutral-900 px-4 py-3 shadow-[0_20px_40px_rgba(15,23,42,0.2)] text-white z-10 border border-neutral-700"
-            >
-              <span class="text-sm font-semibold mr-2">{{ selectedCount }} selected</span>
-              <AppButton
-                variant="stealth"
-                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
-                size="sm"
-                @click="handleBulkApprove"
-              >
-                <template #start><CheckCircle :size="14" /></template>
-                Approve
-              </AppButton>
-              <AppButton
-                variant="stealth"
-                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
-                size="sm"
-                @click="handleBulkReject"
-              >
-                <template #start><XCircle :size="14" /></template>
-                Reject
-              </AppButton>
-              <div class="w-px h-4 bg-neutral-700 mx-1"></div>
-              <AppButton
-                variant="stealth"
-                class="text-neutral-100 hover:text-white hover:bg-neutral-800"
-                size="sm"
-                @click="handleExport"
-              >
-                <template #start><Download :size="14" /></template>
-                Export
-              </AppButton>
-            </div>
-          </Transition>
+          <!-- Floating Bulk Action Bar & Overlay -->
+          <PaymentRequestBulkActionBar
+            :selected-ids="getSelectedIds()"
+            :filtered-requests="filteredRequests"
+            @clear-selection="rowSelection = {}"
+          />
         </div>
       </div>
 
