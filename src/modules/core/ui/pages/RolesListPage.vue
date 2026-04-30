@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { h, ref } from 'vue'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
-import { AppButton, AppBadge } from '@/shared/components/primitives'
-import { Shield, ShieldPlus } from 'lucide-vue-next'
+import { AppButton, AppBadge, AppSidePane } from '@/shared/components/primitives'
+import { Shield, ShieldPlus, ShieldCheck } from 'lucide-vue-next'
 import { useRoles } from '../../application/composables/useRoles'
 import type { Role } from '../../domain/user.types'
 import CreateRoleDialog from '../components/CreateRoleDialog.vue'
@@ -11,6 +11,8 @@ const { roles, isRolesPending } = useRoles()
 const gridState = useDataGrid()
 
 const isCreateOpen = ref(false)
+const isDetailOpen = ref(false)
+const selectedRole = ref<Role | null>(null)
 
 const roleColumns = [
   {
@@ -57,8 +59,8 @@ const roleColumns = [
 ]
 
 function handleRowClick(role: Role) {
-  // Navigation for a future side-bar editor
-  console.log('Open Role Matrix Sidebar for:', role.id)
+  selectedRole.value = role
+  isDetailOpen.value = true
 }
 </script>
 
@@ -114,5 +116,71 @@ function handleRowClick(role: Role) {
     </div>
 
     <CreateRoleDialog v-model:open="isCreateOpen" />
+
+    <!-- Read-Only Role Detail Pane -->
+    <AppSidePane
+      v-model:open="isDetailOpen"
+      :title="selectedRole?.name ?? 'Role Detail'"
+      description="Inspecting role boundary and permissions"
+      mode="docked"
+      width="360px"
+    >
+      <template #icon>
+        <div class="h-6 w-6 rounded-md bg-primary-50 flex items-center justify-center">
+          <ShieldCheck class="h-3.5 w-3.5 text-primary-600" />
+        </div>
+      </template>
+
+      <div v-if="selectedRole" class="space-y-6">
+        <!-- Role Metadata -->
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Boundary Name
+            </p>
+            <p class="text-sm font-semibold text-neutral-900">{{ selectedRole.name }}</p>
+          </div>
+
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Description
+            </p>
+            <p class="text-sm text-neutral-600">
+              {{ selectedRole.description || 'No description provided.' }}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <AppBadge :variant="selectedRole.isSystem ? 'info' : 'neutral'">
+              {{ selectedRole.isSystem ? 'System-Defined' : 'Custom' }}
+            </AppBadge>
+          </div>
+        </div>
+
+        <div class="h-px bg-neutral-200" />
+
+        <!-- Permission List (Read-Only) -->
+        <div class="space-y-3">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            Granted Permissions ({{ selectedRole.permissions.length }})
+          </p>
+
+          <div v-if="selectedRole.permissions.length === 0" class="text-xs text-neutral-400 italic">
+            No permissions assigned to this boundary.
+          </div>
+
+          <div v-else class="space-y-1.5 max-h-[400px] overflow-y-auto">
+            <div
+              v-for="perm in selectedRole.permissions"
+              :key="perm"
+              class="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 border border-neutral-100"
+            >
+              <div class="h-1.5 w-1.5 rounded-full bg-neutral-400" />
+              <span class="text-xs font-medium text-neutral-700">{{ perm }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppSidePane>
   </div>
 </template>
