@@ -214,21 +214,15 @@ function handleCreate() {
   void router.push({ name: 'PaymentRequestCreate' })
 }
 
-function getSelectedIds(): PaymentRequestId[] {
+const selectedIds = computed(() => {
   return Object.keys(rowSelection.value) as PaymentRequestId[]
-}
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-4 h-full">
     <PageHeader title="Payment Requests" :description="headerDescription">
       <template #actions>
-        <AppButton variant="outline" size="sm" @click="handleExport">
-          <template #start>
-            <Download :size="14" />
-          </template>
-          Export
-        </AppButton>
         <AppButton v-if="hasPermission('ap:create')" variant="primary" @click="handleCreate">
           <template #start>
             <Plus :size="14" />
@@ -332,7 +326,7 @@ function getSelectedIds(): PaymentRequestId[] {
 
           <!-- Floating Bulk Action Bar & Overlay -->
           <PaymentRequestBulkActionBar
-            :selected-ids="getSelectedIds()"
+            :selected-ids="selectedIds"
             :filtered-requests="filteredRequests"
             @clear-selection="rowSelection = {}"
           />

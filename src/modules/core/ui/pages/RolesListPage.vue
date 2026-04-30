@@ -122,7 +122,8 @@ function handleRowClick(role: Role) {
       v-model:open="isDetailOpen"
       :title="selectedRole?.name ?? 'Role Detail'"
       description="Inspecting role boundary and permissions"
-      mode="docked"
+      mode="overlay"
+      :show-backdrop="true"
       width="360px"
     >
       <template #icon>

@@ -51,10 +51,10 @@ async function handleLogin() {
     <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
       <div class="space-y-4">
         <div class="space-y-1.5">
-          <Label
+          <label
             for="email"
             class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
-            >Email address</Label
+            >Email address</label
           >
           <AppInput
             id="email"
@@ -66,10 +66,10 @@ async function handleLogin() {
           />
         </div>
         <div class="space-y-1.5">
-          <Label
+          <label
             for="password"
             class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
-            >Password</Label
+            >Password</label
           >
           <AppInput
             id="password"

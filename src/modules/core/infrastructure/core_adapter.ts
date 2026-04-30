@@ -38,9 +38,9 @@ export const coreAdapter = {
     return z.array(PermissionSchema).parse(data) as PermissionDTO[]
   },
 
-  async createRole(dto: RoleCreateDTO): Promise<RoleDTO> {
+  async createRole(dto: RoleCreateDTO): Promise<{ role_id: string }> {
     const data = await apiPost<unknown>('/core/roles', dto)
-    return RoleSchema.parse(data) as RoleDTO
+    return z.object({ role_id: z.string().uuid() }).parse(data)
   },
 
   async assignRole(dto: UserRoleAssignmentDTO): Promise<void> {
