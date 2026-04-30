@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { DataGrid, useDataGrid } from '@/shared/components/data-grid'
 import type { Table, Row } from '@tanstack/vue-table'
-import { AppButton, AppSidePane, AppDialog, AppInput } from '@/shared/components/primitives'
+import { AppButton } from '@/shared/components/primitives'
 import { PageHeader } from '@/shared/components/workspace'
 import { CheckCircle, XCircle, Plus } from 'lucide-vue-next'
 import { usePaymentRequests } from '../../../application/composables/usePaymentRequests'
@@ -12,8 +12,9 @@ import type { PaymentRequest } from '../../../domain/ap.types'
 import { h } from 'vue'
 import { MoneyCell, DateCell, BadgeCell, SelectionCell } from '@/shared/components/data-grid'
 import { History, X, ListFilter, Calendar, Download } from 'lucide-vue-next'
-import PaymentRequestTimeline from '../components/PaymentRequestTimeline.vue'
 import PaymentRequestBulkActionBar from '../components/PaymentRequestBulkActionBar.vue'
+import PaymentRequestFilterPane from '../components/PaymentRequestFilterPane.vue'
+import PaymentRequestTracePane from '../components/PaymentRequestTracePane.vue'
 import { paymentRequestColumns } from '../grids/payment-request.grid'
 import type { PaymentRequestId } from '@/shared/types/brand.types'
 import { useUsers } from '@/modules/core/application/composables/useUsers'
@@ -338,142 +339,20 @@ function getSelectedIds(): PaymentRequestId[] {
         </div>
       </div>
 
-      <!-- Filter Drawer -->
-      <AppSidePane
+      <!-- Filter Sidebar -->
+      <PaymentRequestFilterPane
         v-model:open="isFilterOpen"
-        title="Filter Requests"
-        description="Refine your workspace"
-        show-backdrop
-      >
-        <template #icon>
-          <div class="h-6 w-6 rounded-md bg-neutral-100 flex items-center justify-center">
-            <ListFilter class="h-3.5 w-3.5 text-neutral-600" />
-          </div>
-        </template>
-
-        <div class="space-y-6">
-          <!-- Status Multi-Select -->
-          <div class="space-y-3">
-            <h4 class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Status</h4>
-            <div class="grid grid-cols-2 gap-2">
-              <label
-                v-for="opt in statusOptions"
-                :key="opt.value"
-                class="flex items-center gap-2 p-2 rounded-lg border border-neutral-100 cursor-pointer hover:bg-neutral-50 transition-colors"
-                :class="{
-                  'bg-primary-50 border-primary-200': filterState.statuses.includes(opt.value),
-                }"
-              >
-                <input
-                  v-model="filterState.statuses"
-                  type="checkbox"
-                  :value="opt.value"
-                  class="hidden"
-                />
-                <div
-                  class="h-3.5 w-3.5 rounded border flex items-center justify-center"
-                  :class="
-                    filterState.statuses.includes(opt.value)
-                      ? 'bg-primary-600 border-primary-600'
-                      : 'bg-white border-neutral-300'
-                  "
-                >
-                  <CheckCircle
-                    v-if="filterState.statuses.includes(opt.value)"
-                    :size="10"
-                    class="text-white"
-                  />
-                </div>
-                <span class="text-xs font-medium text-neutral-700">{{ opt.label }}</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Date Range -->
-          <div class="space-y-3">
-            <h4 class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-              Date Range
-            </h4>
-            <div class="space-y-2">
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                  <Calendar :size="12" />
-                </span>
-                <input
-                  v-model="filterState.dateFrom"
-                  type="date"
-                  class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-neutral-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                  <Calendar :size="12" />
-                </span>
-                <input
-                  v-model="filterState.dateTo"
-                  type="date"
-                  class="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-neutral-200 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <template #footer>
-          <div class="flex gap-2">
-            <AppButton
-              variant="outline"
-              size="sm"
-              class="flex-1"
-              @click="filterState = { statuses: [], dateFrom: '', dateTo: '' }"
-            >
-              Reset
-            </AppButton>
-            <AppButton variant="primary" size="sm" class="flex-1" @click="isFilterOpen = false">
-              Apply
-            </AppButton>
-          </div>
-        </template>
-      </AppSidePane>
+        :initial-filters="filterState"
+        :status-options="statusOptions"
+        @apply="filterState = $event"
+      />
 
       <!-- Contextual Sidebar (Audit Trail) -->
-      <!-- Contextual Sidebar (Audit Trail) -->
-      <AppSidePane
+      <PaymentRequestTracePane
         v-model:open="isTraceOpen"
-        :title="`Trace: ${traceTarget?.requestNumber}`"
-        mode="docked"
-        width="320px"
-      >
-        <template #icon>
-          <div class="h-6 w-6 rounded-md bg-primary-50 flex items-center justify-center">
-            <History class="h-3.5 w-3.5 text-primary-600" />
-          </div>
-        </template>
-
-        <div v-if="traceTarget" class="space-y-6">
-          <PaymentRequestTimeline :request="traceTarget" density="compact" />
-
-          <!-- Mini Stats -->
-          <div class="pt-5 border-t border-neutral-100 space-y-3">
-            <div class="flex justify-between items-center text-[10px]">
-              <span class="text-neutral-500 font-medium uppercase tracking-tight">Status</span>
-              <BadgeCell :status="traceTarget.status" class="scale-90 origin-right" />
-            </div>
-          </div>
-        </div>
-
-        <template #footer>
-          <AppButton
-            v-if="traceTarget"
-            variant="outline"
-            size="sm"
-            class="w-full h-8 text-[11px]"
-            @click="goToDetail(traceTarget)"
-          >
-            View Full Detail
-          </AppButton>
-        </template>
-      </AppSidePane>
+        :request="traceTarget"
+        @view-detail="goToDetail"
+      />
     </div>
   </div>
 </template>
