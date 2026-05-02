@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/shared/auth/auth.store'
-import { AppButton, AppInput } from '@/shared/components/primitives'
+import { AppButton, AppInput, AppLabel } from '@/shared/components/primitives'
 import { Lock, Mail, ShieldCheck } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -51,11 +51,7 @@ async function handleLogin() {
     <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
       <div class="space-y-4">
         <div class="space-y-1.5">
-          <label
-            for="email"
-            class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
-            >Email address</label
-          >
+          <AppLabel for="email">Email address</AppLabel>
           <AppInput
             id="email"
             v-model="email"
@@ -66,11 +62,7 @@ async function handleLogin() {
           />
         </div>
         <div class="space-y-1.5">
-          <label
-            for="password"
-            class="text-xs font-bold uppercase tracking-wider text-[var(--color-neutral-500)]"
-            >Password</label
-          >
+          <AppLabel for="password">Password</AppLabel>
           <AppInput
             id="password"
             v-model="password"
@@ -97,12 +89,12 @@ async function handleLogin() {
             type="checkbox"
             class="h-4 w-4 rounded-sm border-[var(--color-neutral-300)] text-[var(--color-primary-600)] focus:ring-[var(--color-primary-500)] cursor-pointer"
           />
-          <label
+          <AppLabel
             for="remember-me"
-            class="text-xs font-medium text-[var(--color-neutral-600)] cursor-pointer select-none"
+            class="text-xs font-medium text-[var(--color-neutral-600)] cursor-pointer select-none tracking-normal normal-case"
           >
             Keep me authenticated
-          </label>
+          </AppLabel>
         </div>
 
         <div class="text-xs">
